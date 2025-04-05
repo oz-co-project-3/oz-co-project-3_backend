@@ -1,0 +1,19 @@
+FROM python:3.11-slim
+
+# 1. 작업 디렉토리 설정 먼저!
+WORKDIR /app
+
+# 2. pyproject.toml & poetry.lock 복사
+COPY pyproject.toml poetry.lock ./
+
+# 3. Poetry 설치 및 의존성 설치
+RUN pip install --upgrade pip \
+    && pip install poetry \
+    && poetry config virtualenvs.create false \
+    && poetry install --no-root --only main
+
+# 4. 전체 애플리케이션 복사
+COPY . /app
+
+# 5. 애플리케이션 실행
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
