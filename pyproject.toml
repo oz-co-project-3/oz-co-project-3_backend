@@ -27,3 +27,6 @@ pre-commit = "^4.2.0"
 black = "^25.1.0"
 isort = "^6.0.1"
 
+[tool.aerich]
+tortoise_orm = "app.core.config.TORTOISE_ORM"
+location = "./migrations"

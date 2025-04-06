@@ -6,6 +6,9 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     container_name: fast-app-prod
+    working_dir: /app
+    volumes:
+      - ./app:/app
     restart: always
     ports:
       - "8000:8000"

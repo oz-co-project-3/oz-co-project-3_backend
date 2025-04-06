@@ -30,3 +30,11 @@ htmlcov/
 # OS junk
 .DS_Store
 Thumbs.db
+
+*.pyc
+
+# 이 부분 추가
+nginx/
+*.md
+docker-compose*.yml
+Dockerfile.*
