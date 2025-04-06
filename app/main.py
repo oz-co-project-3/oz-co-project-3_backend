@@ -1,13 +1,14 @@
+from core.config import TORTOISE_ORM
 from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
 
-from core.config import TORTOISE_ORM
-
 app = FastAPI()
+
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
 
 register_tortoise(
     app,
