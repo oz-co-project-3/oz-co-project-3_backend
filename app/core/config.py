@@ -21,8 +21,14 @@ POSTGRES_URL = f"postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:
 TORTOISE_ORM = {
     "connections": {"default": POSTGRES_URL},
     "apps": {
-        "models": {
-            "models": ["aerich.models"],
+        "models": 
+            "models": [
+                "app.models.success_review_models"
+                "app.models.free_board_models",
+                "app.models.resume_models",
+                "app.models.comment_models"
+                "aerich.models",
+            ],
             "default_connection": "default",
         }
     },
