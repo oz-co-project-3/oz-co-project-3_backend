@@ -27,6 +27,7 @@ TORTOISE_ORM = {
                 "app.models.base_user_models",
                 "app.models.corporate_user_models",
                 "app.models.seeker_user_models",
+                "app.models.user_ban_models",
             ],
             "default_connection": "default",
         }
