@@ -9,10 +9,10 @@ class Resume(Model):
         Writing = "작성중"
         Seeking = "구직중"
         Closed = "완료"
-        
+
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
-        Users.models, related_name="resumes", on_delete=fields.CASCADE
+        "user_model.User", related_name="resumes", on_delete=fields.CASCADE
     )
     title = fields.CharField(max_length=100)
     visibility = fields.BooleanField(default=True)
@@ -31,11 +31,17 @@ class Resume(Model):
     status = fields.CharEnumField(StatusEnum, default=StatusEnum.Writing)
     document_url = fields.CharField(max_length=255, null=True)
 
+    class Meta:
+        table = "resume"
+        ordering = ["-created_at"]
+
 
 class WorkExp(Model):
     id = fields.IntField(pk=True)
     resume = fields.ForeignKeyField(
-        Resume.model, related_name="work_experiences", on_delete=fields.CASCADE
+        "resume_models.Resume",
+        related_name="work_experiences",
+        on_delete=fields.CASCADE,
     )
     company = fields.CharField(max_length=30)
     period = fields.CharField(max_length=20)
