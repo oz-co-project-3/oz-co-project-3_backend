@@ -48,7 +48,9 @@ class RejectPosting(Model):
     user = fields.ForeignKeyField(
         "user_model.User", related_name="reject_postings", null=True
     )
-    job_posting = fields.ForeignKeyField("JobPosting", related_name="reject_by_admins")
+    job_posting = fields.ForeignKeyField(
+        "JobPosting", related_name="reject_by_admins", on_delete=fields.CASCADE
+    )
     content = fields.TextField()
 
     class Meta:
