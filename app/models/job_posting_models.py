@@ -19,7 +19,7 @@ class JobPosting(TimestampMixin, Model):
 
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
-        "user_model.User", related_name="job_postings", on_delete="CASCADE"
+        "user_model.User", related_name="job_postings", on_delete=fields.CASCADE
     )
     title = fields.CharField(max_length=100, unique=True)
     location = fields.CharField(max_length=150)
@@ -74,7 +74,9 @@ class Applicants(Model):
     resume = fields.ForeignKeyField(
         "resume_models.Resume", related_name="applicants_resume"
     )
-    user = fields.ForeignKeyField("user_model.User", related_name="applied_user")
+    user = fields.ForeignKeyField(
+        "user_model.User", related_name="applied_user", on_delete=fields.CASCADE
+    )
     status = fields.CharEnumField(ApplicantEnum, default=ApplicantEnum.Applied)
 
     class Meta:
