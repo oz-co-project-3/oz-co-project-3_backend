@@ -4,13 +4,12 @@ from tortoise import fields
 from tortoise.models import Model
 
 
-class StatusEnum(str, Enum):
-    Writing = "작성중"
-    Seeking = "구직중"
-    Closed = "완료"
-
-
 class Resume(Model):
+    class StatusEnum(str, Enum):
+        Writing = "작성중"
+        Seeking = "구직중"
+        Closed = "완료"
+        
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
         Users.models, related_name="resumes", on_delete=fields.CASCADE
