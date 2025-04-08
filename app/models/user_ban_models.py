@@ -1,4 +1,5 @@
-from tortoise import models, fields
+from tortoise import fields, models
+
 
 class UserBan(models.Model):
     id = fields.IntField(pk=True)
