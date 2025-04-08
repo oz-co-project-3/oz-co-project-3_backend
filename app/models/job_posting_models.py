@@ -31,7 +31,7 @@ class JobPosting(TimestampMixin, Model):
     recruitment_count = fields.IntField()
     education = fields.CharField(max_length=20)
     deadline = fields.CharField(max_length=20)
-    salary = fields.IntField()
+    salary = fields.IntField(default=0)
     summary = fields.TextField(null=True)
     description = fields.TextField()
     status = fields.CharEnumField(StatusEnum, default=StatusEnum.Open)
@@ -43,7 +43,7 @@ class JobPosting(TimestampMixin, Model):
         ordering = ["-created_at"]
 
 
-class RejectPosting(TimestampMixin, Model):
+class RejectPosting(Model):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
         "user_model.User", related_name="reject_postings", null=True
@@ -53,4 +53,30 @@ class RejectPosting(TimestampMixin, Model):
 
     class Meta:
         table = "reject_postings"
+        ordering = ["-created_at"]
+
+
+class Region(Model):
+    id = fields.IntField(pk=True)
+    name = fields.CharField(max_length=50, unique=True)
+
+    class Meta:
+        table = "regions"
+
+
+class Applicants(Model):
+    class ApplicantEnum(str, Enum):
+        Applied = "지원 중"
+        Cancelled = "지원 취소"
+
+    id = fields.IntField(pk=True)
+    job_posting = fields.ForeignKeyField("JobPosting", related_name="applicants")
+    resume = fields.ForeignKeyField(
+        "resume_models.Resume", related_name="applicants_resume"
+    )
+    user = fields.ForeignKeyField("user_model.User", related_name="applied_user")
+    status = fields.CharEnumField(ApplicantEnum, default=ApplicantEnum.Applied)
+
+    class Meta:
+        table = "applicants"
         ordering = ["-created_at"]
