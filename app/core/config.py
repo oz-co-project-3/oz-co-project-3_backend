@@ -22,7 +22,12 @@ TORTOISE_ORM = {
     "connections": {"default": POSTGRES_URL},
     "apps": {
         "models": {
-            "models": ["app.models.user_models", "aerich.models"],
+            "models": [
+                "aerich.models",
+                "app.models.base_user_models",
+                "app.models.corporate_user_models",
+                "app.models.seeker_user_models",
+            ],
             "default_connection": "default",
         }
     },
