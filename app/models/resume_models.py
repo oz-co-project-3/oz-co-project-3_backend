@@ -20,7 +20,7 @@ class Resume(Model):
     name = fields.CharField(max_length=255)
     phone_number = fields.CharField(max_length=255)
     email = fields.CharField(max_length=255)
-    image_profile = fields.CharField(max_length=255, null=True, default="")
+    image_profile = fields.CharField(max_length=255, null=True)
     interests = fields.JSONField(default=[])
     desired_area = fields.CharField(max_length=255)
     education = fields.CharField(max_length=255, null=True)
