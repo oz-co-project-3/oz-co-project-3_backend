@@ -1,25 +1,27 @@
+from enum import Enum
+
 from tortoise import fields, models
 
 
 class BaseUser(models.Model):
-    # 구직자 / 기업회원
-    TYPE_SEEKER = "seeker"
-    TYPE_BUSINESS = "business"
+    class UserType(str, Enum):
+        SEEKER = "seeker"
+        BUSINESS = "business"
 
-    # 활성화 상태
-    STATUS_ACTIVE = "active"
-    STATUS_SUSPEND = "suspend"
-    STATUS_DELETE = "delete"
+    class Status(str, Enum):
+        ACTIVE = "active"
+        SUSPEND = "suspend"
+        DELETE = "delete"
 
     USER_TYPE_CHOICES = [
-        (TYPE_SEEKER, "구직자"),
-        (TYPE_BUSINESS, "기업"),
+        (UserType.SEEKER.value, "구직자"),
+        (UserType.BUSINESS.value, "기업"),
     ]
 
     STATUS_CHOICES = [
-        (STATUS_ACTIVE, "active"),
-        (STATUS_SUSPEND, "suspend"),
-        (STATUS_DELETE, "delete"),
+        (Status.ACTIVE.value, "active"),
+        (Status.SUSPEND.value, "suspend"),
+        (Status.DELETE.value, "delete"),
     ]
 
     id = fields.IntField(pk=True)
@@ -33,14 +35,14 @@ class BaseUser(models.Model):
         max_length=20,
         null=False,
         choices=USER_TYPE_CHOICES,
-        default=TYPE_SEEKER,
+        default=UserType.SEEKER.value,
     )
     is_active = fields.BooleanField(default=True)
     status = fields.CharField(
         max_length=20,
         null=True,
         choices=STATUS_CHOICES,
-        default=STATUS_ACTIVE,
+        default=Status.ACTIVE.value,
     )
     email_verified = fields.BooleanField(default=False)
     is_superuser = fields.BooleanField(default=False)

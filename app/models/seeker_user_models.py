@@ -1,15 +1,18 @@
+from enum import Enum
+
 from tortoise import fields, models
 
 
 class SeekerUser(models.Model):
-    STATUS_SEEKING = "seeking"
-    STATUS_EMPLOYED = "employed"
-    STATUS_NOT_SEEKING = "not_seeking"
+    class Status(str, Enum):
+        SEEKING = "seeking"
+        EMPLOYED = "employed"
+        NOT_SEEKING = "not_seeking"
 
     STATUS_CHOICES = [
-        (STATUS_SEEKING, "seeking"),
-        (STATUS_EMPLOYED, "employed"),
-        (STATUS_NOT_SEEKING, "not_seeking"),
+        (Status.SEEKING.value, "seeking"),
+        (Status.EMPLOYED.value, "employed"),
+        (Status.NOT_SEEKING.value, "not_seeking"),
     ]
 
     id = fields.IntField(pk=True)
@@ -27,7 +30,7 @@ class SeekerUser(models.Model):
         max_length=20,
         null=False,
         choices=STATUS_CHOICES,
-        default=STATUS_SEEKING,
+        default=Status.SEEKING.value,
     )
     interested_companies = fields.ManyToManyField(
         "app.models.CorporateUser",
