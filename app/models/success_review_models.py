@@ -28,3 +28,5 @@ class SuccessReview(TimestampMixin):
     class Meta:
         table = "success_review"
         ordering = ["-created_at"]
+
+    pass
