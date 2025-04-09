@@ -1,8 +1,11 @@
 from fastapi import APIRouter, HTTPException
 
-from app.schemas.user_schema import (CompanyRegisterRequest,
-                                     CompanyRegisterResponse,
-                                     UserRegisterRequest, UserRegisterResponse)
+from app.schemas.user_schema import (
+    CompanyRegisterRequest,
+    CompanyRegisterResponse,
+    UserRegisterRequest,
+    UserRegisterResponse,
+)
 from app.services.user_service import register_company_user, register_user
 
 # swagger 카테고리 = User
