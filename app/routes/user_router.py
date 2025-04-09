@@ -6,7 +6,10 @@ from app.schemas.user_schema import (
     UserRegisterRequest,
     UserRegisterResponse,
 )
-from app.services.user_service import register_company_user, register_user
+from app.services.user_service import (
+    register_company_user,
+    register_user,
+)
 
 router = APIRouter(prefix="/api/user", tags=["user"])
 

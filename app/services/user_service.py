@@ -1,8 +1,13 @@
 import re
 
+from fastapi import HTTPException
 from passlib.hash import bcrypt
 
-from app.models.user_models import BaseUser, CorporateUser, SeekerUser
+from app.models.user_models import (
+    BaseUser,
+    CorporateUser,
+    SeekerUser,
+)
 from app.schemas.user_schema import (
     CompanyRegisterRequest,
     CompanyRegisterResponse,
@@ -18,7 +23,9 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
     existing_user = await BaseUser.get_or_none(email=request.email)
     if existing_user:
         raise CustomException(
-            status_code=400, error="중복된 이메일입니다.", code="duplicate_email"
+            status_code=400,
+            error="중복된 이메일입니다.",
+            code="duplicate_email",
         )
 
     if len(request.password) < 8 or not re.search(
@@ -78,7 +85,9 @@ async def register_company_user(
     existing_user = await BaseUser.get_or_none(email=request.email)
     if existing_user:
         raise CustomException(
-            status_code=400, error="중복된 이메일입니다.", code="duplicate_email"
+            status_code=400,
+            error="중복된 이메일입니다.",
+            code="duplicate_email",
         )
 
     if len(request.password) < 8 or not re.search(
