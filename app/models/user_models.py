@@ -28,7 +28,7 @@ class BaseUser(models.Model):
 
     id = fields.IntField(pk=True)
     password = fields.CharField(
-        max_length=20,
+        max_length=80,
         null=False,
         description="비밀번호는 최소 8자 이상이며 특수 문자를 포함",
     )
@@ -71,6 +71,8 @@ class UserBan(models.Model):
 
 
 class CorporateUser(models.Model):
+    GENDER_CHOICES = [("male", "남자"), ("female", "여자")]
+
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField("models.BaseUser", related_name="corporate_profiles")
     company_name = fields.CharField(max_length=255, null=False)
@@ -80,6 +82,7 @@ class CorporateUser(models.Model):
     manager_name = fields.CharField(max_length=100, null=False)
     manager_phone_number = fields.CharField(max_length=20, null=False)
     manager_email = fields.CharField(max_length=255, null=True, unique=True)
+    gender = fields.CharField(max_length=10, choices=GENDER_CHOICES)
 
     class Meta:
         table = "corporate_users"
