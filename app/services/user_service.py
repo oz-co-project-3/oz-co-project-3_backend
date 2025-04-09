@@ -4,11 +4,14 @@ from fastapi import HTTPException
 from passlib.hash import bcrypt
 
 from app.models.user_models import BaseUser, CorporateUser, SeekerUser
-from app.schemas.user_schema import (CompanyRegisterRequest,
-                                     CompanyRegisterResponse,
-                                     CompanyRegisterResponseData,
-                                     UserRegisterRequest, UserRegisterResponse,
-                                     UserRegisterResponseData)
+from app.schemas.user_schema import (
+    CompanyRegisterRequest,
+    CompanyRegisterResponse,
+    CompanyRegisterResponseData,
+    UserRegisterRequest,
+    UserRegisterResponse,
+    UserRegisterResponseData,
+)
 from app.utils.exception import CustomException
 
 
