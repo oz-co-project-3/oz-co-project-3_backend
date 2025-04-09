@@ -2,13 +2,14 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from app.models.job_posting_models import EmploymentEnum, StatusEnum
+from app.models.job_posting_models import EmploymentEnum, MethodEnum, StatusEnum
 
 
 class JobPostingCreateUpdate(BaseModel):
     title: str
     location: str
     employment_type: EmploymentEnum
+    employ_method: MethodEnum
     position: str
     history: Optional[str] = None
     recruitment_count = int
@@ -27,6 +28,7 @@ class JobPostingResponse(BaseModel):
     title: str
     location: str
     employment_type: EmploymentEnum
+    employ_method: MethodEnum
     position: str
     history: Optional[str] = None
     recruitment_count: int
