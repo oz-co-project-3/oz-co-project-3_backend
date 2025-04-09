@@ -36,7 +36,9 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
     # 비밀번호 확인 일치 여부 확인
     if request.password != request.password_check:
         raise CustomException(
-            status_code=400, error="비밀번호와 비밀번호 확인이 일치하지 않습니다.", code="password_mismatch"
+            status_code=400,
+            error="비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+            code="password_mismatch",
         )
 
     # BaseUser 생성
@@ -99,7 +101,9 @@ async def register_company_user(
     # 3. 비밀번호 확인 일치 여부
     if request.password != request.password_check:
         raise CustomException(
-            status_code=400, error="비밀번호와 비밀번호 확인이 일치하지 않습니다.", code="password_mismatch"
+            status_code=400,
+            error="비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+            code="password_mismatch",
         )
 
     # 4. 해싱 + BaseUser 생성
