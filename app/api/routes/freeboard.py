@@ -36,9 +36,7 @@ async def create_free_board(
     free_board: FreeBoardCreateUpdate,
     current_user: BaseUser = Depends(fake_current_user),
 ):
-    print("free_board:", free_board)
-    board = await create_free_board_by_id(free_board, current_user)
-    return board
+    return await create_free_board_by_id(free_board, current_user)
 
 
 @free_board_router.get(
