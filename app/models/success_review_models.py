@@ -14,7 +14,7 @@ class EmploymnetType(str, Enum):
 class SuccessReview(TimestampMixin):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
-        "user.User", related_name="success_reviews", on_delete=fields.CASCADE
+        "models.SeekerUser", related_name="success_reviews", on_delete=fields.CASCADE
     )
     title = fields.CharField(max_length=100)
     content = fields.TextField(default="")
@@ -26,7 +26,7 @@ class SuccessReview(TimestampMixin):
     view_count = fields.IntField(default=0)
 
     class Meta:
-        table = "success_review"
+        table = "success_reviews"
         ordering = ["-created_at"]
 
     pass

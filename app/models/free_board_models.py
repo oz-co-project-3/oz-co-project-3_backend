@@ -6,7 +6,7 @@ from app.utils.model import TimestampMixin
 class FreeBoard(TimestampMixin):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
-        "user.User", related_name="free_boards", on_delete=fields.CASCADE
+        "models.BaseUser", related_name="free_boards", on_delete=fields.CASCADE
     )
     title = fields.CharField(max_length=50)
     content = fields.TextField(default="")
@@ -14,5 +14,5 @@ class FreeBoard(TimestampMixin):
     view_count = fields.IntField(default=0)
 
     class Meta:
-        table = "free_board"
+        table = "free_boards"
         ordering = ["-created_at"]

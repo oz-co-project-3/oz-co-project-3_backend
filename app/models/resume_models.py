@@ -14,7 +14,7 @@ class Resume(TimestampMixin):
 
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
-        "user.User", related_name="resumes", on_delete=fields.CASCADE
+        "models.SeekerUser", related_name="resumes", on_delete=fields.CASCADE
     )
     title = fields.CharField(max_length=100)
     visibility = fields.BooleanField(default=True)
@@ -32,14 +32,14 @@ class Resume(TimestampMixin):
     document_url = fields.CharField(max_length=255, null=True)
 
     class Meta:
-        table = "resume"
+        table = "resumes"
         ordering = ["-created_at"]
 
 
 class WorkExp(Model):
     id = fields.IntField(pk=True)
     resume = fields.ForeignKeyField(
-        "resume_models.Resume",
+        "models.Resume",
         related_name="work_experiences",
         on_delete=fields.CASCADE,
     )
@@ -48,4 +48,4 @@ class WorkExp(Model):
     position = fields.CharField(max_length=20)
 
     class Meta:
-        table = "work_experience"
+        table = "work_experiences"

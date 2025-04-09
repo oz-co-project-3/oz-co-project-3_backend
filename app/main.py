@@ -1,6 +1,7 @@
-from core.config import TORTOISE_ORM
 from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
+
+from app.core.config import TORTOISE_ORM
 
 app = FastAPI()
 
