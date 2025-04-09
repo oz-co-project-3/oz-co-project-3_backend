@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
+
+from app.utils.exception import CustomException
 
 
 class UserSchema(BaseModel):
@@ -19,6 +21,20 @@ class SuccessReviewCreateUpdateSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+    @model_validator(mode="after")
+    def check_fields(self):
+        if (
+            not self.title
+            or not self.content
+            or not self.job_title
+            or not self.company_name
+            or not self.employment_type
+        ):
+            raise CustomException(
+                error="필수 필드 누락", code="required_field", status_code=400
+            )
+        return self
 
 
 class SuccessReviewResponseSchema(BaseModel):
