@@ -18,6 +18,14 @@ class StatusEnum(str, Enum):  # 공고 상태 표시
     Blinded = "블라인드"
 
 
+class MethodEnum(str, Enum):
+    Permanent = "정규직"
+    PartTime = "계약직"
+    Temporary = "일용직"
+    Freelancer = "프리랜서"
+    Dispatch = "파견직"
+
+
 class JobPosting(TimestampMixin, Model):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
@@ -28,6 +36,7 @@ class JobPosting(TimestampMixin, Model):
     employment_type = fields.CharEnumField(
         EmploymentEnum, default=EmploymentEnum.General
     )
+    employ_method = fields.CharEnumField(MethodEnum, default=MethodEnum.Permanent)
     position = fields.CharField(max_length=50)
     history = fields.TextField(null=True)
     recruitment_count = fields.IntField(default=0)
