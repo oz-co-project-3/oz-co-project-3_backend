@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.schemas.freeboard_schemas import FreeBoardCreateUpdate, FreeBoardResponse
+from app.schemas.freeboard_schemas import (FreeBoardCreateUpdate,
+                                           FreeBoardResponse)
 
 router = APIRouter(prefix="api/free-board/", tags=["FreeBoard"])
 
