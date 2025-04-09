@@ -8,7 +8,6 @@ from app.schemas.user_schema import (
 )
 from app.services.user_service import register_company_user, register_user
 
-# swagger 카테고리 = User
 router = APIRouter(prefix="/api/user", tags=["user"])
 
 

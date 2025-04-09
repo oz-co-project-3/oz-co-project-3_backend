@@ -1,6 +1,5 @@
 import re
 
-from fastapi import HTTPException
 from passlib.hash import bcrypt
 
 from app.models.user_models import BaseUser, CorporateUser, SeekerUser
@@ -16,14 +15,12 @@ from app.utils.exception import CustomException
 
 
 async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
-    # 이메일 중복 확인
     existing_user = await BaseUser.get_or_none(email=request.email)
     if existing_user:
         raise CustomException(
             status_code=400, error="중복된 이메일입니다.", code="duplicate_email"
         )
 
-    # 비릴번호 유효성 검사
     if len(request.password) < 8 or not re.search(
         r"[!@#$%^&*(),.?\":{}|<>]", request.password
     ):
@@ -33,7 +30,6 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
             code="invalid_password",
         )
 
-    # 비밀번호 확인 일치 여부 확인
     if request.password != request.password_check:
         raise CustomException(
             status_code=400,
@@ -41,7 +37,6 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
             code="password_mismatch",
         )
 
-    # BaseUser 생성
     hashed_password = bcrypt.hash(request.password)
 
     base_user = await BaseUser.create(
@@ -50,7 +45,7 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
         user_type="seeker",
         gender=request.gender,
     )
-    # SeekerUser 생성
+
     seeker_user = await SeekerUser.create(
         user=base_user,
         name=request.name,
@@ -64,7 +59,6 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
         is_social=False,
     )
 
-    # 응답 데이터 포맷 맞춰서 리턴
     return UserRegisterResponse(
         message="회원가입이 완료되었습니다.",
         data=UserRegisterResponseData(
@@ -81,14 +75,12 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
 async def register_company_user(
     request: CompanyRegisterRequest,
 ) -> CompanyRegisterResponse:
-    # 1. 이메일 중복 확인
     existing_user = await BaseUser.get_or_none(email=request.email)
     if existing_user:
         raise CustomException(
             status_code=400, error="중복된 이메일입니다.", code="duplicate_email"
         )
 
-    # 2. 비밀번호 유효성 검사
     if len(request.password) < 8 or not re.search(
         r"[!@#$%^&*(),.?\":{}|<>]", request.password
     ):
@@ -98,7 +90,6 @@ async def register_company_user(
             code="invalid_password",
         )
 
-    # 3. 비밀번호 확인 일치 여부
     if request.password != request.password_check:
         raise CustomException(
             status_code=400,
@@ -106,7 +97,6 @@ async def register_company_user(
             code="password_mismatch",
         )
 
-    # 4. 해싱 + BaseUser 생성
     hashed_password = bcrypt.hash(request.password)
     base_user = await BaseUser.create(
         email=request.email,
@@ -115,7 +105,6 @@ async def register_company_user(
         gender=request.gender,
     )
 
-    # 5. CorporateUser 생성
     corp_user = await CorporateUser.create(
         user=base_user,
         company_name=request.company_name,
@@ -128,7 +117,6 @@ async def register_company_user(
         gender=request.gender,
     )
 
-    # 6. 응답
     return CompanyRegisterResponse(
         message="기업 회원가입이 완료되었습니다.",
         data=CompanyRegisterResponseData(
