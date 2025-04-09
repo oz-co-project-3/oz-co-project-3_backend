@@ -19,7 +19,7 @@ class JobPosting(TimestampMixin, Model):
 
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
-        "user_model.User", related_name="job_postings", on_delete=fields.CASCADE
+        "models.CorporateUser", related_name="job_postings", on_delete=fields.CASCADE
     )
     title = fields.CharField(max_length=100, unique=True)
     location = fields.CharField(max_length=150)
@@ -46,10 +46,10 @@ class JobPosting(TimestampMixin, Model):
 class RejectPosting(Model):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
-        "user_model.User", related_name="reject_postings", null=True
+        "models.BaseUser", related_name="reject_postings", null=True
     )
     job_posting = fields.ForeignKeyField(
-        "JobPosting", related_name="reject_by_admins", on_delete=fields.CASCADE
+        "models.JobPosting", related_name="reject_by_admins", on_delete=fields.CASCADE
     )
     content = fields.TextField()
 
@@ -72,12 +72,10 @@ class Applicants(Model):
         Cancelled = "지원 취소"
 
     id = fields.IntField(pk=True)
-    job_posting = fields.ForeignKeyField("JobPosting", related_name="applicants")
-    resume = fields.ForeignKeyField(
-        "resume_models.Resume", related_name="applicants_resume"
-    )
+    job_posting = fields.ForeignKeyField("models.JobPosting", related_name="applicants")
+    resume = fields.ForeignKeyField("models.Resume", related_name="applicants_resume")
     user = fields.ForeignKeyField(
-        "user_model.User", related_name="applied_user", on_delete=fields.CASCADE
+        "models.BaseUser", related_name="applied_user", on_delete=fields.CASCADE
     )
     status = fields.CharEnumField(ApplicantEnum, default=ApplicantEnum.Applied)
 
