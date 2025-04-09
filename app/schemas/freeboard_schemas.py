@@ -1,6 +1,16 @@
-from typing import Optional
+from datetime import datetime
+from typing import Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
+
+from app.utils.exception import CustomException
+
+
+class UserSchema(BaseModel):
+    id: int
+
+    class Config:
+        from_attributes = True  # orm_mode → v2 기준
 
 
 class FreeBoardCreateUpdate(BaseModel):
@@ -8,16 +18,25 @@ class FreeBoardCreateUpdate(BaseModel):
     content: str
     image_url: Optional[str] = None
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
+
+    @model_validator(mode="after")
+    def check_fields(self):
+        if not self.title or not self.content:
+            raise CustomException(
+                error="필수 필드 누락", code="required_field", status_code=400
+            )
+        return self
 
 
 class FreeBoardResponse(BaseModel):
     id: int
-    user: int
+    user: UserSchema
     title: str
     content: str
     image_url: Optional[str] = None
+    view_count: int
+    created_at: datetime
+    updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
