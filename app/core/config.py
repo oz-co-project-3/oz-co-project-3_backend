@@ -28,6 +28,7 @@ TORTOISE_ORM = {
                 "app.models.resume_models",
                 "app.models.comment_models",
                 "app.models.job_posting_models",
+                "app.models.user_models",
                 "aerich.models",
             ],
             "default_connection": "default",
