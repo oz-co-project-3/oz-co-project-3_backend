@@ -10,7 +10,9 @@ def existing_board(board):
     """존재하는 게시판인지 확인"""
     if not board:
         raise CustomException(
-            error="해당 게시글을 찾을 수 없습니다.", code="free_board_not_found", status_code=404
+            error="해당 게시글을 찾을 수 없습니다.",
+            code="free_board_not_found",
+            status_code=404,
         )
 
 
