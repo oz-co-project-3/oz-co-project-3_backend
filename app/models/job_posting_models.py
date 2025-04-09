@@ -6,17 +6,19 @@ from tortoise.models import Model
 from app.utils.model import TimestampMixin
 
 
+class EmploymentEnum(str, Enum):  # 공공, 일반 고용 형태 표시
+    Public = "공공"
+    General = "일반"
+
+
+class StatusEnum(str, Enum):  # 공고 상태 표시
+    Open = "모집중"
+    Closing_soon = "마감 임박"
+    Closed = "모집 종료"
+    Blinded = "블라인드"
+
+
 class JobPosting(TimestampMixin, Model):
-    class EmploymentEnum(str, Enum):  # 공공, 일반 고용 형태 표시
-        Public = "공공"
-        General = "일반"
-
-    class StatusEnum(str, Enum):  # 공고 상태 표시
-        Open = "모집중"
-        Closing_soon = "마감 임박"
-        Closed = "모집 종료"
-        Blinded = "블라인드"
-
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
         "models.CorporateUser", related_name="job_postings", on_delete=fields.CASCADE
@@ -28,7 +30,7 @@ class JobPosting(TimestampMixin, Model):
     )
     position = fields.CharField(max_length=50)
     history = fields.TextField(null=True)
-    recruitment_count = fields.IntField()
+    recruitment_count = fields.IntField(default=0)
     education = fields.CharField(max_length=20)
     deadline = fields.CharField(max_length=20)
     salary = fields.IntField(default=0)
