@@ -54,7 +54,7 @@ async def get_list_free_board(current_user: BaseUser = Depends(fake_current_user
 
 
 @free_board_router.get(
-    "/{id}",
+    "/{id}/",
     response_model=FreeBoardResponse,
     status_code=status.HTTP_200_OK,
     summary="자유게시판 상세 조회",
@@ -71,7 +71,7 @@ async def get_detail_free_board(
 
 
 @free_board_router.patch(
-    "/{id}",
+    "/{id}/",
     response_model=FreeBoardResponse,
     summary="자유게시판 수정",
     status_code=status.HTTP_200_OK,
@@ -91,7 +91,7 @@ async def patch_free_board(
 
 
 @free_board_router.delete(
-    "/{id}",
+    "/{id}/",
     status_code=status.HTTP_200_OK,
     summary="자유게시판 삭제",
     description="""
