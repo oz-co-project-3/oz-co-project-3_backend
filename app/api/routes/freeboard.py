@@ -43,7 +43,7 @@ async def create_free_board(
     "/",
     response_model=List[FreeBoardResponse],
     status_code=status.HTTP_200_OK,
-    summary="자유게시판 조회",
+    summary="자유게시판 전체 조회",
     description="""
     - `401` `code`:`auth_required` 인증이 필요합니다.\n
     - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
@@ -57,7 +57,7 @@ async def get_list_free_board(current_user: BaseUser = Depends(fake_current_user
     "/{id}",
     response_model=FreeBoardResponse,
     status_code=status.HTTP_200_OK,
-    summary="자유게시판 조회",
+    summary="자유게시판 상세 조회",
     description="""
     - `401` `code`:`auth_required` 인증이 필요합니다.\n
     - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
@@ -73,6 +73,7 @@ async def get_detail_free_board(
 @free_board_router.patch(
     "/{id}",
     response_model=FreeBoardResponse,
+    summary="자유게시판 수정",
     status_code=status.HTTP_200_OK,
     description="""
 - `401` `code`:`auth_required` 인증이 필요합니다.\n
@@ -92,6 +93,7 @@ async def patch_free_board(
 @free_board_router.delete(
     "/{id}",
     status_code=status.HTTP_200_OK,
+    summary="자유게시판 삭제",
     description="""
 - `401` `code`:`auth_required` 인증이 필요합니다.\n
 - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
