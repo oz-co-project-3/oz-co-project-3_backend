@@ -9,6 +9,6 @@ RUN pip install --upgrade pip \
     && poetry config virtualenvs.create false \
     && poetry install --no-root
 
-COPY . .
+COPY app /app
 
 CMD ["/bin/bash", "-c", "test -f .aerich.ini && aerich upgrade || echo 'No aerich config, skipping upgrade'; uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
