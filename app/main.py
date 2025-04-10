@@ -2,13 +2,24 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from tortoise.contrib.fastapi import register_tortoise
 
+
+from app.api.routes.success_review import success_review_router
+
+from app.api.routes.freeboard import free_board_router
+
 from app.core.config import TORTOISE_ORM
 from app.routes import user_router
+
 from app.utils.exception import CustomException
 
 app = FastAPI()
 
 app.include_router(user_router.router)
+
+
+app.include_router(success_review_router)
+app.include_router(free_board_router)
+
 
 
 @app.get("/")
