@@ -37,4 +37,3 @@ Thumbs.db
 nginx/
 *.md
 docker-compose*.yml
-Dockerfile.*
