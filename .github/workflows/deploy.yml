@@ -20,8 +20,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: check pw
         with:
-          script:
+          script: |
             pwd
+            ls
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
