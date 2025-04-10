@@ -35,7 +35,6 @@ jobs:
           host: 175.45.205.244
           username: root
           key: ${{ secrets.NCP_SSH_KEY }}
-          password: ${{ secrets.NCP_PASSWORD }}  # 바로 이거!
           script: |
             docker system prune -af
             docker pull hak2881/senior:latest
