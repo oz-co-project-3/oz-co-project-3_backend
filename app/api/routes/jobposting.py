@@ -13,7 +13,7 @@ job_posting_router = APIRouter(
 
 
 async def fake_current_user():
-    user = await CorporateUser.get(pk=1).prefetch_related("user")
+    user = await CorporateUser.get_or_none(pk=1)
     if not user:
         raise CustomException(
             error="로그인이 필요합니다.",
@@ -41,7 +41,7 @@ async def create_job_posting(
 
 
 @job_posting_router.patch(
-    "/{job_posting_id}/",
+    "/{company_id}/{job_posting_id}/",
     response_model=JobPostingResponse,
     status_code=200,
     summary="구인 공고 수정",
@@ -56,13 +56,18 @@ async def patch_job_posting(
     updated_data: JobPostingCreateUpdate,
     user: CorporateUser = Depends(fake_current_user),
 ):
-    job_posting = await JobPosting.get_or_none(id=job_posting_id)
-    if not job_posting:
-        raise CustomException(
-            error="공고를 찾을 수 없습니다.",
-            code="notification_not_found",
-            status_code=404,
-        )
+    return await JobPostingService.patch_job_posting(user, job_posting_id, updated_data)
 
-    # 권한 확인 및 수정 로직은 서비스 클래스 처리
-    return await JobPostingService.patch_job_posting(user, job_posting, updated_data)
+
+@job_posting_router.get(
+    "/{company_id}/{job_posting_id}/",
+    response_model=JobPostingResponse,
+    status_code=200,
+    summary="특정 구인 공고 조회",
+    description="""
+             - `404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.\n
+             """,
+)
+async def get_job_posting(job_posting_id: int):
+    # 특정 구인 공고를 조회
+    return await JobPostingService.get_job_posting(job_posting_id)
