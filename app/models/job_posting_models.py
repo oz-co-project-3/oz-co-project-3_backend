@@ -37,6 +37,7 @@ class JobPosting(TimestampMixin, Model):
         EmploymentEnum, default=EmploymentEnum.General
     )
     employ_method = fields.CharEnumField(MethodEnum, default=MethodEnum.Permanent)
+    work_time = fields.CharField(max_length=30)
     position = fields.CharField(max_length=50)
     history = fields.TextField(null=True)
     recruitment_count = fields.IntField(default=0)
@@ -89,6 +90,7 @@ class Applicants(Model):
         "models.BaseUser", related_name="applied_user", on_delete=fields.CASCADE
     )
     status = fields.CharEnumField(ApplicantEnum, default=ApplicantEnum.Applied)
+    memo = fields.TextField(null=True)
 
     class Meta:
         table = "applicants"
