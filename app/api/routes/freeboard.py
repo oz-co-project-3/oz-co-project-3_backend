@@ -14,8 +14,6 @@ from app.services.freeboard_services import (
 
 free_board_router = APIRouter(prefix="/api/free-board", tags=["FreeBoard"])
 
-from app.models.user_models import BaseUser
-
 
 async def fake_current_user():
     user = await BaseUser.get(pk=1)
