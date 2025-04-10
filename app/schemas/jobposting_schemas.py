@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.models.job_posting_models import EmploymentEnum, MethodEnum, StatusEnum
 
@@ -10,17 +10,35 @@ class JobPostingCreateUpdate(BaseModel):
     location: str
     employment_type: EmploymentEnum
     employ_method: MethodEnum
+    work_time: str
     position: str
     history: Optional[str] = None
-    recruitment_count = int
+    recruitment_count: int
     education: str
     deadline: str
     summary: Optional[str] = None
     description: str
     status: StatusEnum
 
-    class Config:
-        orm_mode = True
+    # 벨리데이터 추가
+    @field_validator(
+        "title",
+        "location",
+        "employment_type",
+        "employ_method",
+        "work_time",
+        "position",
+        "education",
+        "deadline",
+        "description",
+    )
+    def validate_required_fields(cls, value, field):
+        if not value:
+            raise ValueError(f"{field.name}값은 필수입니다.")
+        return value
+
+    # configdict 적용
+    model_config = ConfigDict(from_attributes=True)
 
 
 class JobPostingResponse(BaseModel):
@@ -41,5 +59,4 @@ class JobPostingResponse(BaseModel):
     view_count: int
     report: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

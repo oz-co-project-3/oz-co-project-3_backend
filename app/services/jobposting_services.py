@@ -33,8 +33,8 @@ class JobPostingService:
             },
         }
 
+    @staticmethod
     async def patch_job_posting(
-        self,
         user: CorporateUser,
         job_posting: JobPosting,
         updated_data: JobPostingCreateUpdate,
