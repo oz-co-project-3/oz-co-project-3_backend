@@ -23,7 +23,7 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           docker login
-          docker build -f Dockerfile.dev -t ${{ secrets.DOCKER_USERNAME }}/hak2881/senior:latest .
+          docker build -f Dockerfile.dev -t hak2881/senior:latest .
           docker push hak2881/senior:latest
 
       - name: Deploy to NCP via SSH
