@@ -18,11 +18,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: check pw
-        with:
-          script: |
-            pwd
-            ls
+      - name: Check pwd and ls
+        run: |
+          pwd
+          ls
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
