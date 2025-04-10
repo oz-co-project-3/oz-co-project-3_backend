@@ -1,11 +1,14 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from tortoise.contrib.fastapi import register_tortoise
-from utils.exception import CustomException
 
+from app.api.routes.jobposting import job_posting_router
 from app.core.config import TORTOISE_ORM
+from app.utils.exception import CustomException
 
 app = FastAPI()
+
+app.include_router(job_posting_router)
 
 
 @app.get("/")
