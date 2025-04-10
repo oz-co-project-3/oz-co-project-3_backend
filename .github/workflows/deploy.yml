@@ -23,20 +23,21 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          file: Dockerfile.dev
+#          file: Dockerfile.prod
           push: true
           tags: hak2881/senior:latest
           no-cache: true
 
-      - name: Deploy to EC2 via SSH
+      - name: Deploy to NCP via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: 175.45.205.244
+          username: root
+          key: ${{ secrets.NCP_SSH_KEY }}
+          password: ${{ secrets.NCP_PASSWORD }}  # 바로 이거!
           script: |
-            # 불필요한 이미지 제거
             docker system prune -af
-
             docker pull hak2881/senior:latest
             docker-compose -f docker-compose.dev.yml down
             docker-compose -f docker-compose.dev.yml up -d
