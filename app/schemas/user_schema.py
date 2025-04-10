@@ -59,3 +59,22 @@ class CompanyRegisterResponseData(BaseModel):
 class CompanyRegisterResponse(BaseModel):
     message: str
     data: CompanyRegisterResponseData
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class LoginResponseData(BaseModel):
+    access_token: str
+    refresh_token: str
+    user_id: int
+    user_type: str
+    email: str
+    name: str
+
+
+class LoginResponse(BaseModel):
+    message: str
+    data: LoginResponseData

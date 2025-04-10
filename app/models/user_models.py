@@ -104,7 +104,7 @@ class SeekerUser(models.Model):
     user = fields.ForeignKeyField("models.BaseUser", related_name="seeker_profiles")
     name = fields.CharField(max_length=20, null=False)
     phone_number = fields.CharField(max_length=20, null=False)
-    age = fields.IntField(null=False)
+    age = fields.IntField(null=False)  # birth
     interests = fields.JSONField(null=False)
     purposes = fields.JSONField(null=False)
     sources = fields.JSONField(null=True)
