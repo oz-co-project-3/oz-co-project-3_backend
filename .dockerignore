@@ -1,38 +1,10 @@
-# Byte-compiled / cache
-__pycache__/
-*.py[cod]
-*.pyo
 
 .github
-
-.venv/
-
-# Git
-.git
-
-# Editor / IDE
-*.swp
-.idea/
-.vscode/
-
-# Environment files
-.env
-.env.*
 .envs/
-
-# Test & coverage
-tests/
-.coverage
-htmlcov/
-.pytest_cache/
-
-# OS junk
-.DS_Store
-Thumbs.db
-
-*.pyc
-
-# 이 부분 추가
+.venv/
 nginx/
 docker-compose*
 Dockerfile*
+
+# Git
+.git
