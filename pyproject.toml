@@ -36,3 +36,11 @@ src_folder = "./."
 
 [tool.isort]
 profile = "black"
+skip_glob = ["*/migrations/*.py"]
+
+[tool.black]
+extend-exclude = '''
+/(
+    migrations/.*
+)/
+'''
