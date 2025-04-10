@@ -3,7 +3,7 @@ name: Deploy to EC2 with Docker
 on:
   push:
     branches:
-      - release  # release 브랜치에 push하면 자동 배포
+      - release
 
 jobs:
   deploy:
