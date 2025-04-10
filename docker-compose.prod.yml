@@ -5,8 +5,6 @@ services:
     image: hak2881/senior:latest
     container_name: fast-app-prod
     working_dir: /app
-    volumes:
-      - .:/app
     restart: always
     ports:
       - "8000:8000"
