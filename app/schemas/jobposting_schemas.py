@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -58,5 +59,14 @@ class JobPostingResponse(BaseModel):
     status: StatusEnum
     view_count: int
     report: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class JobPostingSummaryResponse(BaseModel):
+    id: int
+    title: str
+    status: StatusEnum
+    created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
