@@ -15,6 +15,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: 확인용 디버깅
+        run: |
+          echo "👉 현재 디렉토리:"
+          pwd
+          echo "👉 파일 목록:"
+          ls -al
+          echo "👉 app 폴더 내용:"
+          ls -al app || echo "⚠️ app 폴더 없음"
+
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
