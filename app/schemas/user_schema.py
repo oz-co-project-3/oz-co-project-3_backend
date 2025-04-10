@@ -10,7 +10,7 @@ class UserRegisterRequest(BaseModel):
     password: str = Field(min_length=8)
     password_check: str
     phone_number: str
-    age: int
+    birth: date
     interests: List[str]
     purposes: List[str]
     sources: List[str]

@@ -52,6 +52,7 @@ class BaseUser(models.Model):
     deleted_at = fields.DatetimeField(null=True)
     is_banned = fields.BooleanField(default=False)
     gender = fields.CharField(max_length=10, choices=GENDER_CHOICES)
+    is_admin = fields.BooleanField(default=False)
 
     class Meta:
         table = "base_users"
@@ -104,7 +105,7 @@ class SeekerUser(models.Model):
     user = fields.ForeignKeyField("models.BaseUser", related_name="seeker_profiles")
     name = fields.CharField(max_length=20, null=False)
     phone_number = fields.CharField(max_length=20, null=False)
-    age = fields.IntField(null=False)  # birth
+    birth = fields.DateField(null=True)  # birth로 변경
     interests = fields.JSONField(null=False)
     purposes = fields.JSONField(null=False)
     sources = fields.JSONField(null=True)
