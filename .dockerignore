@@ -34,3 +34,5 @@ Thumbs.db
 
 # 이 부분 추가
 nginx/
+docker-compose*
+Dockerfile*
