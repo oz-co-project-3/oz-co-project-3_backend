@@ -1,8 +1,6 @@
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
+    image: hak2881/senior:latest
     container_name: fast-app-dev
     working_dir: /app
     restart: always

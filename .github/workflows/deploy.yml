@@ -23,8 +23,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: Dockerfile.dev
-#          file: Dockerfile.prod
           push: true
           tags: hak2881/senior:latest
           no-cache: true
@@ -37,6 +35,7 @@ jobs:
           key: ${{ secrets.NCP_SSH_KEY }}
           script: |
             docker system prune -af
+            cd app
             docker pull hak2881/senior:latest
             docker-compose -f docker-compose.dev.yml down
             docker-compose -f docker-compose.dev.yml up -d
