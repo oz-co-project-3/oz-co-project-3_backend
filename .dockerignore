@@ -35,5 +35,3 @@ Thumbs.db
 
 # 이 부분 추가
 nginx/
-*.md
-docker-compose*.yml
