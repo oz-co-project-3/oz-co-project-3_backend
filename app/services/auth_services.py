@@ -3,8 +3,16 @@ from datetime import datetime, timedelta
 import jwt
 from passlib.hash import bcrypt
 
+from app.core.redis import redis
 from app.models.user_models import BaseUser, CorporateUser, SeekerUser
-from app.schemas.user_schema import LoginRequest, LoginResponse, LoginResponseData
+from app.schemas.user_schema import (
+    LoginRequest,
+    LoginResponse,
+    LoginResponseData,
+    RefreshTokenRequest,
+    RefreshTokenResponse,
+    RefreshTokenResponseData,
+)
 from app.utils.exception import CustomException
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
@@ -42,6 +50,13 @@ async def login_user(request: LoginRequest) -> LoginResponse:
         {"sub": str(user.id)}, timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     )
 
+    # redis에 refresh_token저장
+    await redis.set(
+        f"refresh_token:{user.id}",
+        refresh_token,
+        ex=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+    )
+
     # 이름 정보 가져오기 (구직자/기업 구분)
     if user.user_type == "seeker":
         profile = await SeekerUser.get(user=user)
@@ -64,4 +79,61 @@ async def login_user(request: LoginRequest) -> LoginResponse:
             email=user.email,
             name=name,
         ),
+    )
+
+
+# 로그아웃 레디스 삽입
+async def logout_user(user: BaseUser):
+    deleted = await redis.delete(f"refresh_token:{user.id}")
+    if deleted == 0:
+        raise CustomException(
+            status_code=401,
+            error="유효하지 않은 인증 토큰입니다.",
+            code="invalid_token",
+        )
+
+
+async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResponse:
+    try:
+        payload = jwt.decode(request.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+
+        if user_id is None:
+            raise CustomException(
+                status_code=401,
+                error="유효하지 않은 리프레시 토큰입니다.",
+                code="invalid_refresh_token",
+            )
+
+    except jwt.ExpiredSignatureError:
+        raise CustomException(
+            status_code=401,
+            error="만료된 리프레시 토큰입니다.",
+            code="expired_refresh_token",
+        )
+    except jwt.PyJWTError:
+        raise CustomException(
+            status_code=401,
+            error="유효하지 않은 리프레시 토큰입니다.",
+            code="invalid_refresh_token",
+        )
+
+    # Redis에 저장된 refresh_token과 비교 (보안 체크!)
+    stored_token = await redis.get(f"refresh_token:{user_id}")
+    if stored_token != request.refresh_token:
+        raise CustomException(
+            status_code=401,
+            error="유효하지 않은 리프레시 토큰입니다.",
+            code="invalid_refresh_token",
+        )
+
+    # access_token 새로 만들기
+    new_access_token = create_token(
+        {"sub": user_id},
+        timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+
+    return RefreshTokenResponse(
+        message="토큰이 갱신되었습니다.",
+        data=RefreshTokenResponseData(access_token=new_access_token),
     )

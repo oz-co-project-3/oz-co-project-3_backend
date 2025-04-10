@@ -78,3 +78,16 @@ class LoginResponseData(BaseModel):
 class LoginResponse(BaseModel):
     message: str
     data: LoginResponseData
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
+class RefreshTokenResponseData(BaseModel):
+    access_token: str
+
+
+class RefreshTokenResponse(BaseModel):
+    message: str
+    data: RefreshTokenResponseData
