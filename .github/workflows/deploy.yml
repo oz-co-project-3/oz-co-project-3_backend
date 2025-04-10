@@ -25,12 +25,10 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
-          context: .
           file: ./Dockerfile.dev
 #          file: Dockerfile.prod # 배포
           push: true
           tags: hak2881/senior:latest
-          no-cache: true
 
       - name: Deploy to NCP via SSH
         uses: appleboy/ssh-action@v0.1.7
