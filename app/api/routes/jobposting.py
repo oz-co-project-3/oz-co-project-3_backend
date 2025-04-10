@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends
 
 from app.models.job_posting_models import JobPosting
 from app.models.user_models import CorporateUser, SeekerUser
-from app.schemas.jobposting_schemas import JobPostingCreateUpdate, JobPostingResponse
+from app.schemas.jobposting_schemas import (
+    JobPostingCreateUpdate,
+    JobPostingResponse,
+    JobPostingSummaryResponse,
+)
 from app.services.jobposting_services import JobPostingService
 from app.utils.exception import CustomException
 
@@ -40,8 +44,23 @@ async def create_job_posting(
     return await JobPostingService.create_job_posting(user, data)
 
 
+@job_posting_router.get(
+    "/{company_id}/",
+    response_model=list[JobPostingSummaryResponse],
+    status_code=200,
+    summary="특정 회사 공고 조회",
+    description="""
+             - `401` `code`: `invalid_token` 로그인이 필요합니다.\n
+             - `403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
+             - `404` `code`: `notification_not_found` 등록된 공고를 찾을 수 없습니다.\n
+             """,
+)
+async def get_job_postings_by_company(company_id: int):
+    return await JobPostingService.get_job_postings_by_company(company_id)
+
+
 @job_posting_router.patch(
-    "/{company_id}/{job_posting_id}/",
+    "/{job_posting_id}/",
     response_model=JobPostingResponse,
     status_code=200,
     summary="구인 공고 수정",
@@ -60,14 +79,16 @@ async def patch_job_posting(
 
 
 @job_posting_router.get(
-    "/{company_id}/{job_posting_id}/",
+    "/{job_posting_id}/",
     response_model=JobPostingResponse,
     status_code=200,
     summary="특정 구인 공고 조회",
     description="""
+             - `401` `code`: `invalid_token` 유효하지 않은 토큰입니다.\n
+             - `403` `code`: `permission_denied` 해당 작업을 처리할 권한이 없습니다.
              - `404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.\n
              """,
 )
 async def get_job_posting(job_posting_id: int):
     # 특정 구인 공고를 조회
-    return await JobPostingService.get_job_posting(job_posting_id)
+    return await JobPosting.get_job_posting(job_posting_id)
