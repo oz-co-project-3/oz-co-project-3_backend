@@ -16,13 +16,14 @@ class JobPosting(TimestampMixin, Model):
         Closing_soon = "마감 임박"
         Closed = "모집 종료"
         Blinded = "블라인드"
-        "대기중"
-        "반려됨"
+        Pending = "대기중"
+        Rejected = "반려됨"
 
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
         "models.CorporateUser", related_name="job_postings", on_delete=fields.CASCADE
     )
+    company = fields.CharField(max_length=50)
     title = fields.CharField(max_length=100, unique=True)
     location = fields.CharField(max_length=150)
     employment_type = fields.CharEnumField(
