@@ -16,6 +16,8 @@ class JobPosting(TimestampMixin, Model):
         Closing_soon = "마감 임박"
         Closed = "모집 종료"
         Blinded = "블라인드"
+        "대기중"
+        "반려됨"
 
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
