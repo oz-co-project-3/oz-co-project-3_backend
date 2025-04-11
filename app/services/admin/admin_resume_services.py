@@ -8,7 +8,7 @@ from app.utils.exception import CustomException, check_superuser
 def check_resume(resume: Resume):
     if not resume:
         raise CustomException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_404_NOT_FOUND,
             code="resume_not_found",
             error="해당 이력서를 찾지 못했습니다.",
         )
