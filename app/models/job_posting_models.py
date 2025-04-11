@@ -45,7 +45,7 @@ class JobPosting(TimestampMixin, Model):
     recruitment_count = fields.IntField(default=0)
     education = fields.CharField(max_length=20)
     deadline = fields.CharField(max_length=20)
-    salary = fields.IntField(default=0)
+    salary = fields.CharField(max_length=20)
     summary = fields.TextField(null=True)
     description = fields.TextField()
     status = fields.CharEnumField(StatusEnum, default=StatusEnum.Open)
