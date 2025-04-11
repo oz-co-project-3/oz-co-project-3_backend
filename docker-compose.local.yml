@@ -1,11 +1,15 @@
 services:
   web:
-    image: hak2881/senior:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     container_name: fast-app-dev
     working_dir: /app
     restart: always
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
     env_file:
       - .envs/.dev.env
     environment:
