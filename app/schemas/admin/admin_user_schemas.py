@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, model_validator
 
 from app.utils.exception import CustomException
 
@@ -27,11 +27,11 @@ class SeekerUserResponseSchema(BaseModel):
     id: int
     name: str
     phone_number: str
-    age: int
-    interests: List[str]
-    purposes: List[str]
-    sources: List[str]
-    applied_posting: Optional[List[int]] = None
+    birth: date
+    interests: str
+    purposes: str
+    sources: str
+    applied_posting: Optional[str] = None
     applied_posting_count: int
     is_social: bool
     status: str
