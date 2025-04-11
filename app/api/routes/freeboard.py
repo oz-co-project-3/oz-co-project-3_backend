@@ -32,7 +32,6 @@ async def fake_current_user():
     """
     ),
 )
-
 async def create_free_board(
     free_board: FreeBoardCreateUpdate,
     current_user: BaseUser = Depends(fake_current_user),
