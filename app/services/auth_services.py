@@ -57,6 +57,12 @@ async def login_user(request: LoginRequest) -> LoginResponse:
         ex=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
     )
 
+    await redis.set(
+        f"access_token:{user.id}",
+        access_token,
+        ex=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+
     # 이름 정보 가져오기 (구직자/기업 구분)
     if user.user_type == "seeker":
         profile = await SeekerUser.get(user=user)
@@ -84,8 +90,16 @@ async def login_user(request: LoginRequest) -> LoginResponse:
 
 # 로그아웃 레디스 삽입
 async def logout_user(user: BaseUser):
-    deleted = await redis.delete(f"refresh_token:{user.id}")
-    if deleted == 0:
+    access_deleted = await redis.delete(f"access_token:{user.id}")
+    if access_deleted == 0:
+        raise CustomException(
+            status_code=401,
+            error="유효하지 않은 인증 토큰입니다.",
+            code="invalid_token",
+        )
+
+    refresh_deleted = await redis.delete(f"refresh_token:{user.id}")
+    if refresh_deleted == 0:
         raise CustomException(
             status_code=401,
             error="유효하지 않은 인증 토큰입니다.",
