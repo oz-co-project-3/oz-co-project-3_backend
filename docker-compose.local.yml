@@ -8,6 +8,8 @@ services:
     restart: always
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
     env_file:
       - .envs/.dev.env
     environment:

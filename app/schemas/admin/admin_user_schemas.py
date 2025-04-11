@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field, model_validator
+
+from app.utils.exception import CustomException
 
 
 class UserResponseSchema(BaseModel):
@@ -13,7 +15,7 @@ class UserResponseSchema(BaseModel):
     email_verified: bool
     is_superuser: bool
     created_at: datetime
-    deleted_at: datetime
+    deleted_at: Optional[datetime] = None
     is_banned: bool
     gender: str
 
@@ -23,18 +25,16 @@ class UserResponseSchema(BaseModel):
 
 class SeekerUserResponseSchema(BaseModel):
     id: int
-    user: UserResponseSchema
     name: str
     phone_number: str
     age: int
     interests: List[str]
     purposes: List[str]
     sources: List[str]
-    applied_posting = List[str]
+    applied_posting: Optional[List[int]] = None
     applied_posting_count: int
     is_social: bool
     status: str
-    interested_companies = List[str]
 
     class Config:
         from_attributes = True
@@ -42,7 +42,6 @@ class SeekerUserResponseSchema(BaseModel):
 
 class CorpUserResponseSchema(BaseModel):
     id: int
-    user: UserResponseSchema
     company_name: str
     business_start_date: datetime
     business_number: str
@@ -54,3 +53,21 @@ class CorpUserResponseSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserUnionResponseSchema(BaseModel):
+    base: UserResponseSchema
+    seeker: Optional[SeekerUserResponseSchema] = None
+    corp: Optional[CorpUserResponseSchema] = None
+
+
+class UserUpdateSchema(BaseModel):
+    is_active: bool
+
+    @model_validator(mode="after")
+    def check_field(self):
+        if self.is_active is None:
+            raise CustomException(
+                code="required_field", status_code=400, error="필수 필드 누락"
+            )
+        return self

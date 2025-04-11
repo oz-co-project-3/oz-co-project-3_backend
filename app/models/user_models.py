@@ -117,11 +117,6 @@ class SeekerUser(models.Model):
         choices=STATUS_CHOICES,
         default=Status.SEEKING.value,
     )
-    interested_companies = fields.ManyToManyField(
-        "models.CorporateUser",
-        related_name="interested_seekers",
-        through="interested_companies_seeker",
-    )
 
     class Meta:
         table = "seeker_users"
