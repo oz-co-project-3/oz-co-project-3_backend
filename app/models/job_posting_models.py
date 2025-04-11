@@ -93,6 +93,7 @@ class Applicants(Model):
     )
     status = fields.CharEnumField(ApplicantEnum, default=ApplicantEnum.Applied)
     memo = fields.TextField(null=True)
+    created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
         table = "applicants"
