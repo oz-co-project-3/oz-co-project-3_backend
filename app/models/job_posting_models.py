@@ -16,6 +16,8 @@ class StatusEnum(str, Enum):  # 공고 상태 표시
     Closing_soon = "마감 임박"
     Closed = "모집 종료"
     Blinded = "블라인드"
+    Waiting = "대기중"
+    Returned = "반려됨"
 
 
 class MethodEnum(str, Enum):
