@@ -10,7 +10,7 @@ class UserRegisterRequest(BaseModel):
     password: str = Field(min_length=8)
     password_check: str
     phone_number: str
-    age: int
+    birth: date
     interests: List[str]
     purposes: List[str]
     sources: List[str]
@@ -59,3 +59,35 @@ class CompanyRegisterResponseData(BaseModel):
 class CompanyRegisterResponse(BaseModel):
     message: str
     data: CompanyRegisterResponseData
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class LoginResponseData(BaseModel):
+    access_token: str
+    refresh_token: str
+    user_id: int
+    user_type: str
+    email: str
+    name: str
+
+
+class LoginResponse(BaseModel):
+    message: str
+    data: LoginResponseData
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
+class RefreshTokenResponseData(BaseModel):
+    access_token: str
+
+
+class RefreshTokenResponse(BaseModel):
+    message: str
+    data: RefreshTokenResponseData

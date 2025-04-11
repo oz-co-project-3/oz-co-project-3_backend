@@ -51,13 +51,14 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
         user=base_user,
         name=request.name,
         phone_number=request.phone_number,
-        age=request.age,
+        birth=request.birth,
         gender=request.gender,
         interests=request.interests,
         purposes=request.purposes,
         sources=request.sources,
         status=request.status,
         is_social=False,
+        is_admin=False,
     )
 
     return UserRegisterResponse(
