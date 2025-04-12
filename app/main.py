@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
 from tortoise.contrib.fastapi import register_tortoise
 
-from app.api.routes.admin.admin_user import admin_router
+from app.api.routes.admin_user import admin_router
 from app.api.routes.freeboard import free_board_router
 from app.api.routes.success_review import success_review_router
 from app.api.routes.user import router as user_router

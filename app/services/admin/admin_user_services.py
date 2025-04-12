@@ -2,16 +2,7 @@ from fastapi import status
 
 from app.models.user_models import BaseUser, CorporateUser, SeekerUser
 from app.schemas.admin.admin_user_schemas import UserUpdateSchema
-from app.utils.exception import CustomException
-
-
-def check_superuser(current_user):
-    if not current_user.is_superuser:
-        raise CustomException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            error="접근 권한이 없습니다",
-            code="permission_denied",
-        )
+from app.utils.exception import CustomException, check_superuser
 
 
 async def get_user_all(current_user: BaseUser, seeker: bool, corp: bool, search: str):
