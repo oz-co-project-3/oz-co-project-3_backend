@@ -45,7 +45,7 @@ async def get_user_by_id(
         raise CustomException(
             status_code=status.HTTP_404_NOT_FOUND,
             error="존재하지 않는 유저입니다",
-            code="not_found",
+            code="user_not_found",
         )
 
     seeker_user = await SeekerUser.filter(user_id=id).first()
