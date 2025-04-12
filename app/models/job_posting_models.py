@@ -49,16 +49,15 @@ class JobPosting(TimestampMixin, Model):
 class RejectPosting(Model):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
-        "models.BaseUser", related_name="reject_postings", null=True
+        "models.BaseUser", related_name="reject_by_admin", null=True
     )
     job_posting = fields.ForeignKeyField(
-        "models.JobPosting", related_name="reject_by_admins", on_delete=fields.CASCADE
+        "models.JobPosting", related_name="reject_postings", on_delete=fields.CASCADE
     )
     content = fields.TextField()
 
     class Meta:
         table = "reject_postings"
-        ordering = ["-created_at"]
 
 
 class Region(Model):
