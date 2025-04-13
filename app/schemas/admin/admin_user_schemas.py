@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr, model_validator
@@ -10,13 +11,11 @@ class UserResponseSchema(BaseModel):
     id: int
     email: EmailStr
     user_type: str
-    is_active: bool
     status: str
     email_verified: bool
     is_superuser: bool
     created_at: datetime
     deleted_at: Optional[datetime] = None
-    is_banned: bool
     gender: str
 
     class Config:
@@ -61,12 +60,18 @@ class UserUnionResponseSchema(BaseModel):
     corp: Optional[CorpUserResponseSchema] = None
 
 
+class Status(str, Enum):
+    ACTIVE = "active"
+    SUSPEND = "suspend"
+    DELETE = "delete"
+
+
 class UserUpdateSchema(BaseModel):
-    is_active: bool
+    status: Status
 
     @model_validator(mode="after")
     def check_field(self):
-        if self.is_active is None:
+        if self.status is None:
             raise CustomException(
                 code="required_field", status_code=400, error="필수 필드 누락"
             )

@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 from pydantic import BaseModel, Field
 
@@ -24,6 +25,15 @@ class StatusEnum(str, Enum):  # 공고 상태 표시
     Rejected = "반려됨"
 
 
+class RejectPostingSchema(BaseModel):
+    id: int
+    user: UserSchema
+    content: str
+
+    class Config:
+        from_attributes = True
+
+
 class JobPostingResponseSchema(BaseModel):
     id: int
     user: UserSchema
@@ -42,13 +52,7 @@ class JobPostingResponseSchema(BaseModel):
     status: StatusEnum
     view_count: int
     report: int
-
-    class Config:
-        from_attributes = True
-
-
-class JobPostingPatchSchema(BaseModel):
-    status: StatusEnum
+    reject_postings: List[RejectPostingSchema] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

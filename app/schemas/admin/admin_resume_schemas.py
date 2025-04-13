@@ -1,7 +1,7 @@
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class StatusEnum(str, Enum):
@@ -12,6 +12,16 @@ class StatusEnum(str, Enum):
 
 class UserSchema(BaseModel):
     id: int
+
+    class Config:
+        from_attributes = True
+
+
+class WorkExpResponseSchema(BaseModel):
+    id: int
+    company: str
+    period: str
+    position: str
 
     class Config:
         from_attributes = True
@@ -34,6 +44,7 @@ class ResumeResponseSchema(BaseModel):
     introduce: str
     status: StatusEnum
     document_url: Optional[str] = None
+    work_experiences: List[WorkExpResponseSchema] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

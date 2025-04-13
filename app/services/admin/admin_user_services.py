@@ -72,7 +72,7 @@ async def patch_user_by_id(
             code="user_not_found",
         )
 
-    user.is_active = patch_user.is_active
+    user.status = patch_user.status
     await user.save()
 
     return user

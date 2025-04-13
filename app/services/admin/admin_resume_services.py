@@ -19,17 +19,29 @@ async def get_all_resumes(current_user: BaseUser, name: str):
 
     if name:
         resumes = (
-            await Resume.filter(name__icontains=name).prefetch_related("user").all()
+            await Resume.filter(name__icontains=name)
+            .select_related("user")
+            .prefetch_related("work_experiences")
+            .all()
         )
     else:
-        resumes = await Resume.all().prefetch_related("user")
+        resumes = (
+            await Resume.all()
+            .select_related("user")
+            .prefetch_related("work_experiences")
+        )
     return resumes
 
 
 async def get_resume_by_id(current_user: BaseUser, id: int):
     check_superuser(current_user)
 
-    resume = await Resume.filter(id=id).select_related("user").first()
+    resume = (
+        await Resume.filter(id=id)
+        .select_related("user")
+        .prefetch_related("work_experiences")
+        .first()
+    )
     check_resume(resume)
 
     return resume

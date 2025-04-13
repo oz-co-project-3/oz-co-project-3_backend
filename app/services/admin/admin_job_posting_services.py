@@ -1,4 +1,5 @@
 from fastapi import status
+from tortoise.query_utils import Prefetch
 
 from app.models.job_posting_models import JobPosting, RejectPosting
 from app.models.user_models import BaseUser
@@ -27,23 +28,25 @@ async def get_all_job_postings(
 ):
     check_superuser(current_user)
 
+    queryset = (
+        JobPosting.all()
+        .select_related("user")
+        .prefetch_related(
+            Prefetch(
+                "reject_postings", queryset=RejectPosting.all().select_related("user")
+            )
+        )
+    )
+
     if search_type == "company":
-        job_postings = (
-            await JobPosting.filter(company__icontains=search_keyword)
-            .select_related("user")
-            .all()
-        )
+        queryset = queryset.filter(company__icontains=search_keyword)
     elif search_type == "employment_type":
-        job_postings = (
-            await JobPosting.filter(employment_type__icontains=search_keyword)
-            .select_related("user")
-            .all()
-        )
-    else:
-        job_postings = await JobPosting.all().select_related("user")
+        queryset = queryset.filter(employment_type__icontains=search_keyword)
 
     if status:
-        job_postings = await JobPosting.filter(status=status).all()
+        queryset = queryset.filter(status=status)
+
+    job_postings = await queryset
 
     return job_postings
 
@@ -54,7 +57,16 @@ async def get_job_posting_by_id(
 ):
     check_superuser(current_user)
 
-    posting = await JobPosting.filter(pk=id).select_related("user").first()
+    posting = (
+        await JobPosting.filter(pk=id)
+        .select_related("user")
+        .prefetch_related(
+            Prefetch(
+                "reject_postings", queryset=RejectPosting.all().select_related("user")
+            )
+        )
+        .first()
+    )
 
     check_job_posting(posting)
 

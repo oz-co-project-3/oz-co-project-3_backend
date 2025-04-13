@@ -39,7 +39,6 @@ class BaseUser(models.Model):
         choices=USER_TYPE_CHOICES,
         default=UserType.SEEKER.value,
     )
-    is_active = fields.BooleanField(default=True)
     status = fields.CharField(
         max_length=20,
         null=True,
@@ -50,7 +49,6 @@ class BaseUser(models.Model):
     is_superuser = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     deleted_at = fields.DatetimeField(null=True)
-    is_banned = fields.BooleanField(default=False)
     gender = fields.CharField(max_length=10, choices=GENDER_CHOICES)
 
     class Meta:
