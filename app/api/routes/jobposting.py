@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app.models.job_posting_models import JobPosting
-from app.models.user_models import CorporateUser, SeekerUser
+from app.models.user_models import BaseUser, CorporateUser, SeekerUser
 from app.schemas.jobposting_schemas import (
     JobPostingCreateUpdate,
     JobPostingResponse,
@@ -111,3 +111,20 @@ async def patch_job_posting(
 async def get_job_posting(job_posting_id: int):
     # 특정 구인 공고를 조회
     return await JobPosting.get_job_posting(job_posting_id)
+
+
+@job_posting_router.delete(
+    "/{job_posting_id}/",
+    status_code=200,
+    summary="구인 공고 삭제",
+    description="""
+         - `401` `code`: `invalid_token` 유효하지 않은 토큰입니다.\n
+         - `403` `code`: `permission_denied` 해당 작업을 처리할 권한이 없습니다.\n
+         - `404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.\n
+         """,
+)
+async def delete_job_posting_endpoint(
+    job_posting_id: int,
+    current_user: BaseUser = Depends(fake_current_user),  # 인증된 현재 사용자
+):
+    return await JobPostingService.delete_job_posting(current_user, job_posting_id)

@@ -179,3 +179,27 @@ class JobPostingService:
             "message": "공고 조회에 성공했습니다.",
             "data": JobPostingService.job_posting_response(job_posting),
         }
+
+    @staticmethod
+    async def delete_job_posting(user: BaseUser, job_posting_id: int) -> dict:
+        """
+        공고 삭제 메서드
+        """
+        # 공고 조회
+        job_posting = await JobPosting.get_or_none(id=job_posting_id)
+        ensure_resource_exists(
+            job_posting,
+            error_message="공고를 찾을 수 없습니다.",
+            error_code="notification_not_found",
+        )
+
+        # 사용자 권한 검증
+        await JobPostingService.validate_user_permissions(user, job_posting=job_posting)
+
+        # 공고 삭제
+        await job_posting.delete()
+
+        return {
+            "message": "공고가 성공적으로 삭제되었습니다.",
+            "data": job_posting_id,
+        }
