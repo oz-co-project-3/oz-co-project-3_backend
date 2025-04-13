@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Body, Depends, status
+from pydantic import BaseModel, EmailStr
 
+from app.core.redis import redis
 from app.core.token import get_current_user
 from app.models.user_models import BaseUser
 from app.schemas.user_schema import (
@@ -9,13 +11,25 @@ from app.schemas.user_schema import (
     LoginResponse,
     RefreshTokenRequest,
     RefreshTokenResponse,
+    UserDeleteRequest,
     UserRegisterRequest,
     UserRegisterResponse,
 )
 from app.services.auth_services import login_user, logout_user, refresh_access_token
-from app.services.user_register_services import register_company_user, register_user
+from app.services.email_services import send_email_code, verify_email_code
+from app.services.user_register_services import (
+    delete_user,
+    register_company_user,
+    register_user,
+)
 
 router = APIRouter(prefix="/api/user", tags=["user"])
+
+
+# 이메일 인증 요청 부분
+class EmailVerifyRequest(BaseModel):
+    email: EmailStr
+    verification_code: str
 
 
 @router.post(
@@ -48,6 +62,23 @@ async def register_company(request: CompanyRegisterRequest):
     return await register_company_user(request)
 
 
+@router.delete(
+    "/profile/",
+    status_code=status.HTTP_200_OK,
+    summary="회원 탈퇴",
+    description="""
+- `400` `code`:`invalid_password` : 비밀번호가 일치하지 않습니다.
+""",
+)
+async def delete_profile(
+    request: UserDeleteRequest,
+    current_user: BaseUser = Depends(get_current_user),
+):
+    if not request.is_active:
+        return await delete_user(current_user=current_user, password=request.password)
+    return {"message": "탈퇴 요청이 취소되었습니다."}
+
+
 @router.post(
     "/login/",
     response_model=LoginResponse,
@@ -63,7 +94,7 @@ async def login(request: LoginRequest):
 
 
 @router.post(
-    "/logout",
+    "/logout/",
     status_code=status.HTTP_200_OK,
     summary="로그아웃",
     description="""
@@ -89,3 +120,16 @@ async def logout(current_user: BaseUser = Depends(get_current_user)):
 )
 async def refresh_token(request: RefreshTokenRequest):
     return await refresh_access_token(request)
+
+
+@router.post(
+    "/verify-email/",
+    status_code=status.HTTP_200_OK,
+    summary="이메일 인증",
+    description="""
+- `400` `code`:`invalid_verification_code` : 유효하지 않은 인증코드입니다.
+- `404` `code`:`user_not_found` : 사용자를 찾을 수 없습니다.
+""",
+)
+async def verify_email(request: EmailVerifyRequest):
+    return await verify_email_code(request)

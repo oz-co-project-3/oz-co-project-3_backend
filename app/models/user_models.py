@@ -14,6 +14,7 @@ class BaseUser(models.Model):
         ACTIVE = "active"
         SUSPEND = "suspend"
         DELETE = "delete"
+        PENDING = "pending"  # 메일 인증 미 완료시 상태 추가
 
     USER_TYPE_CHOICES = [
         (UserType.SEEKER.value, "구직자"),
@@ -21,6 +22,7 @@ class BaseUser(models.Model):
     ]
 
     STATUS_CHOICES = [
+        (Status.PENDING.value, "pending"),
         (Status.ACTIVE.value, "active"),
         (Status.SUSPEND.value, "suspend"),
         (Status.DELETE.value, "delete"),
@@ -39,18 +41,16 @@ class BaseUser(models.Model):
         choices=USER_TYPE_CHOICES,
         default=UserType.SEEKER.value,
     )
-    is_active = fields.BooleanField(default=True)
     status = fields.CharField(
         max_length=20,
         null=True,
         choices=STATUS_CHOICES,
-        default=Status.ACTIVE.value,
+        default=Status.PENDING.value,
     )
     email_verified = fields.BooleanField(default=False)
     is_superuser = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     deleted_at = fields.DatetimeField(null=True)
-    is_banned = fields.BooleanField(default=False)
     gender = fields.CharField(max_length=10, choices=GENDER_CHOICES)
 
     class Meta:

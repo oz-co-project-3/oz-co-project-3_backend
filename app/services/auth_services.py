@@ -43,6 +43,13 @@ async def authenticate_user(email: str, password: str) -> BaseUser:
 async def login_user(request: LoginRequest) -> LoginResponse:
     user = await authenticate_user(request.email, request.password)
 
+    if not user.email_verified or user.status != "active":
+        raise CustomException(
+            status_code=403,
+            error="이메일 인증이 완료되지 않았거나 계정이 활성화되지 않았습니다.",
+            code="unverified_or_inactive_account",
+        )
+
     access_token = create_token(
         {"sub": str(user.id)}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
