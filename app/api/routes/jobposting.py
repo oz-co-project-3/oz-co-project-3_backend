@@ -59,6 +59,25 @@ async def get_job_postings_by_company(company_id: int):
     return await JobPostingService.get_job_postings_by_company(company_id)
 
 
+@job_posting_router.get(
+    "/{company_id}/{job_posting_id}/",
+    response_model=JobPostingResponse,
+    status_code=200,
+    summary="특정 회사의 특정 공고 조회",
+    description="""
+             - `401` `code`: `invalid_token` 로그인이 필요합니다.\n
+             - `403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
+             - `404` `code`: `notification_not_found` 해당 공고를 찾을 수 없습니다.\n
+             """,
+)
+async def get_specific_job_posting(company_id: int, job_posting_id: int):
+    # 특정 회사 ID와 공고 ID로 공고 조회
+    job_posting = await JobPostingService.get_specific_job_posting(
+        company_id, job_posting_id
+    )
+    return job_posting
+
+
 @job_posting_router.patch(
     "/{job_posting_id}/",
     response_model=JobPostingResponse,
