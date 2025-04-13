@@ -5,6 +5,7 @@ from fastapi.security import HTTPBearer
 from tortoise.contrib.fastapi import register_tortoise
 
 from app.api.routes.admin import admin_router
+from app.api.routes.comment import comment_router
 from app.api.routes.freeboard import free_board_router
 from app.api.routes.success_review import success_review_router
 from app.api.routes.user import router as user_router
@@ -15,7 +16,7 @@ bearer_scheme = HTTPBearer()
 app = FastAPI()
 
 app.include_router(user_router)
-
+app.include_router(comment_router)
 app.include_router(success_review_router)
 app.include_router(free_board_router)
 app.include_router(admin_router)
