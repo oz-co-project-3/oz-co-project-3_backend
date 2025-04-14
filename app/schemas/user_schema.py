@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -100,3 +100,42 @@ class RefreshTokenResponse(BaseModel):
 
 class ResendEmailRequest(BaseModel):
     email: EmailStr
+
+
+class BusinessVerifyRequest(BaseModel):
+    business_number: str
+
+
+class BusinessVerifyResponse(BaseModel):
+    business_number: str
+    company_name: Optional[str]
+    business_status: str
+    is_valid: bool
+
+
+class FindEmailRequest(BaseModel):
+    name: str
+    phone_number: str
+
+
+class FindEmailResponseData(BaseModel):
+    email: str
+
+
+# 메일 찾을 시 DICT로 간단하게 가능하지만
+# DICT구조 사용시 SWAGGER에서 안보이거나 깨진다고함
+class FindEmailResponse(BaseModel):
+    message: str
+    data: FindEmailResponseData
+
+
+class FindPasswordRequest(BaseModel):
+    name: str
+    phone_number: str
+    email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    new_password: str
+    new_password_check: str

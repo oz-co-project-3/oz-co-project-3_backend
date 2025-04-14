@@ -46,9 +46,21 @@ async def generate_email_code(email: str) -> str:
 async def send_email_code(email: str, purpose: str) -> str:
     code = await generate_email_code(email)
     subject = f"[{purpose}] 인증코드 안내"
-    content = f"{purpose}에 사용할 인증코드는 다음과 같습니다:\n\n인증코드: {code}\n\n10분 이내에 입력해주세요."
 
-    # 핵심 수정: 동기 함수 비동기 실행
+    # 기본 본문
+    content = (
+        f"{purpose}에 사용할 인증코드는 다음과 같습니다:\n\n"
+        f"📌 인증코드: {code}\n\n"
+        f"※ 인증코드는 10분간 유효합니다.\n"
+    )
+
+    # 아이디 찾기 또는 비밀번호 찾기일 경우 링크 포함
+    if purpose in ["아이디 찾기", "비밀번호 찾기"]:
+        verify_link = (
+            f"https://your-frontend.com/verify-code?email={email}&purpose={purpose}"
+        )
+        content += f"\n👇 아래 링크를 눌러 인증코드를 입력해주세요:\n{verify_link}"
+
     await asyncio.to_thread(send_email, email, subject, content)
     return code
 

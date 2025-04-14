@@ -1,11 +1,17 @@
+import os
+from datetime import datetime, timedelta
+
 import jwt
-from fastapi import Depends, HTTPException, status
+from dotenv import load_dotenv
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
 from app.models.user_models import BaseUser
 from app.utils.exception import CustomException
 
-SECRET_KEY = "your_secret_key"
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login/")
@@ -43,3 +49,19 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> BaseUser:
         )
 
     return user
+
+
+def create_reset_token(email: str, expires_minutes: int = 10) -> str:
+    expire = datetime.utcnow() + timedelta(minutes=expires_minutes)
+    to_encode = {"sub": email, "exp": expire}
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_reset_token(token: str) -> str | None:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload.get("sub")  # email
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.PyJWTError:
+        return None
