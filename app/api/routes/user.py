@@ -11,12 +11,13 @@ from app.schemas.user_schema import (
     LoginResponse,
     RefreshTokenRequest,
     RefreshTokenResponse,
+    ResendEmailRequest,
     UserDeleteRequest,
     UserRegisterRequest,
     UserRegisterResponse,
 )
 from app.services.auth_services import login_user, logout_user, refresh_access_token
-from app.services.email_services import send_email_code, verify_email_code
+from app.services.email_services import resend_verification_email, verify_email_code
 from app.services.user_register_services import (
     delete_user,
     register_company_user,
@@ -133,3 +134,16 @@ async def refresh_token(request: RefreshTokenRequest):
 )
 async def verify_email(request: EmailVerifyRequest):
     return await verify_email_code(request)
+
+
+@router.post(
+    "/resend-email-code/",
+    status_code=status.HTTP_200_OK,
+    summary="재인증 코드 발송",
+    description="""
+- `400` `code`:`already_verified` : 이미 인증된 계정입니다.
+- `404` `code`:`user_not_found` : 가입된 이메일이 아닙니다.
+""",
+)
+async def resend_email_code(request: ResendEmailRequest):
+    return await resend_verification_email(request)

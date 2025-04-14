@@ -1,18 +1,23 @@
 import asyncio
+import os
 import random
 import smtplib
 from email.mime.text import MIMEText
 
+from dotenv import load_dotenv
 from pydantic import BaseModel, EmailStr
 
 from app.core.redis import redis
 from app.models.user_models import BaseUser
+from app.schemas.user_schema import ResendEmailRequest
 from app.utils.exception import CustomException
 
-SMTP_USER = "haa2007@naver.com"
-SMTP_PASSWORD = "PZSSN6NGZD9W"
-SMTP_SERVER = "smtp.naver.com"
-SMTP_PORT = 465
+load_dotenv()
+
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.naver.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 465))
 
 
 # 동기 함수로 변경
@@ -81,3 +86,22 @@ async def verify_email_code(request: EmailVerifyRequest):
             "email_verified": user.email_verified,
         },
     }
+
+
+async def resend_verification_email(request: ResendEmailRequest):
+    user = await BaseUser.get_or_none(email=request.email)
+    if not user:
+        raise CustomException(
+            status_code=404,
+            error="가입된 이메일이 아닙니다.",
+            code="user_not_found",
+        )
+    if user.email_verified:
+        raise CustomException(
+            status_code=400,
+            error="이미 인증된 계정입니다.",
+            code="already_verified",
+        )
+
+    await send_email_code(email=user.email, purpose="이메일 재인증")
+    return {"message": "인증코드가 재전송되었습니다.", "data": {"email": user.email}}

@@ -96,3 +96,7 @@ class RefreshTokenResponseData(BaseModel):
 class RefreshTokenResponse(BaseModel):
     message: str
     data: RefreshTokenResponseData
+
+
+class ResendEmailRequest(BaseModel):
+    email: EmailStr
