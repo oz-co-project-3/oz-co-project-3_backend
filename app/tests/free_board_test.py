@@ -22,8 +22,9 @@ async def access_token(client):
     mock_set = AsyncMock(return_value=True)
     mock_get = AsyncMock(return_value=None)
 
-    with patch("app.core.redis.redis.set", mock_set), patch(
-        "app.core.redis.redis.get", mock_get
+    with (
+        patch("app.core.redis.redis.set", mock_set),
+        patch("app.core.redis.redis.get", mock_get),
     ):
         hashed_pw = bcrypt.hash("!!Test1234")  # 서비스에서 쓰는 방식 확인 필수!
         user = await BaseUser.create(
