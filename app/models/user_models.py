@@ -28,7 +28,7 @@ class BaseUser(models.Model):
 
     id = fields.IntField(pk=True)
     password = fields.CharField(
-        max_length=20,
+        max_length=80,
         null=False,
         description="비밀번호는 최소 8자 이상이며 특수 문자를 포함",
     )
@@ -39,7 +39,6 @@ class BaseUser(models.Model):
         choices=USER_TYPE_CHOICES,
         default=UserType.SEEKER.value,
     )
-    is_active = fields.BooleanField(default=True)
     status = fields.CharField(
         max_length=20,
         null=True,
@@ -50,7 +49,6 @@ class BaseUser(models.Model):
     is_superuser = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     deleted_at = fields.DatetimeField(null=True)
-    is_banned = fields.BooleanField(default=False)
     gender = fields.CharField(max_length=10, choices=GENDER_CHOICES)
 
     class Meta:
@@ -71,6 +69,8 @@ class UserBan(models.Model):
 
 
 class CorporateUser(models.Model):
+    GENDER_CHOICES = [("male", "남자"), ("female", "여자")]
+
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField("models.BaseUser", related_name="corporate_profiles")
     company_name = fields.CharField(max_length=255, null=False)
@@ -80,6 +80,7 @@ class CorporateUser(models.Model):
     manager_name = fields.CharField(max_length=100, null=False)
     manager_phone_number = fields.CharField(max_length=20, null=False)
     manager_email = fields.CharField(max_length=255, null=True, unique=True)
+    gender = fields.CharField(max_length=10, choices=GENDER_CHOICES)
 
     class Meta:
         table = "corporate_users"
@@ -101,11 +102,12 @@ class SeekerUser(models.Model):
     user = fields.ForeignKeyField("models.BaseUser", related_name="seeker_profiles")
     name = fields.CharField(max_length=20, null=False)
     phone_number = fields.CharField(max_length=20, null=False)
-    age = fields.IntField(null=False)
-    interests = fields.JSONField(null=False)
-    purposes = fields.JSONField(null=False)
-    sources = fields.JSONField(null=True)
-    applied_posting = fields.JSONField(null=True)
+    birth = fields.DateField(null=True)
+    interests = fields.CharField(max_length=100, null=True)
+    interests_posting = fields.CharField(max_length=255, null=True)
+    purposes = fields.CharField(max_length=100, null=True)
+    sources = fields.CharField(max_length=60, null=True)
+    applied_posting = fields.CharField(max_length=60, null=True)
     applied_posting_count = fields.IntField(null=False, default=0)
     is_social = fields.BooleanField(default=False)
     status = fields.CharField(
@@ -113,11 +115,6 @@ class SeekerUser(models.Model):
         null=False,
         choices=STATUS_CHOICES,
         default=Status.SEEKING.value,
-    )
-    interested_companies = fields.ManyToManyField(
-        "models.CorporateUser",
-        related_name="interested_seekers",
-        through="interested_companies_seeker",
     )
 
     class Meta:

@@ -16,8 +16,8 @@ class StatusEnum(str, Enum):  # 공고 상태 표시
     Closing_soon = "마감 임박"
     Closed = "모집 종료"
     Blinded = "블라인드"
-    pending = "대기중"
-    Returned = "반려됨"
+    Pending = "대기중"
+    Rejected = "반려됨"
 
 
 class MethodEnum(str, Enum):
@@ -33,6 +33,7 @@ class JobPosting(TimestampMixin, Model):
     user = fields.ForeignKeyField(
         "models.CorporateUser", related_name="job_postings", on_delete=fields.CASCADE
     )
+    company = fields.CharField(max_length=50)
     title = fields.CharField(max_length=100, unique=True)
     location = fields.CharField(max_length=150)
     employment_type = fields.CharEnumField(
@@ -60,16 +61,15 @@ class JobPosting(TimestampMixin, Model):
 class RejectPosting(Model):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
-        "models.BaseUser", related_name="reject_postings", null=True
+        "models.BaseUser", related_name="reject_by_admin", null=True
     )
     job_posting = fields.ForeignKeyField(
-        "models.JobPosting", related_name="reject_by_admins", on_delete=fields.CASCADE
+        "models.JobPosting", related_name="reject_postings", on_delete=fields.CASCADE
     )
     content = fields.TextField()
 
     class Meta:
         table = "reject_postings"
-        ordering = ["-created_at"]
 
 
 class Region(Model):

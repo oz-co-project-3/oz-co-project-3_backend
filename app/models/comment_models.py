@@ -5,6 +5,9 @@ from app.utils.model import TimestampMixin
 
 class Comment(TimestampMixin):
     id = fields.IntField(pk=True)
+    user = fields.ForeignKeyField(
+        "models.BaseUser", related_name="comments", on_delete=fields.CASCADE
+    )
     success_review = fields.ForeignKeyField(
         "models.SuccessReview",
         related_name="comments",

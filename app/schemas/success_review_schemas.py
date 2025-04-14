@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional, Union
 
 from pydantic import BaseModel, model_validator
 
@@ -10,33 +9,45 @@ class UserSchema(BaseModel):
     id: int
 
     class Config:
-        from_attributes = True  # orm_mode → v2 기준
+        from_attributes = True
 
 
-class FreeBoardCreateUpdate(BaseModel):
+class SuccessReviewCreateUpdateSchema(BaseModel):
     title: str
     content: str
-    image_url: Optional[str] = None
+    job_title: str
+    company_name: str
+    employment_type: str
 
-    model_config = {"from_attributes": True}
+    class Config:
+        from_attributes = True
 
     @model_validator(mode="after")
     def check_fields(self):
-        if not self.title or not self.content:
+        if (
+            not self.title
+            or not self.content
+            or not self.job_title
+            or not self.company_name
+            or not self.employment_type
+        ):
             raise CustomException(
                 error="필수 필드 누락", code="required_field", status_code=400
             )
         return self
 
 
-class FreeBoardResponse(BaseModel):
+class SuccessReviewResponseSchema(BaseModel):
     id: int
     user: UserSchema
     title: str
     content: str
-    image_url: Optional[str] = None
+    job_title: str
+    company_name: str
+    employment_type: str
     view_count: int
     created_at: datetime
     updated_at: datetime
 
-    model_config = {"from_attributes": True}
+    class Config:
+        from_attributes = True
