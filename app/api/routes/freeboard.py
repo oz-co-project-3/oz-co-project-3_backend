@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Body, Depends, status
+from fastapi import APIRouter, Depends, status
 
 from app.core.token import get_current_user
 from app.models.user_models import BaseUser
