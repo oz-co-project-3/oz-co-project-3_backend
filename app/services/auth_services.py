@@ -1,6 +1,8 @@
+import os
 from datetime import datetime, timedelta
 
 import jwt
+from dotenv import load_dotenv
 from passlib.hash import bcrypt
 
 from app.core.redis import redis
@@ -15,9 +17,11 @@ from app.schemas.user_schema import (
 )
 from app.utils.exception import CustomException
 
+load_dotenv()
+
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 1
-SECRET_KEY = "your_secret_key"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 

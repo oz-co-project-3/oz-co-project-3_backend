@@ -1,18 +1,22 @@
 import asyncio
+import os
 import random
 import smtplib
 from email.mime.text import MIMEText
 
+from dotenv import load_dotenv
 from pydantic import BaseModel, EmailStr
 
 from app.core.redis import redis
 from app.models.user_models import BaseUser
 from app.utils.exception import CustomException
 
-SMTP_USER = "haa2007@naver.com"
-SMTP_PASSWORD = "PZSSN6NGZD9W"
-SMTP_SERVER = "smtp.naver.com"
-SMTP_PORT = 465
+load_dotenv()
+
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 465))
 
 
 # 동기 함수로 변경
