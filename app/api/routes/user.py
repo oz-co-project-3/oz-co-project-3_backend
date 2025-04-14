@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, status
+from typing import Union
+
+from fastapi import APIRouter, Body, Depends, status
 from pydantic import BaseModel, EmailStr
 
 from app.core.token import get_current_user
@@ -8,6 +10,7 @@ from app.schemas.user_schema import (
     BusinessVerifyResponse,
     CompanyRegisterRequest,
     CompanyRegisterResponse,
+    CorporateProfileUpdateRequest,
     FindEmailRequest,
     FindPasswordRequest,
     LoginRequest,
@@ -16,7 +19,10 @@ from app.schemas.user_schema import (
     RefreshTokenResponse,
     ResendEmailRequest,
     ResetPasswordRequest,
+    SeekerProfileUpdateRequest,
     UserDeleteRequest,
+    UserProfileResponse,
+    UserProfileUpdateResponse,
     UserRegisterRequest,
     UserRegisterResponse,
 )
@@ -34,6 +40,10 @@ from app.services.user.business_verify_services import verify_business_number
 from app.services.user.email_services import (
     resend_verification_email,
     verify_email_code,
+)
+from app.services.user.user_profile_services import (
+    get_user_profile,
+    update_user_profile,
 )
 from app.services.user.user_register_services import (
     delete_user,
@@ -142,6 +152,41 @@ async def reset_password_route(request: ResetPasswordRequest):
         new_password=request.new_password,
         new_password_check=request.new_password_check,
     )
+
+
+@router.get(
+    "/profile/",
+    response_model=UserProfileResponse,
+    status_code=status.HTTP_200_OK,
+    summary="로그인한 사용자 프로필 조회",
+    description="""
+- `401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다
+- `404` `code`:`user_not_found` : 사용자 정보를 찾을 수 없습니다
+- `500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다
+""",
+)
+async def profile(current_user: BaseUser = Depends(get_current_user)):
+    return await get_user_profile(current_user)
+
+
+@router.patch(
+    "/profile/",
+    response_model=UserProfileUpdateResponse,
+    status_code=status.HTTP_200_OK,
+    summary="회원 정보 수정",
+    description="""
+- `401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다
+- `400` `code`:`invalid_phone` : 올바른 형식의 전화번호를 입력해주세요
+- `500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다
+""",
+)
+async def update_profile(
+    current_user: BaseUser = Depends(get_current_user),
+    update_data: Union[
+        SeekerProfileUpdateRequest, CorporateProfileUpdateRequest
+    ] = Body(...),
+):
+    return await update_user_profile(current_user, update_data)
 
 
 @router.post(
