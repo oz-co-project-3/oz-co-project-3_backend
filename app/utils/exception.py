@@ -7,6 +7,7 @@ class CustomException(HTTPException):
         self.error = error
         self.code = code
 
+
 def check_superuser(current_user):
     if not current_user.is_superuser:
         raise CustomException(
