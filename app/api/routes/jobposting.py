@@ -97,22 +97,6 @@ async def patch_job_posting(
     return await JobPostingService.patch_job_posting(user, job_posting_id, updated_data)
 
 
-@job_posting_router.get(
-    "/{job_posting_id}/",
-    response_model=JobPostingResponse,
-    status_code=200,
-    summary="특정 구인 공고 조회",
-    description="""
-             - `401` `code`: `invalid_token` 유효하지 않은 토큰입니다.\n
-             - `403` `code`: `permission_denied` 해당 작업을 처리할 권한이 없습니다.
-             - `404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.\n
-             """,
-)
-async def get_job_posting(job_posting_id: int):
-    # 특정 구인 공고를 조회
-    return await JobPosting.get_job_posting(job_posting_id)
-
-
 @job_posting_router.delete(
     "/{job_posting_id}/",
     status_code=200,
