@@ -80,7 +80,7 @@ class Region(Model):
         table = "regions"
 
 
-class Applicants(Model):
+class Applicants(TimestampMixin, Model):
     class ApplicantEnum(str, Enum):
         Applied = "지원 중"
         Cancelled = "지원 취소"
@@ -93,7 +93,6 @@ class Applicants(Model):
     )
     status = fields.CharEnumField(ApplicantEnum, default=ApplicantEnum.Applied)
     memo = fields.TextField(null=True)
-    created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
         table = "applicants"
