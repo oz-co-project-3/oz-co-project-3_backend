@@ -22,6 +22,7 @@ async def setup_test_db(event_loop):
         db_url="sqlite://:memory:",
         modules={
             "models": [
+                "app.models.chatbot_model",
                 "app.models.success_review_models",
                 "app.models.free_board_models",
                 "app.models.resume_models",

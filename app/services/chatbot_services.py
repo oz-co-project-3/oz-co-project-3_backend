@@ -29,7 +29,7 @@ async def patch_chatbot_by_id(
         )
 
     chatbot.step = update_chatbot.step
-    chatbot.is_terminated = update_chatbot.is_terminate
+    chatbot.is_terminate = update_chatbot.is_terminate
     chatbot.selection_path = update_chatbot.selection_path
     chatbot.options = update_chatbot.options
     chatbot.answer = update_chatbot.answer

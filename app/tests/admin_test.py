@@ -1,8 +1,6 @@
-import os
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from dotenv import load_dotenv
 from httpx import ASGITransport, AsyncClient
 from passlib.handlers.bcrypt import bcrypt
 
@@ -23,10 +21,6 @@ async def client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
-
-
-# 테스트 전용 기본값 넣어줄 수도 있음
-os.environ.setdefault("SECRET_KEY", "test_secret_key_1234")
 
 
 @pytest.fixture(scope="module")
