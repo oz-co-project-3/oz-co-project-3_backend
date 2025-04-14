@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# 1. 작업 디렉토리 설정 먼저!
+# 1. 작업 디렉토리 설정
 WORKDIR /app
 
 # 2. pyproject.toml & poetry.lock 복사
@@ -15,5 +15,5 @@ RUN pip install --upgrade pip \
 # 4. 전체 애플리케이션 복사
 COPY . .
 
-# 5. 애플리케이션 실행
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 5. 애플리케이션 실행 (gunicorn + uvicorn worker)
+CMD ["gunicorn", "app.main:app", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
