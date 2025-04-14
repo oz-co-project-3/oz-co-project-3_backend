@@ -1,6 +1,8 @@
+import os
 from datetime import datetime, timedelta
 
 import jwt
+from dotenv import load_dotenv
 from passlib.hash import bcrypt
 
 from app.core.redis import redis
@@ -15,9 +17,11 @@ from app.schemas.user_schema import (
 )
 from app.utils.exception import CustomException
 
+load_dotenv()
+
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 1
-SECRET_KEY = "your_secret_key"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 
@@ -44,6 +48,13 @@ async def authenticate_user(email: str, password: str) -> BaseUser:
 # 로그인
 async def login_user(request: LoginRequest) -> LoginResponse:
     user = await authenticate_user(request.email, request.password)
+
+    if not user.email_verified or user.status != "active":
+        raise CustomException(
+            status_code=403,
+            error="이메일 인증이 완료되지 않았거나 계정이 활성화되지 않았습니다.",
+            code="unverified_or_inactive_account",
+        )
 
     access_token = create_token(
         {"sub": str(user.id)}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

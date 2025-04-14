@@ -1,11 +1,16 @@
+import os
+
 import jwt
+from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from app.models.user_models import BaseUser
 from app.utils.exception import CustomException
 
-SECRET_KEY = "your_secret_key"
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login/")

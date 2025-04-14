@@ -61,6 +61,11 @@ class CompanyRegisterResponse(BaseModel):
     data: CompanyRegisterResponseData
 
 
+class UserDeleteRequest(BaseModel):
+    password: str
+    is_active: bool
+
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
