@@ -28,7 +28,7 @@ async def fake_current_user():
 
 
 @job_posting_router.post(
-    "/{company_id}/",
+    "/",
     response_model=JobPostingResponse,
     status_code=201,
     summary="구인 공고 작성",
