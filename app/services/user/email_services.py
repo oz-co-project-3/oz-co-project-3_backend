@@ -9,13 +9,14 @@ from pydantic import BaseModel, EmailStr
 
 from app.core.redis import redis
 from app.models.user_models import BaseUser
+from app.schemas.user_schema import ResendEmailRequest
 from app.utils.exception import CustomException
 
 load_dotenv()
 
 SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
-SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.naver.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", 465))
 
 
@@ -45,9 +46,21 @@ async def generate_email_code(email: str) -> str:
 async def send_email_code(email: str, purpose: str) -> str:
     code = await generate_email_code(email)
     subject = f"[{purpose}] 인증코드 안내"
-    content = f"{purpose}에 사용할 인증코드는 다음과 같습니다:\n\n인증코드: {code}\n\n10분 이내에 입력해주세요."
 
-    # 핵심 수정: 동기 함수 비동기 실행
+    # 기본 본문
+    content = (
+        f"{purpose}에 사용할 인증코드는 다음과 같습니다:\n\n"
+        f"📌 인증코드: {code}\n\n"
+        f"※ 인증코드는 10분간 유효합니다.\n"
+    )
+
+    # 아이디 찾기 또는 비밀번호 찾기일 경우 링크 포함
+    if purpose in ["아이디 찾기", "비밀번호 찾기"]:
+        verify_link = (
+            f"https://your-frontend.com/verify-code?email={email}&purpose={purpose}"
+        )
+        content += f"\n👇 아래 링크를 눌러 인증코드를 입력해주세요:\n{verify_link}"
+
     await asyncio.to_thread(send_email, email, subject, content)
     return code
 
@@ -85,3 +98,22 @@ async def verify_email_code(request: EmailVerifyRequest):
             "email_verified": user.email_verified,
         },
     }
+
+
+async def resend_verification_email(request: ResendEmailRequest):
+    user = await BaseUser.get_or_none(email=request.email)
+    if not user:
+        raise CustomException(
+            status_code=404,
+            error="가입된 이메일이 아닙니다.",
+            code="user_not_found",
+        )
+    if user.email_verified:
+        raise CustomException(
+            status_code=400,
+            error="이미 인증된 계정입니다.",
+            code="already_verified",
+        )
+
+    await send_email_code(email=user.email, purpose="이메일 재인증")
+    return {"message": "인증코드가 재전송되었습니다.", "data": {"email": user.email}}

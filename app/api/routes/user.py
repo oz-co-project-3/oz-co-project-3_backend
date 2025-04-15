@@ -1,23 +1,51 @@
+from typing import Union
+
 from fastapi import APIRouter, Body, Depends, status
 from pydantic import BaseModel, EmailStr
 
-from app.core.redis import redis
 from app.core.token import get_current_user
 from app.models.user_models import BaseUser
 from app.schemas.user_schema import (
+    BusinessVerifyRequest,
+    BusinessVerifyResponse,
     CompanyRegisterRequest,
     CompanyRegisterResponse,
+    CorporateProfileUpdateRequest,
+    FindEmailRequest,
+    FindPasswordRequest,
     LoginRequest,
     LoginResponse,
     RefreshTokenRequest,
     RefreshTokenResponse,
+    ResendEmailRequest,
+    ResetPasswordRequest,
+    SeekerProfileUpdateRequest,
     UserDeleteRequest,
+    UserProfileResponse,
+    UserProfileUpdateResponse,
     UserRegisterRequest,
     UserRegisterResponse,
 )
-from app.services.auth_services import login_user, logout_user, refresh_access_token
-from app.services.email_services import send_email_code, verify_email_code
-from app.services.user_register_services import (
+from app.services.user.auth_recovery_services import (
+    find_email,
+    find_password,
+    reset_password,
+)
+from app.services.user.auth_services import (
+    login_user,
+    logout_user,
+    refresh_access_token,
+)
+from app.services.user.business_verify_services import verify_business_number
+from app.services.user.email_services import (
+    resend_verification_email,
+    verify_email_code,
+)
+from app.services.user.user_profile_services import (
+    get_user_profile,
+    update_user_profile,
+)
+from app.services.user.user_register_services import (
     delete_user,
     register_company_user,
     register_user,
@@ -80,6 +108,88 @@ async def delete_profile(
 
 
 @router.post(
+    "/find-email/",
+    status_code=status.HTTP_200_OK,
+    summary="아이디(이메일) 찾기",
+    description="""
+- `404` `code`:`user_not_found` : 일치하는 사용자 정보가 없습니다
+""",
+)
+async def find_email_route(request: FindEmailRequest):
+    return await find_email(name=request.name, phone_number=request.phone_number)
+
+
+@router.post(
+    "/find-password/",
+    status_code=status.HTTP_200_OK,
+    summary="비밀번호 찾기",
+    description="""
+- `404` `code`:`user_not_found` : 일치하는 사용자 정보가 없습니다
+""",
+)
+async def find_password_route(request: FindPasswordRequest):
+    return await find_password(
+        name=request.name,
+        phone_number=request.phone_number,
+        email=request.email,
+    )
+
+
+@router.post(
+    "/reset-password/",
+    status_code=200,
+    summary="비밀번호 재설정",
+    description="""
+- `400` `code`:`password_mismatch` : 새 비밀번호와 확인이 다름
+- `400` `code`:`invalid_password` : 비밀번호 조건 불충족
+- `400` `code`:`password_previously_used` : 이전 비밀번호 재사용
+- `404` `code`:`user_not_found` : 이메일에 해당하는 유저 없음
+""",
+)
+async def reset_password_route(request: ResetPasswordRequest):
+    return await reset_password(
+        email=request.email,
+        new_password=request.new_password,
+        new_password_check=request.new_password_check,
+    )
+
+
+@router.get(
+    "/profile/",
+    response_model=UserProfileResponse,
+    status_code=status.HTTP_200_OK,
+    summary="로그인한 사용자 프로필 조회",
+    description="""
+- `401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다
+- `404` `code`:`user_not_found` : 사용자 정보를 찾을 수 없습니다
+- `500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다
+""",
+)
+async def profile(current_user: BaseUser = Depends(get_current_user)):
+    return await get_user_profile(current_user)
+
+
+@router.patch(
+    "/profile/",
+    response_model=UserProfileUpdateResponse,
+    status_code=status.HTTP_200_OK,
+    summary="회원 정보 수정",
+    description="""
+- `401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다
+- `400` `code`:`invalid_phone` : 올바른 형식의 전화번호를 입력해주세요
+- `500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다
+""",
+)
+async def update_profile(
+    current_user: BaseUser = Depends(get_current_user),
+    update_data: Union[
+        SeekerProfileUpdateRequest, CorporateProfileUpdateRequest
+    ] = Body(...),
+):
+    return await update_user_profile(current_user, update_data)
+
+
+@router.post(
     "/login/",
     response_model=LoginResponse,
     status_code=status.HTTP_200_OK,
@@ -133,3 +243,32 @@ async def refresh_token(request: RefreshTokenRequest):
 )
 async def verify_email(request: EmailVerifyRequest):
     return await verify_email_code(request)
+
+
+@router.post(
+    "/resend-email-code/",
+    status_code=status.HTTP_200_OK,
+    summary="재인증 코드 발송",
+    description="""
+- `400` `code`:`already_verified` : 이미 인증된 계정입니다.
+- `404` `code`:`user_not_found` : 가입된 이메일이 아닙니다.
+""",
+)
+async def resend_email_code(request: ResendEmailRequest):
+    return await resend_verification_email(request)
+
+
+@router.post(
+    "/business-verify/",
+    response_model=BusinessVerifyResponse,
+    status_code=status.HTTP_200_OK,
+    summary="사업자 등록번호 검증",
+    description="""
+- 국세청 API를 이용하여 사업자 등록번호의 유효성을 검증합니다.
+- 결과가 '계속사업자'일 경우 `is_valid = true` 로 반환됩니다.
+- `400` `code`:`invalid_business_number` : 국세청에 등록되지 않은 사업자등록번호입니다.
+- `500` `code`:`external_api_error` : 국세청 API 호출 실패
+""",
+)
+async def business_verify(request: BusinessVerifyRequest):
+    return await verify_business_number(request.business_number)

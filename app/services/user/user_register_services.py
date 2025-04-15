@@ -12,7 +12,7 @@ from app.schemas.user_schema import (
     UserRegisterResponse,
     UserRegisterResponseData,
 )
-from app.services.email_services import send_email_code
+from app.services.user.email_services import send_email_code
 from app.utils.exception import CustomException
 
 
