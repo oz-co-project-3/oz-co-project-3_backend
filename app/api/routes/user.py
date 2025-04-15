@@ -15,6 +15,7 @@ from app.schemas.user_schema import (
     FindPasswordRequest,
     LoginRequest,
     LoginResponse,
+    MessageResponse,
     RefreshTokenRequest,
     RefreshTokenResponse,
     ResendEmailRequest,
@@ -25,6 +26,7 @@ from app.schemas.user_schema import (
     UserProfileUpdateResponse,
     UserRegisterRequest,
     UserRegisterResponse,
+    VerifyPasswordRequest,
 )
 from app.services.user.auth_recovery_services import (
     find_email,
@@ -35,6 +37,7 @@ from app.services.user.auth_services import (
     login_user,
     logout_user,
     refresh_access_token,
+    verify_user_password,
 )
 from app.services.user.business_verify_services import verify_business_number
 from app.services.user.email_services import (
@@ -133,6 +136,20 @@ async def find_password_route(request: FindPasswordRequest):
         phone_number=request.phone_number,
         email=request.email,
     )
+
+
+@router.post(
+    "/verify-password/",
+    response_model=MessageResponse,
+    status_code=status.HTTP_200_OK,
+    summary="현재 비밀번호 확인",
+)
+async def verify_password(
+    request: VerifyPasswordRequest,
+    current_user: BaseUser = Depends(get_current_user),
+):
+    await verify_user_password(current_user, request.password)
+    return {"message": "비밀번호가 확인되었습니다."}
 
 
 @router.post(

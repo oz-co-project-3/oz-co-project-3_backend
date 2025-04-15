@@ -52,6 +52,7 @@ class BaseUser(models.Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     deleted_at = fields.DatetimeField(null=True)
     gender = fields.CharField(max_length=10, choices=GENDER_CHOICES)
+    leave_reason = fields.TextField(null=True)
 
     class Meta:
         table = "base_users"
@@ -83,6 +84,7 @@ class CorporateUser(models.Model):
     manager_phone_number = fields.CharField(max_length=20, null=False)
     manager_email = fields.CharField(max_length=255, null=True, unique=True)
     gender = fields.CharField(max_length=10, choices=GENDER_CHOICES)
+    profile_url = fields.CharField(max_length=255, null=True)
 
     class Meta:
         table = "corporate_users"
@@ -118,6 +120,7 @@ class SeekerUser(models.Model):
         choices=STATUS_CHOICES,
         default=Status.SEEKING.value,
     )
+    profile_url = fields.CharField(max_length=255, null=True)
 
     class Meta:
         table = "seeker_users"

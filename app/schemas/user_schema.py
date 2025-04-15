@@ -79,6 +79,7 @@ class SeekerProfileResponse(BaseModel):
     applied_posting_count: int
     created_at: datetime
     updated_at: Optional[datetime] = None  # updated_at 필드가 있다면
+    profile_url: Optional[str] = None
 
 
 # 기업 회원용
@@ -96,6 +97,7 @@ class CorporateProfileResponse(BaseModel):
     email_verified: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
+    profile_url: Optional[str] = None
 
 
 # 공통 Wrapper
@@ -104,21 +106,23 @@ class UserProfileResponse(BaseModel):
 
 
 class SeekerProfileUpdateRequest(BaseModel):
-    name: Optional[str]
-    phone_number: Optional[str]
-    birth: Optional[date]
-    interests: Optional[List[str]]
-    purposes: Optional[List[str]]
-    sources: Optional[List[str]]
-    status: Optional[str]  # "seeking", "employed", "not_seeking"
+    name: Optional[str] = None
+    phone_number: Optional[str] = None
+    birth: Optional[date] = None
+    interests: Optional[List[str]] = None
+    purposes: Optional[List[str]] = None
+    sources: Optional[List[str]] = None
+    status: Optional[str] = None  # "seeking", "employed", "not_seeking"
+    profile_url: Optional[str] = None
 
 
 class CorporateProfileUpdateRequest(BaseModel):
-    company_name: Optional[str]
-    company_description: Optional[str]
-    manager_name: Optional[str]
-    manager_phone_number: Optional[str]
-    manager_email: Optional[EmailStr]
+    company_name: Optional[str] = None
+    company_description: Optional[str] = None
+    manager_name: Optional[str] = None
+    manager_phone_number: Optional[str] = None
+    manager_email: Optional[EmailStr] = None
+    profile_url: Optional[str] = None
 
 
 class SeekerProfileUpdateResponse(BaseModel):
@@ -130,6 +134,7 @@ class SeekerProfileUpdateResponse(BaseModel):
     interests: List[str]
     status: str
     updated_at: Optional[datetime]
+    profile_url: Optional[str] = None
 
 
 class CorporateProfileUpdateResponse(BaseModel):
@@ -141,6 +146,7 @@ class CorporateProfileUpdateResponse(BaseModel):
     manager_phone_number: str
     manager_email: str
     updated_at: Optional[datetime]
+    profile_url: Optional[str] = None
 
 
 class UserProfileUpdateResponse(BaseModel):
@@ -151,6 +157,7 @@ class UserProfileUpdateResponse(BaseModel):
 class UserDeleteRequest(BaseModel):
     password: str
     is_active: bool
+    reason: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
@@ -170,6 +177,14 @@ class LoginResponseData(BaseModel):
 class LoginResponse(BaseModel):
     message: str
     data: LoginResponseData
+
+
+class VerifyPasswordRequest(BaseModel):
+    password: str
+
+
+class MessageResponse(BaseModel):
+    message: str
 
 
 class RefreshTokenRequest(BaseModel):
