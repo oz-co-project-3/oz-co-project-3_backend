@@ -1,6 +1,6 @@
 import re
+from datetime import datetime
 
-from fastapi import HTTPException
 from passlib.hash import bcrypt
 
 from app.models.user_models import BaseUser, CorporateUser, SeekerUser
@@ -12,6 +12,7 @@ from app.schemas.user_schema import (
     UserRegisterResponse,
     UserRegisterResponseData,
 )
+from app.services.email_services import send_email_code
 from app.utils.exception import CustomException
 
 
@@ -45,13 +46,15 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
         password=hashed_password,
         user_type="seeker",
         gender=request.gender,
+        is_superuser=False,
+        status="pending",
     )
 
     seeker_user = await SeekerUser.create(
         user=base_user,
         name=request.name,
         phone_number=request.phone_number,
-        age=request.age,
+        birth=request.birth,
         gender=request.gender,
         interests=request.interests,
         purposes=request.purposes,
@@ -59,6 +62,8 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
         status=request.status,
         is_social=False,
     )
+    # 회원가입 성공 시 인증메일 전송
+    await send_email_code(email=base_user.email, purpose="회원가입")
 
     return UserRegisterResponse(
         message="회원가입이 완료되었습니다.",
@@ -80,6 +85,14 @@ async def register_company_user(
     if existing_user:
         raise CustomException(
             status_code=400, error="중복된 이메일입니다.", code="duplicate_email"
+        )
+
+    manager_exists = await CorporateUser.get_or_none(
+        manager_email=request.manager_email
+    )
+    if manager_exists:
+        raise CustomException(
+            status_code=400, error="중복된 관리자 이메일입니다.", code="duplicate_manager_email"
         )
 
     if len(request.password) < 8 or not re.search(
@@ -104,6 +117,7 @@ async def register_company_user(
         password=hashed_password,
         user_type="business",
         gender=request.gender,
+        status="pending",
     )
 
     corp_user = await CorporateUser.create(
@@ -118,6 +132,9 @@ async def register_company_user(
         gender=request.gender,
     )
 
+    # 회원가입 성공 시 인증메일 발송
+    await send_email_code(email=base_user.email, purpose="기업 회원가입")
+
     return CompanyRegisterResponse(
         message="기업 회원가입이 완료되었습니다.",
         data=CompanyRegisterResponseData(
@@ -130,3 +147,17 @@ async def register_company_user(
             created_at=base_user.created_at,
         ),
     )
+
+
+async def delete_user(current_user: BaseUser, password: str):
+    if not bcrypt.verify(password, current_user.password):
+        raise CustomException(
+            status_code=400, error="비밀번호가 일치하지 않습니다.", code="invalid_password"
+        )
+
+    current_user.deleted_at = datetime.utcnow()
+    current_user.email_verified = False
+    current_user.status = "delete"
+    await current_user.save()
+
+    return {"message": "회원 탈퇴가 완료되었습니다."}

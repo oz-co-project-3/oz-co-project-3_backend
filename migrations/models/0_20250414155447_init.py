@@ -9,16 +9,14 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
 );
 CREATE TABLE IF NOT EXISTS "base_users" (
     "id" SERIAL NOT NULL PRIMARY KEY,
-    "password" VARCHAR(20) NOT NULL,
+    "password" VARCHAR(80) NOT NULL,
     "email" VARCHAR(50) NOT NULL UNIQUE,
     "user_type" VARCHAR(20) NOT NULL DEFAULT 'seeker',
-    "is_active" BOOL NOT NULL DEFAULT True,
-    "status" VARCHAR(20) DEFAULT 'active',
+    "status" VARCHAR(20) DEFAULT 'pending',
     "email_verified" BOOL NOT NULL DEFAULT False,
     "is_superuser" BOOL NOT NULL DEFAULT False,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMPTZ,
-    "is_banned" BOOL NOT NULL DEFAULT False,
     "gender" VARCHAR(10) NOT NULL
 );
 COMMENT ON COLUMN "base_users"."password" IS '비밀번호는 최소 8자 이상이며 특수 문자를 포함';
@@ -41,21 +39,25 @@ CREATE TABLE IF NOT EXISTS "corporate_users" (
     "manager_name" VARCHAR(100) NOT NULL,
     "manager_phone_number" VARCHAR(20) NOT NULL,
     "manager_email" VARCHAR(255) UNIQUE,
+    "gender" VARCHAR(10) NOT NULL,
     "user_id" INT NOT NULL REFERENCES "base_users" ("id") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "job_postings" (
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "id" SERIAL NOT NULL PRIMARY KEY,
+    "company" VARCHAR(50) NOT NULL,
     "title" VARCHAR(100) NOT NULL UNIQUE,
     "location" VARCHAR(150) NOT NULL,
     "employment_type" VARCHAR(2) NOT NULL DEFAULT '일반',
+    "employ_method" VARCHAR(4) NOT NULL DEFAULT '정규직',
+    "work_time" VARCHAR(30) NOT NULL,
     "position" VARCHAR(50) NOT NULL,
     "history" TEXT,
-    "recruitment_count" INT NOT NULL,
+    "recruitment_count" INT NOT NULL DEFAULT 0,
     "education" VARCHAR(20) NOT NULL,
     "deadline" VARCHAR(20) NOT NULL,
-    "salary" INT NOT NULL DEFAULT 0,
+    "salary" VARCHAR(20) NOT NULL,
     "summary" TEXT,
     "description" TEXT NOT NULL,
     "status" VARCHAR(5) NOT NULL DEFAULT '모집중',
@@ -64,7 +66,8 @@ CREATE TABLE IF NOT EXISTS "job_postings" (
     "user_id" INT NOT NULL REFERENCES "corporate_users" ("id") ON DELETE CASCADE
 );
 COMMENT ON COLUMN "job_postings"."employment_type" IS 'Public: 공공\nGeneral: 일반';
-COMMENT ON COLUMN "job_postings"."status" IS 'Open: 모집중\nClosing_soon: 마감 임박\nClosed: 모집 종료\nBlinded: 블라인드';
+COMMENT ON COLUMN "job_postings"."employ_method" IS 'Permanent: 정규직\nPartTime: 계약직\nTemporary: 일용직\nFreelancer: 프리랜서\nDispatch: 파견직';
+COMMENT ON COLUMN "job_postings"."status" IS 'Open: 모집중\nClosing_soon: 마감 임박\nClosed: 모집 종료\nBlinded: 블라인드\nPending: 대기중\nRejected: 반려됨';
 CREATE TABLE IF NOT EXISTS "reject_postings" (
     "id" SERIAL NOT NULL PRIMARY KEY,
     "content" TEXT NOT NULL,
@@ -75,11 +78,12 @@ CREATE TABLE IF NOT EXISTS "seeker_users" (
     "id" SERIAL NOT NULL PRIMARY KEY,
     "name" VARCHAR(20) NOT NULL,
     "phone_number" VARCHAR(20) NOT NULL,
-    "age" INT NOT NULL,
-    "interests" JSONB NOT NULL,
-    "purposes" JSONB NOT NULL,
-    "sources" JSONB,
-    "applied_posting" JSONB,
+    "birth" DATE,
+    "interests" VARCHAR(100),
+    "interests_posting" VARCHAR(255),
+    "purposes" VARCHAR(100),
+    "sources" VARCHAR(60),
+    "applied_posting" VARCHAR(60),
     "applied_posting_count" INT NOT NULL DEFAULT 0,
     "is_social" BOOL NOT NULL DEFAULT False,
     "status" VARCHAR(20) NOT NULL DEFAULT 'seeking',
@@ -108,7 +112,7 @@ CREATE TABLE IF NOT EXISTS "resumes" (
     "phone_number" VARCHAR(40) NOT NULL,
     "email" VARCHAR(50) NOT NULL,
     "image_profile" VARCHAR(255),
-    "interests" JSONB NOT NULL,
+    "interests" VARCHAR(100),
     "desired_area" VARCHAR(50) NOT NULL,
     "education" VARCHAR(10),
     "school_name" VARCHAR(20),
@@ -132,11 +136,15 @@ CREATE TABLE IF NOT EXISTS "comments" (
     "id" SERIAL NOT NULL PRIMARY KEY,
     "content" TEXT NOT NULL,
     "free_board_id" INT REFERENCES "free_boards" ("id") ON DELETE CASCADE,
-    "success_review_id" INT REFERENCES "success_reviews" ("id") ON DELETE CASCADE
+    "success_review_id" INT REFERENCES "success_reviews" ("id") ON DELETE CASCADE,
+    "user_id" INT NOT NULL REFERENCES "base_users" ("id") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "applicants" (
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "id" SERIAL NOT NULL PRIMARY KEY,
     "status" VARCHAR(5) NOT NULL DEFAULT '지원 중',
+    "memo" TEXT,
     "job_posting_id" INT NOT NULL REFERENCES "job_postings" ("id") ON DELETE CASCADE,
     "resume_id" INT NOT NULL REFERENCES "resumes" ("id") ON DELETE CASCADE,
     "user_id" INT NOT NULL REFERENCES "base_users" ("id") ON DELETE CASCADE
@@ -156,12 +164,7 @@ CREATE TABLE IF NOT EXISTS "aerich" (
     "version" VARCHAR(255) NOT NULL,
     "app" VARCHAR(100) NOT NULL,
     "content" JSONB NOT NULL
-);
-CREATE TABLE IF NOT EXISTS "interested_companies_seeker" (
-    "seeker_users_id" INT NOT NULL REFERENCES "seeker_users" ("id") ON DELETE CASCADE,
-    "corporateuser_id" INT NOT NULL REFERENCES "corporate_users" ("id") ON DELETE CASCADE
-);
-CREATE UNIQUE INDEX IF NOT EXISTS "uidx_interested__seeker__a662a5" ON "interested_companies_seeker" ("seeker_users_id", "corporateuser_id");"""
+);"""
 
 
 async def downgrade(db: BaseDBAsyncClient) -> str:

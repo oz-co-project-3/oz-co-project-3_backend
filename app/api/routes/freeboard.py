@@ -1,7 +1,8 @@
 from typing import List
 
-from fastapi import APIRouter, Body, Depends, status
+from fastapi import APIRouter, Depends, status
 
+from app.core.token import get_current_user
 from app.models.user_models import BaseUser
 from app.schemas.freeboard_schemas import FreeBoardCreateUpdate, FreeBoardResponse
 from app.services.freeboard_services import (
@@ -13,11 +14,6 @@ from app.services.freeboard_services import (
 )
 
 free_board_router = APIRouter(prefix="/api/free-board", tags=["FreeBoard"])
-
-
-async def fake_current_user():
-    user = await BaseUser.get(pk=1)
-    return user
 
 
 @free_board_router.post(
@@ -32,10 +28,9 @@ async def fake_current_user():
     """
     ),
 )
-
 async def create_free_board(
     free_board: FreeBoardCreateUpdate,
-    current_user: BaseUser = Depends(fake_current_user),
+    current_user: BaseUser = Depends(get_current_user),
 ):
     return await create_free_board_by_id(free_board, current_user)
 
@@ -50,7 +45,7 @@ async def create_free_board(
     - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     """,
 )
-async def get_list_free_board(current_user: BaseUser = Depends(fake_current_user)):
+async def get_list_free_board(current_user: BaseUser = Depends(get_current_user)):
     return await get_all_free_board()
 
 
@@ -66,7 +61,7 @@ async def get_list_free_board(current_user: BaseUser = Depends(fake_current_user
     """,
 )
 async def get_detail_free_board(
-    id: int, current_user: BaseUser = Depends(fake_current_user)
+    id: int, current_user: BaseUser = Depends(get_current_user)
 ):
     return await get_free_board_by_id(id)
 
@@ -86,7 +81,7 @@ async def get_detail_free_board(
 async def patch_free_board(
     id: int,
     free_board: FreeBoardCreateUpdate,
-    current_user: BaseUser = Depends(fake_current_user),
+    current_user: BaseUser = Depends(get_current_user),
 ):
     return await patch_free_board_by_id(id, free_board, current_user)
 
@@ -104,7 +99,7 @@ async def patch_free_board(
 )
 async def delete_free_board(
     id: int,
-    current_user: BaseUser = Depends(fake_current_user),
+    current_user: BaseUser = Depends(get_current_user),
 ):
     await delete_free_board_by_id(id, current_user)
     return {"message": "삭제가 완료되었습니다."}
