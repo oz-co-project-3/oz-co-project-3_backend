@@ -5,9 +5,15 @@ from httpx import ASGITransport, AsyncClient
 from passlib.handlers.bcrypt import bcrypt
 
 from app.main import app
-from app.models.job_posting_models import JobPosting, RejectPosting
+from app.models.job_posting_models import (
+    JobPosting,
+    MethodEnum,
+    RejectPosting,
+    StatusEnum,
+)
 from app.models.resume_models import Resume, WorkExp
 from app.models.user_models import BaseUser, CorporateUser, SeekerUser
+from app.schemas.admin.admin_job_posting_schemas import EmploymentEnum
 
 
 @pytest.fixture(scope="module")
@@ -105,16 +111,18 @@ async def access_token(client):
             company="테스트 주식회사",
             title="백엔드 개발자 채용",
             location="서울 강남구",
-            employment_type=JobPosting.EmploymentEnum.General,
+            employment_type=EmploymentEnum.General,
+            employ_method=MethodEnum.Permanent,  # ✅ 이 필드도 누락 시 에러날 수 있음
+            work_time="09:00~18:00",  # ✅ 추가!
             position="백엔드 개발자",
             history="경력 3년 이상",
             recruitment_count=2,
             education="대졸",
             deadline="2025-05-01",
-            salary=4000,
+            salary="4000",
             summary="백엔드 개발 채용 요약",
             description="백엔드 개발 관련 상세 업무 내용",
-            status=JobPosting.StatusEnum.Pending,
+            status=StatusEnum.Pending,
         )
 
         await RejectPosting.create(
@@ -126,18 +134,20 @@ async def access_token(client):
         await JobPosting.create(
             user=corp_user,
             company="테스트 주식회사2",
-            title="프론트엔드 개발자 채용",
+            title="백엔드 개발자 채2용",
             location="서울 강남구",
-            employment_type=JobPosting.EmploymentEnum.General,
-            position="프론트엔드 개발자",
+            employment_type=EmploymentEnum.General,
+            employ_method=MethodEnum.Permanent,  # ✅ 이 필드도 누락 시 에러날 수 있음
+            work_time="09:00~18:00",  # ✅ 추가!
+            position="백엔드 개발자",
             history="경력 3년 이상",
             recruitment_count=2,
             education="대졸",
             deadline="2025-05-01",
-            salary=4000,
-            summary="프론트엔드 개발 채용 요약",
-            description="프론트엔드 개발 관련 상세 업무 내용",
-            status=JobPosting.StatusEnum.Pending,
+            salary="4000",
+            summary="백엔드 개발 채용 요약",
+            description="백엔드 2개발 관련 상세 업무 내용",
+            status=StatusEnum.Pending,
         )
 
         login_data = {"email": "test@test.com", "password": "!!Test1234"}

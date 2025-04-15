@@ -1,4 +1,7 @@
+import os
+
 import pytest
+from dotenv import load_dotenv
 from tortoise import Tortoise
 
 
@@ -19,6 +22,7 @@ async def setup_test_db(event_loop):
         db_url="sqlite://:memory:",
         modules={
             "models": [
+                "app.models.chatbot_model",
                 "app.models.success_review_models",
                 "app.models.free_board_models",
                 "app.models.resume_models",
@@ -35,3 +39,9 @@ async def setup_test_db(event_loop):
 
     # 테스트 후 연결 종료
     await Tortoise.close_connections()
+
+
+load_dotenv(dotenv_path=".env.test")  # 또는 .env
+
+# SECRET_KEY 기본값 보장 (환경 변수 없을 때)
+os.environ.setdefault("SECRET_KEY", "test_secret_key_123")
