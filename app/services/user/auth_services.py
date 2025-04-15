@@ -38,7 +38,9 @@ async def authenticate_user(email: str, password: str) -> BaseUser:
     user = await BaseUser.get_or_none(email=email)
     if not user or not bcrypt.verify(password, user.password):
         raise CustomException(
-            status_code=401, error="이메일 또는 비밀번호가 일치하지 않습니다.", code="invalid_credentials"
+            status_code=401,
+            error="이메일 또는 비밀번호가 일치하지 않습니다.",
+            code="invalid_credentials",
         )
     return user
 
@@ -83,7 +85,9 @@ async def login_user(request: LoginRequest) -> LoginResponse:
         name = profile.company_name
     else:
         raise CustomException(
-            status_code=500, error="알 수 없는 사용자 유형입니다.", code="unknown_user_type"
+            status_code=500,
+            error="알 수 없는 사용자 유형입니다.",
+            code="unknown_user_type",
         )
 
     return LoginResponse(

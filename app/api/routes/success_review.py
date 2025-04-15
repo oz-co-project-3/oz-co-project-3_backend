@@ -2,6 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, status
 
+from app.core.token import get_current_user
 from app.models.user_models import SeekerUser
 from app.schemas.success_review_schemas import (
     SuccessReviewCreateUpdateSchema,
@@ -18,11 +19,6 @@ from app.services.success_review_services import (
 success_review_router = APIRouter(prefix="/api/success-review", tags=["success-review"])
 
 
-async def fake_current_user():
-    seeker_user = await SeekerUser.get(pk=1).prefetch_related("user")
-    return seeker_user
-
-
 @success_review_router.post(
     "/",
     response_model=SuccessReviewResponseSchema,
@@ -36,7 +32,7 @@ async def fake_current_user():
 )
 async def create_success_review(
     success_review: SuccessReviewCreateUpdateSchema,
-    current_user: SeekerUser = Depends(fake_current_user),
+    current_user: SeekerUser = Depends(get_current_user),
 ):
     return await create_success_review_by_id(success_review, current_user)
 
@@ -52,7 +48,7 @@ async def create_success_review(
     """,
 )
 async def get_list_success_reviews(
-    current_user: SeekerUser = Depends(fake_current_user),
+    current_user: SeekerUser = Depends(get_current_user),
 ):
     return await get_all_success_reviews(current_user)
 
@@ -70,7 +66,7 @@ async def get_list_success_reviews(
 )
 async def get_success_review(
     id: int,
-    current_user: SeekerUser = Depends(fake_current_user),
+    current_user: SeekerUser = Depends(get_current_user),
 ):
     return await get_success_review_by_id(id, current_user)
 
@@ -90,7 +86,7 @@ async def get_success_review(
 async def patch_success_review(
     id: int,
     success_review: SuccessReviewCreateUpdateSchema,
-    current_user: SeekerUser = Depends(fake_current_user),
+    current_user: SeekerUser = Depends(get_current_user),
 ):
     return await patch_success_review_by_id(id, success_review, current_user)
 
@@ -108,7 +104,7 @@ async def patch_success_review(
 )
 async def delete_success_review(
     id: int,
-    current_user: SeekerUser = Depends(fake_current_user),
+    current_user: SeekerUser = Depends(get_current_user),
 ):
     await delete_success_review_by_id(id, current_user)
     return {"message": "삭제가 완료되었습니다."}

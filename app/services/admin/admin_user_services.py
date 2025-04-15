@@ -2,16 +2,7 @@ from fastapi import status
 
 from app.models.user_models import BaseUser, CorporateUser, SeekerUser
 from app.schemas.admin.admin_user_schemas import UserUpdateSchema
-from app.utils.exception import CustomException
-
-
-def check_superuser(current_user):
-    if not current_user.is_superuser:
-        raise CustomException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            error="접근 권한이 없습니다",
-            code="permission_denied",
-        )
+from app.utils.exception import CustomException, check_superuser
 
 
 async def get_user_all(current_user: BaseUser, seeker: bool, corp: bool, search: str):
@@ -54,7 +45,7 @@ async def get_user_by_id(
         raise CustomException(
             status_code=status.HTTP_404_NOT_FOUND,
             error="존재하지 않는 유저입니다",
-            code="not_found",
+            code="user_not_found",
         )
 
     seeker_user = await SeekerUser.filter(user_id=id).first()
@@ -81,7 +72,7 @@ async def patch_user_by_id(
             code="user_not_found",
         )
 
-    user.is_active = patch_user.is_active
+    user.status = patch_user.status
     await user.save()
 
     return user

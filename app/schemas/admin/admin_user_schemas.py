@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import date, datetime
+from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, model_validator
 
 from app.utils.exception import CustomException
 
@@ -10,13 +11,11 @@ class UserResponseSchema(BaseModel):
     id: int
     email: EmailStr
     user_type: str
-    is_active: bool
     status: str
     email_verified: bool
     is_superuser: bool
     created_at: datetime
     deleted_at: Optional[datetime] = None
-    is_banned: bool
     gender: str
 
     class Config:
@@ -27,11 +26,11 @@ class SeekerUserResponseSchema(BaseModel):
     id: int
     name: str
     phone_number: str
-    age: int
-    interests: List[str]
-    purposes: List[str]
-    sources: List[str]
-    applied_posting: Optional[List[int]] = None
+    birth: date
+    interests: str
+    purposes: str
+    sources: str
+    applied_posting: Optional[str] = None
     applied_posting_count: int
     is_social: bool
     status: str
@@ -61,12 +60,18 @@ class UserUnionResponseSchema(BaseModel):
     corp: Optional[CorpUserResponseSchema] = None
 
 
+class Status(str, Enum):
+    ACTIVE = "active"
+    SUSPEND = "suspend"
+    DELETE = "delete"
+
+
 class UserUpdateSchema(BaseModel):
-    is_active: bool
+    status: Status
 
     @model_validator(mode="after")
     def check_field(self):
-        if self.is_active is None:
+        if self.status is None:
             raise CustomException(
                 code="required_field", status_code=400, error="필수 필드 누락"
             )
