@@ -37,7 +37,7 @@ class JobPosting(TimestampMixin, Model):
     title = fields.CharField(max_length=100, unique=True)
     location = fields.CharField(max_length=150)
     employment_type = fields.CharEnumField(
-        EmploymentEnum, default=EmploymentEnum.General
+        EmploymentEnum, default=EmploymentEnum.General, max_length=10
     )
     employ_method = fields.CharEnumField(MethodEnum, default=MethodEnum.Permanent)
     work_time = fields.CharField(max_length=30)
