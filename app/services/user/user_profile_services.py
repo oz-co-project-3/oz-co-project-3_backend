@@ -43,6 +43,7 @@ async def get_user_profile(current_user: BaseUser) -> UserProfileResponse:
                 applied_posting_count=len(applied_posting_ids),
                 created_at=current_user.created_at,
                 updated_at=None,  # SeekerUser에 updated_at 필드 없으면 None
+                profile_url=profile.profile_url,
             )
         )
 
@@ -64,6 +65,7 @@ async def get_user_profile(current_user: BaseUser) -> UserProfileResponse:
                 email_verified=current_user.email_verified,
                 created_at=current_user.created_at,
                 updated_at=None,  # CorporateUser에 updated_at 필드 없으면 None
+                profile_url=profile.profile_url,
             )
         )
 
@@ -97,6 +99,9 @@ async def update_user_profile(
         if update_data.status is not None:
             profile.status = update_data.status
 
+        if update_data.profile_url is not None:
+            profile.profile_url = update_data.profile_url
+
         await profile.save()
 
         return UserProfileUpdateResponse(
@@ -110,6 +115,7 @@ async def update_user_profile(
                 interests=profile.interests.split(",") if profile.interests else [],
                 status=profile.status,
                 updated_at=None,  # updated_at 필드 있으면 넣어줘
+                profile_url=profile.profile_url,
             ),
         )
 
@@ -127,6 +133,9 @@ async def update_user_profile(
         if update_data.manager_email is not None:
             profile.manager_email = update_data.manager_email
 
+        if update_data.profile_url is not None:
+            profile.profile_url = update_data.profile_url
+
         await profile.save()
 
         return UserProfileUpdateResponse(
@@ -140,6 +149,7 @@ async def update_user_profile(
                 manager_phone_number=profile.manager_phone_number,
                 manager_email=profile.manager_email,
                 updated_at=None,
+                profile_url=profile.profile_url,
             ),
         )
 

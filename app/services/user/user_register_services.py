@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Optional
 
 from passlib.hash import bcrypt
 
@@ -149,7 +150,9 @@ async def register_company_user(
     )
 
 
-async def delete_user(current_user: BaseUser, password: str):
+async def delete_user(
+    current_user: BaseUser, password: str, reason: Optional[str] = None
+):
     if not bcrypt.verify(password, current_user.password):
         raise CustomException(
             status_code=400, error="비밀번호가 일치하지 않습니다.", code="invalid_password"
@@ -158,6 +161,10 @@ async def delete_user(current_user: BaseUser, password: str):
     current_user.deleted_at = datetime.utcnow()
     current_user.email_verified = False
     current_user.status = "delete"
+
+    if reason:
+        current_user.reason = reason  # 탈퇴 사유 추가
+
     await current_user.save()
 
     return {"message": "회원 탈퇴가 완료되었습니다."}

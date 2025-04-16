@@ -45,6 +45,14 @@ async def authenticate_user(email: str, password: str) -> BaseUser:
     return user
 
 
+# 비밀번호 변경 시 비밀번호 확인
+async def verify_user_password(user: BaseUser, password: str):
+    if not bcrypt.verify(password, user.password):
+        raise CustomException(
+            status_code=400, error="비밀번호가 일치하지 않습니다.", code="invalid_password"
+        )
+
+
 # 로그인
 async def login_user(request: LoginRequest) -> LoginResponse:
     user = await authenticate_user(request.email, request.password)

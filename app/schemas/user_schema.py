@@ -3,6 +3,8 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field
 
+from app.models.user_models import Gender, SeekerStatus, UserType
+
 
 class UserRegisterRequest(BaseModel):
     name: str
@@ -14,15 +16,15 @@ class UserRegisterRequest(BaseModel):
     interests: List[str]
     purposes: List[str]
     sources: List[str]
-    status: str  # "seeking", "employed", "not_seeking"
-    gender: str
+    status: SeekerStatus
+    gender: Gender
 
 
 class UserRegisterResponseData(BaseModel):
     id: int
     email: EmailStr
     name: str
-    user_type: str
+    user_type: UserType
     email_verified: bool
     created_at: datetime
 
@@ -43,7 +45,7 @@ class CompanyRegisterRequest(BaseModel):
     manager_name: str
     manager_phone_number: str
     manager_email: EmailStr
-    gender: str
+    gender: Gender
 
 
 class CompanyRegisterResponseData(BaseModel):
@@ -51,7 +53,7 @@ class CompanyRegisterResponseData(BaseModel):
     email: EmailStr
     company_name: str
     manager_name: str
-    user_type: str
+    user_type: UserType
     email_verified: bool
     created_at: datetime
 
@@ -65,27 +67,28 @@ class CompanyRegisterResponse(BaseModel):
 class SeekerProfileResponse(BaseModel):
     id: int
     email: EmailStr
-    user_type: str
+    user_type: UserType
     name: str
     phone_number: str
     birth: date
     interests: List[str]
     purposes: List[str]
     sources: List[str]
-    status: str  # "seeking", "employed", "not_seeking"
+    status: SeekerStatus
     is_social: bool
     email_verified: bool
-    applied_posting: List[int] = []  # 예: [1, 3, 5]
+    applied_posting: List[int] = []
     applied_posting_count: int
     created_at: datetime
-    updated_at: Optional[datetime] = None  # updated_at 필드가 있다면
+    updated_at: Optional[datetime] = None
+    profile_url: Optional[str] = None
 
 
 # 기업 회원용
 class CorporateProfileResponse(BaseModel):
     id: int
     email: EmailStr
-    user_type: str
+    user_type: UserType
     company_name: str
     business_number: str
     business_start_date: datetime
@@ -96,6 +99,7 @@ class CorporateProfileResponse(BaseModel):
     email_verified: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
+    profile_url: Optional[str] = None
 
 
 # 공통 Wrapper
@@ -104,21 +108,23 @@ class UserProfileResponse(BaseModel):
 
 
 class SeekerProfileUpdateRequest(BaseModel):
-    name: Optional[str]
-    phone_number: Optional[str]
-    birth: Optional[date]
-    interests: Optional[List[str]]
-    purposes: Optional[List[str]]
-    sources: Optional[List[str]]
-    status: Optional[str]  # "seeking", "employed", "not_seeking"
+    name: Optional[str] = None
+    phone_number: Optional[str] = None
+    birth: Optional[date] = None
+    interests: Optional[List[str]] = None
+    purposes: Optional[List[str]] = None
+    sources: Optional[List[str]] = None
+    status: Optional[SeekerStatus] = None
+    profile_url: Optional[str] = None
 
 
 class CorporateProfileUpdateRequest(BaseModel):
-    company_name: Optional[str]
-    company_description: Optional[str]
-    manager_name: Optional[str]
-    manager_phone_number: Optional[str]
-    manager_email: Optional[EmailStr]
+    company_name: Optional[str] = None
+    company_description: Optional[str] = None
+    manager_name: Optional[str] = None
+    manager_phone_number: Optional[str] = None
+    manager_email: Optional[EmailStr] = None
+    profile_url: Optional[str] = None
 
 
 class SeekerProfileUpdateResponse(BaseModel):
@@ -128,8 +134,9 @@ class SeekerProfileUpdateResponse(BaseModel):
     phone_number: str
     birth: date
     interests: List[str]
-    status: str
+    status: SeekerStatus
     updated_at: Optional[datetime]
+    profile_url: Optional[str] = None
 
 
 class CorporateProfileUpdateResponse(BaseModel):
@@ -141,6 +148,7 @@ class CorporateProfileUpdateResponse(BaseModel):
     manager_phone_number: str
     manager_email: str
     updated_at: Optional[datetime]
+    profile_url: Optional[str] = None
 
 
 class UserProfileUpdateResponse(BaseModel):
@@ -151,6 +159,7 @@ class UserProfileUpdateResponse(BaseModel):
 class UserDeleteRequest(BaseModel):
     password: str
     is_active: bool
+    reason: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
@@ -162,7 +171,7 @@ class LoginResponseData(BaseModel):
     access_token: str
     refresh_token: str
     user_id: int
-    user_type: str
+    user_type: UserType
     email: str
     name: str
 
@@ -170,6 +179,14 @@ class LoginResponseData(BaseModel):
 class LoginResponse(BaseModel):
     message: str
     data: LoginResponseData
+
+
+class VerifyPasswordRequest(BaseModel):
+    password: str
+
+
+class MessageResponse(BaseModel):
+    message: str
 
 
 class RefreshTokenRequest(BaseModel):
