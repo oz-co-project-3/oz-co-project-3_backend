@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
@@ -28,6 +29,21 @@ app.include_router(job_posting_router)
 app.include_router(chatbot_router)
 app.include_router(websocket_router)
 app.include_router(posting_router)
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://127.0.0.1",
+    "http://127.0.0.1:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # 위에서 지정한 origins 목록 허용
+    allow_credentials=True,  # 쿠키 포함 요청 허용
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 HTTP 헤더 허용
+)
 
 
 @app.get("/")
