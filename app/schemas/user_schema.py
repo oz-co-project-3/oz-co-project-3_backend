@@ -3,6 +3,8 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field
 
+from app.models.user_models import Gender, SeekerStatus, UserType
+
 
 class UserRegisterRequest(BaseModel):
     name: str
@@ -14,15 +16,15 @@ class UserRegisterRequest(BaseModel):
     interests: List[str]
     purposes: List[str]
     sources: List[str]
-    status: str  # "seeking", "employed", "not_seeking"
-    gender: str
+    status: SeekerStatus
+    gender: Gender
 
 
 class UserRegisterResponseData(BaseModel):
     id: int
     email: EmailStr
     name: str
-    user_type: str
+    user_type: UserType
     email_verified: bool
     created_at: datetime
 
@@ -43,7 +45,7 @@ class CompanyRegisterRequest(BaseModel):
     manager_name: str
     manager_phone_number: str
     manager_email: EmailStr
-    gender: str
+    gender: Gender
 
 
 class CompanyRegisterResponseData(BaseModel):
@@ -51,7 +53,7 @@ class CompanyRegisterResponseData(BaseModel):
     email: EmailStr
     company_name: str
     manager_name: str
-    user_type: str
+    user_type: UserType
     email_verified: bool
     created_at: datetime
 
@@ -65,20 +67,20 @@ class CompanyRegisterResponse(BaseModel):
 class SeekerProfileResponse(BaseModel):
     id: int
     email: EmailStr
-    user_type: str
+    user_type: UserType
     name: str
     phone_number: str
     birth: date
     interests: List[str]
     purposes: List[str]
     sources: List[str]
-    status: str  # "seeking", "employed", "not_seeking"
+    status: SeekerStatus
     is_social: bool
     email_verified: bool
-    applied_posting: List[int] = []  # 예: [1, 3, 5]
+    applied_posting: List[int] = []
     applied_posting_count: int
     created_at: datetime
-    updated_at: Optional[datetime] = None  # updated_at 필드가 있다면
+    updated_at: Optional[datetime] = None
     profile_url: Optional[str] = None
 
 
@@ -86,7 +88,7 @@ class SeekerProfileResponse(BaseModel):
 class CorporateProfileResponse(BaseModel):
     id: int
     email: EmailStr
-    user_type: str
+    user_type: UserType
     company_name: str
     business_number: str
     business_start_date: datetime
@@ -112,7 +114,7 @@ class SeekerProfileUpdateRequest(BaseModel):
     interests: Optional[List[str]] = None
     purposes: Optional[List[str]] = None
     sources: Optional[List[str]] = None
-    status: Optional[str] = None  # "seeking", "employed", "not_seeking"
+    status: Optional[SeekerStatus] = None
     profile_url: Optional[str] = None
 
 
@@ -132,7 +134,7 @@ class SeekerProfileUpdateResponse(BaseModel):
     phone_number: str
     birth: date
     interests: List[str]
-    status: str
+    status: SeekerStatus
     updated_at: Optional[datetime]
     profile_url: Optional[str] = None
 
@@ -169,7 +171,7 @@ class LoginResponseData(BaseModel):
     access_token: str
     refresh_token: str
     user_id: int
-    user_type: str
+    user_type: UserType
     email: str
     name: str
 
