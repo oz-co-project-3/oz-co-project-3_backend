@@ -44,13 +44,38 @@ async def get_all_postings(
 ):
     query = JobPosting.all()
 
+    # 검색 키워드 처리 (제목 + 회사명)
     if search_keyword:
         query = query.filter(
             Q(title__icontains=search_keyword) | Q(company__icontains=search_keyword)
-        ).select_related()
+        )
 
+    # 필터 조건 처리
     if filter_type and filter_keyword:
-        query = query.filter(**{filter_type: filter_keyword}).select_related("user")
+        if filter_type == "location":
+            query = query.filter(location__icontains=filter_keyword)
+        elif filter_type == "view_count":
+            try:
+                count = int(filter_keyword)
+                query = query.filter(view_count__gte=count)
+            except ValueError:
+                raise CustomException(
+                    code="invalid_view_count",
+                    error="view_count는 숫자여야 합니다.",
+                    status_code=400,
+                )
+        elif filter_type == "employment_type":
+            if filter_keyword not in ["공공", "일반"]:
+                raise CustomException(
+                    code="invalid_employment_type",
+                    error="employment_type은 '공공' 또는 '일반'이어야 합니다.",
+                    status_code=400,
+                )
+            query = query.filter(employment_type=filter_keyword)
+        else:
+            raise CustomException(
+                code="invalid_filter_type", error="유효하지 않은 필터 타입입니다.", status_code=400
+            )
 
     total = await query.count()
     results = await query.offset(offset).limit(limit).select_related("user")
