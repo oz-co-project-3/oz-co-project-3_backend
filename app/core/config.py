@@ -36,3 +36,7 @@ TORTOISE_ORM = {
         }
     },
 }
+
+# 외부 api
+base_url = os.getenv("BASE_URL")
+api_key = os.getenv("API_KEY")
