@@ -70,7 +70,7 @@ class SeekerProfileResponse(BaseModel):
     user_type: UserType
     name: str
     phone_number: str
-    birth: date
+    birth: Optional[date]
     interests: List[str]
     purposes: List[str]
     sources: List[str]
@@ -173,7 +173,7 @@ class LoginResponseData(BaseModel):
     user_id: int
     user_type: UserType
     email: str
-    name: str
+    name: Optional[str] = "소셜유저"
 
 
 class LoginResponse(BaseModel):
@@ -243,3 +243,10 @@ class ResetPasswordRequest(BaseModel):
     email: EmailStr
     new_password: str
     new_password_check: str
+
+    # 카카오 콜백
+
+
+class SocialCallbackRequest(BaseModel):
+    code: str
+    state: Optional[str] = None
