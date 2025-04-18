@@ -1,11 +1,17 @@
-import os
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import jwt
-from dotenv import load_dotenv
 from passlib.hash import bcrypt
 
 from app.core.redis import redis
+from app.core.token import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    ALGORITHM,
+    REFRESH_TOKEN_EXPIRE_DAYS,
+    SECRET_KEY,
+    create_jwt_tokens,
+    create_token,
+)
 from app.models.user_models import BaseUser, CorporateUser, SeekerUser
 from app.schemas.user_schema import (
     LoginRequest,
@@ -16,21 +22,6 @@ from app.schemas.user_schema import (
     RefreshTokenResponseData,
 )
 from app.utils.exception import CustomException
-
-load_dotenv()
-
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-REFRESH_TOKEN_EXPIRE_DAYS = 1
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = "HS256"
-
-
-# JWT 생성
-def create_token(data: dict, expires_delta: timedelta) -> str:
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
 
 
 # 비밀번호 검증
@@ -64,14 +55,10 @@ async def login_user(request: LoginRequest) -> LoginResponse:
             code="unverified_or_inactive_account",
         )
 
-    access_token = create_token(
-        {"sub": str(user.id)}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
-    refresh_token = create_token(
-        {"sub": str(user.id)}, timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    )
+    # 토큰 발급 함수로 변경
+    access_token, refresh_token = create_jwt_tokens(str(user.id))
 
-    # redis에 refresh_token저장
+    # redis에 토큰 저장
     await redis.set(
         f"refresh_token:{user.id}",
         refresh_token,
@@ -84,7 +71,7 @@ async def login_user(request: LoginRequest) -> LoginResponse:
         ex=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
-    # 이름 정보 가져오기 (구직자/기업 구분)
+    # 이름 정보 가져오기
     if user.user_type == "seeker":
         profile = await SeekerUser.get(user=user)
         name = profile.name
@@ -111,7 +98,7 @@ async def login_user(request: LoginRequest) -> LoginResponse:
     )
 
 
-# 로그아웃 레디스 삽입
+# 로그아웃
 async def logout_user(user: BaseUser):
     access_deleted = await redis.delete(f"access_token:{user.id}")
     if access_deleted == 0:
@@ -130,6 +117,7 @@ async def logout_user(user: BaseUser):
         )
 
 
+# 리프레시 토큰 재발급
 async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResponse:
     try:
         payload = jwt.decode(request.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -155,7 +143,7 @@ async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResp
             code="invalid_refresh_token",
         )
 
-    # Redis에 저장된 refresh_token과 비교 (보안 체크!)
+    # Redis에 저장된 refresh_token과 비교
     stored_token = await redis.get(f"refresh_token:{user_id}")
     if stored_token != request.refresh_token:
         raise CustomException(
@@ -164,7 +152,7 @@ async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResp
             code="invalid_refresh_token",
         )
 
-    # access_token 새로 만들기
+    # access_token 재생성
     new_access_token = create_token(
         {"sub": user_id},
         timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),

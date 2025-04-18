@@ -10,11 +10,30 @@ from app.models.user_models import BaseUser
 from app.utils.exception import CustomException
 
 load_dotenv()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login/")
 
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
+REFRESH_TOKEN_EXPIRE_DAYS = 1
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login/")
+
+# JWT 생성
+def create_token(data: dict, expires_delta: timedelta) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + expires_delta
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
+
+
+def create_jwt_tokens(user_id: str) -> tuple[str, str]:
+    access_token = create_token(
+        {"sub": str(user_id)}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    refresh_token = create_token(
+        {"sub": str(user_id)}, timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    )
+    return access_token, refresh_token
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> BaseUser:

@@ -21,6 +21,7 @@ from app.schemas.user_schema import (
     ResendEmailRequest,
     ResetPasswordRequest,
     SeekerProfileUpdateRequest,
+    SocialCallbackRequest,
     UserDeleteRequest,
     UserProfileResponse,
     UserProfileUpdateResponse,
@@ -43,6 +44,16 @@ from app.services.user.business_verify_services import verify_business_number
 from app.services.user.email_services import (
     resend_verification_email,
     verify_email_code,
+)
+from app.services.user.social_services import (
+    generate_kakao_auth_url,
+    generate_naver_auth_url,
+    get_kakao_access_token,
+    get_kakao_user_info,
+    get_naver_access_token,
+    get_naver_user_info,
+    kakao_social_login,
+    naver_social_login,
 )
 from app.services.user.user_profile_services import (
     get_user_profile,
@@ -289,3 +300,57 @@ async def resend_email_code(request: ResendEmailRequest):
 )
 async def business_verify(request: BusinessVerifyRequest):
     return await verify_business_number(request.business_number)
+
+
+@router.get(
+    "/social-login/kakao/",
+    summary="카카오 로그인 인가 URL 발급",
+    description="카카오 소셜 로그인을 위한 인가 URL을 발급 " "이 URL로 사용자 리다이렉트",
+    status_code=status.HTTP_200_OK,
+)
+async def get_kakao_auth_url():
+    return await generate_kakao_auth_url()
+
+
+@router.post(
+    "/social-login/kakao/callback/",
+    status_code=status.HTTP_200_OK,
+    summary="카카오 로그인 콜백",
+    description="""
+- 카카오 로그인 후 전달받은 `code`를 이용해 access_token을 발급
+- `400` `code`:`invalid_code` : 잘못된 code 또는 만료된 code입니다.
+- `500` `code`:`kakao_api_error` : 카카오 서버 응답 실패
+""",
+    response_model=LoginResponse,
+)
+async def kakao_callback(request: SocialCallbackRequest):
+    access_token = await get_kakao_access_token(request.code)
+    kakao_info = await get_kakao_user_info(access_token)
+    return await kakao_social_login(kakao_info)
+
+
+@router.get(
+    "/social-login/naver/",
+    summary="네이버 로그인 인가 URL 발급",
+    description="네이버 소셜 로그인을 위한 인가 URL을 발급\n" "이 URL로 사용자 리다이렉트",
+    status_code=status.HTTP_200_OK,
+)
+async def get_naver_auth_url():
+    return await generate_naver_auth_url()
+
+
+@router.post(
+    "/social-login/naver/callback/",
+    status_code=status.HTTP_200_OK,
+    summary="네이버 로그인 콜백",
+    description="""
+- 네이버 로그인 후 전달받은 `code`, `state`를 이용해 access_token 발급
+- access_token으로 유저정보 조회 후 로그인 처리
+- `400` `code`:`naver_email_required` : 이메일 없는 네이버 계정
+""",
+    response_model=LoginResponse,
+)
+async def naver_callback(request: SocialCallbackRequest):  # 🔁 schema 재사용!
+    access_token = await get_naver_access_token(request.code, request.state)
+    naver_info = await get_naver_user_info(access_token)
+    return await naver_social_login(naver_info)
