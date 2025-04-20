@@ -11,7 +11,7 @@ from app.services.jobposting_services import JobPostingService
 from app.utils.exception import CustomException
 
 job_posting_router = APIRouter(
-    prefix="/job_posting",
+    prefix="/api/job_posting",
     tags=["job_posting"],  # 스웨거 표시 태그
 )
 

@@ -10,7 +10,7 @@ from app.api.routes.comment import comment_router
 from app.api.routes.freeboard import free_board_router
 from app.api.routes.jobposting import job_posting_router
 from app.api.routes.postings import posting_router
-from app.api.routes.public_api import api_service
+from app.api.routes.public_api import public_router
 from app.api.routes.success_review import success_review_router
 from app.api.routes.user import router as user_router
 from app.api.routes.websocket import websocket_router
@@ -29,7 +29,7 @@ app.include_router(job_posting_router)
 app.include_router(chatbot_router)
 app.include_router(websocket_router)
 app.include_router(posting_router)
-app.include_router(api_service)
+app.include_router(public_router)
 
 
 @app.get("/")
