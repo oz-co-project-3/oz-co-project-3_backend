@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
 from app.core.token import get_current_user
 from app.domain.posting.postings_schemas import (
@@ -31,14 +31,26 @@ posting_router = APIRouter(
     """,
 )
 async def get_list_postings(
-    search_keyword=None,
-    filter_type=None,
-    filter_keyword=None,
-    offset: int = 0,
-    limit: int = 10,
+    search_keyword: str = Query("", description="검색 키워드 (제목, 회사, 요약, 위치 등)"),
+    location: str = Query("", description="지역 필터"),
+    employment_type: str = Query("", description="고용 형태: 공공, 일반"),
+    position: str = Query("", description="포지션 키워드 (,로 구분하여 다중 가능)"),
+    career: str = Query("", description="신입, 경력직, 경력무관"),
+    education: str = Query("", description="학력 조건 필터"),
+    view_count: int = Query(0, description="최소 조회수"),
+    offset: int = Query(0, description="페이지 번호 (0부터 시작)"),
+    limit: int = Query(10, description="페이지당 항목 수"),
 ):
     return await get_all_postings(
-        search_keyword, filter_type, filter_keyword, offset, limit
+        search_keyword=search_keyword,
+        location=location,
+        employment_type=employment_type,
+        position=position,
+        career=career,
+        education=education,
+        view_count=view_count,
+        offset=offset,
+        limit=limit,
     )
 
 

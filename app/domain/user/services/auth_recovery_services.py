@@ -10,14 +10,14 @@ async def find_email(name: str, phone_number: str):
     # 구직자에서 먼저 검색
     seeker = await SeekerUser.get_or_none(
         name=name, phone_number=phone_number
-    ).prefetch_related("services")
+    ).prefetch_related("user")
     if seeker:
         email = seeker.user.email
     else:
         # 2. 없으면 기업회원에서 검색
         corp = await CorporateUser.get_or_none(
             manager_name=name, manager_phone_number=phone_number
-        ).prefetch_related("services")
+        ).prefetch_related("user")
         if corp:
             email = corp.user.email
         else:

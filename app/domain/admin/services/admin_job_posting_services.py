@@ -30,11 +30,11 @@ async def get_all_job_postings(
 
     queryset = (
         JobPosting.all()
-        .select_related("services")
+        .select_related("user")
         .prefetch_related(
             Prefetch(
                 "reject_postings",
-                queryset=RejectPosting.all().select_related("services"),
+                queryset=RejectPosting.all().select_related("user"),
             )
         )
     )
@@ -60,11 +60,11 @@ async def get_job_posting_by_id(
 
     posting = (
         await JobPosting.filter(pk=id)
-        .select_related("services")
+        .select_related("user")
         .prefetch_related(
             Prefetch(
                 "reject_postings",
-                queryset=RejectPosting.all().select_related("services"),
+                queryset=RejectPosting.all().select_related("user"),
             )
         )
         .first()

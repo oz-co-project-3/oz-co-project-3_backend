@@ -1,3 +1,5 @@
+from typing import Optional
+
 from tortoise.expressions import Q
 
 from app.domain.job_posting.job_posting_models import Applicants, JobPosting
@@ -36,15 +38,19 @@ def author_applicant(applicant, user):
 
 
 async def get_all_postings(
-    search_keyword: str,
-    filter_type: str,
-    filter_keyword: str,
+    search_keyword: Optional[str] = "",
+    location: Optional[str] = "",
+    employment_type: Optional[str] = "",
+    position: Optional[str] = "",
+    career: Optional[str] = "",
+    education: Optional[str] = "",
+    view_count: Optional[int] = 0,
     offset: int = 0,
     limit: int = 10,
 ):
     query = JobPosting.all()
 
-    # 검색 키워드 처리 (제목 + 회사명)
+    # 🔍 검색 키워드 (제목, 회사, 요약, 포지션, 위치)
     if search_keyword:
         query = query.filter(
             Q(title__icontains=search_keyword)
@@ -54,42 +60,59 @@ async def get_all_postings(
             | Q(location__icontains=search_keyword)
         )
 
-    # 필터 조건 처리
-    if filter_type and filter_keyword:
-        if filter_type == "location":
-            query = query.filter(location__icontains=filter_keyword)
-        elif filter_type == "view_count":
-            try:
-                count = int(filter_keyword)
-                query = query.filter(view_count__gte=count)
-            except ValueError:
-                raise CustomException(
-                    code="invalid_view_count",
-                    error="view_count는 숫자여야 합니다.",
-                    status_code=400,
-                )
-        elif filter_type == "employment_type":
-            if filter_keyword not in ["공공", "일반"]:
-                raise CustomException(
-                    code="invalid_employment_type",
-                    error="employment_type은 '공공' 또는 '일반'이어야 합니다.",
-                    status_code=400,
-                )
-            query = query.filter(employment_type=filter_keyword)
-        else:
-            raise CustomException(
-                code="invalid_filter_type", error="유효하지 않은 필터 타입입니다.", status_code=400
-            )
+    if location:
+        query = query.filter(location__icontains=location)
+
+    if employment_type:
+        types = [t.strip() for t in employment_type.split(",")]
+        allowed = ["공공", "일반"]
+        query = query.filter(employment_type__in=[t for t in types if t in allowed])
+
+    if position:
+        keywords = [k.strip() for k in position.split(",")]
+        q = Q()
+        for k in keywords:
+            q |= Q(position__icontains=k)
+        query = query.filter(q)
+
+    if career:
+        options = ["신입", "경력직", "경력무관"]
+        query = query.filter(
+            career__in=[k.strip() for k in career.split(",") if k.strip() in options]
+        )
+
+    if education:
+        allowed = [
+            "학력무관",
+            "고등학교 졸업",
+            "대학교 졸업(2,3년제)",
+            "대학교 졸업(4년제)",
+            "대학원 석사 졸업",
+            "대학원 박사 졸업",
+        ]
+        query = query.filter(
+            education__in=[
+                e.strip() for e in education.split(",") if e.strip() in allowed
+            ]
+        )
+
+    if view_count and view_count > 0:
+        query = query.filter(view_count__gte=view_count)
 
     total = await query.count()
     start = offset * limit
-    results = await query.offset(start).limit(limit).select_related("services")
+    results = await query.offset(start).limit(limit)
 
-    return {"total": total, "offset": offset, "limit": limit, "data": results}
+    return {
+        "total": total,
+        "offset": offset,
+        "limit": limit,
+        "data": results,
+    }
 
 
 async def get_posting_by_id(id: int):
-    posting = await JobPosting.filter(pk=id).select_related("services").first()
+    posting = await JobPosting.filter(pk=id).select_related("user").first()
     existing_posting(posting)
     return posting
 
@@ -97,7 +120,7 @@ async def get_posting_by_id(id: int):
 async def create_posting_applicant_by_id(
     id: int, current_user: BaseUser, applicant: ApplicantCreateUpdateSchema
 ):
-    posting = await JobPosting.filter(pk=id).select_related("services").first()
+    posting = await JobPosting.filter(pk=id).select_related("user").first()
     existing_posting(posting)
     resume_obj = await Resume.get_or_none(id=applicant.resume)
     if not resume_obj:
@@ -117,7 +140,7 @@ async def create_posting_applicant_by_id(
         "id": created_applicant.id,
         "job_posting": created_applicant.job_posting_id,
         "resume": created_applicant.resume_id,
-        "services": created_applicant.user_id,
+        "user": created_applicant.user_id,
         "status": created_applicant.status,
         "memo": created_applicant.memo,
     }
@@ -129,7 +152,7 @@ async def patch_posting_applicant_by_id(
     patch_applicant: ApplicantCreateUpdateSchema,
     applicant_id: int,
 ):
-    posting = await JobPosting.filter(pk=id).select_related("services").first()
+    posting = await JobPosting.filter(pk=id).select_related("user").first()
     existing_posting(posting)
 
     applicant = await Applicants.filter(id=applicant_id).first()
@@ -154,7 +177,7 @@ async def patch_posting_applicant_by_id(
         "id": applicant.id,
         "job_posting": applicant.job_posting_id,
         "resume": applicant.resume_id,
-        "services": applicant.user_id,
+        "user": applicant.user_id,
         "status": applicant.status,
         "memo": applicant.memo,
     }

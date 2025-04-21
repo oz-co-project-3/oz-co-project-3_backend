@@ -30,12 +30,12 @@ async def create_free_board_by_id(
 
 async def get_all_free_board():
     """전체조회"""
-    return await FreeBoard.all().select_related("services")
+    return await FreeBoard.all().select_related("user")
 
 
 async def get_free_board_by_id(id: int):
     """상세조회"""
-    board = await FreeBoard.filter(pk=id).select_related("services").first()
+    board = await FreeBoard.filter(pk=id).select_related("user").first()
     existing_board(board)
     return board
 
@@ -44,7 +44,7 @@ async def patch_free_board_by_id(
     id: int, free_board: FreeBoardCreateUpdate, current_user: BaseUser
 ):
     """업데이트"""
-    board = await FreeBoard.filter(pk=id).select_related("services").first()
+    board = await FreeBoard.filter(pk=id).select_related("user").first()
     existing_board(board)
     author_board(board, current_user)
     board.title = free_board.title
@@ -59,7 +59,7 @@ async def patch_free_board_by_id(
 
 async def delete_free_board_by_id(id: int, current_user: BaseUser):
     """삭제"""
-    board = await FreeBoard.filter(pk=id).select_related("services").first()
+    board = await FreeBoard.filter(pk=id).select_related("user").first()
     existing_board(board)
     author_board(board, current_user)
     await board.delete()

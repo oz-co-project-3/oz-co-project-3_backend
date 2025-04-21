@@ -25,17 +25,17 @@ async def create_success_review_by_id(success_review, current_user):
 
 
 async def get_all_success_reviews(current_user):
-    return await SuccessReview.all().select_related("services")
+    return await SuccessReview.all().select_related("user")
 
 
 async def get_success_review_by_id(id, current_user):
-    review = await SuccessReview.filter(pk=id).select_related("services").first()
+    review = await SuccessReview.filter(pk=id).select_related("user").first()
     existing_review(review)
     return review
 
 
 async def patch_success_review_by_id(id, success_review, current_user):
-    review = await SuccessReview.filter(pk=id).select_related("services").first()
+    review = await SuccessReview.filter(pk=id).select_related("user").first()
     existing_review(review)
     author_board(review, current_user)
 
@@ -51,7 +51,7 @@ async def patch_success_review_by_id(id, success_review, current_user):
 
 
 async def delete_success_review_by_id(id, current_user):
-    review = await SuccessReview.filter(pk=id).select_related("services").first()
+    review = await SuccessReview.filter(pk=id).select_related("user").first()
     existing_review(review)
     author_board(review, current_user)
 

@@ -31,7 +31,7 @@ async def access_token(client):
             email="test@test.com",
             password=hashed_pw,
             user_type="seeker",
-            status=BaseUser.Status.ACTIVE,
+            status="active",
             email_verified=True,
             is_superuser=True,
             gender="male",
@@ -50,7 +50,7 @@ async def access_token(client):
             email="test2@test.com",
             password=hashed_pw,
             user_type="business",
-            status=BaseUser.Status.ACTIVE,
+            status="active",
             email_verified=True,
             is_superuser=False,
             gender="male",
@@ -74,11 +74,11 @@ async def access_token(client):
         )
 
         login_data = {"email": "test@test.com", "password": "!!Test1234"}
-        response = await client.post("/api/services/login/", json=login_data)
+        response = await client.post("/api/user/login/", json=login_data)
         access_token = [response.json()["data"]["access_token"]]
 
         login_data = {"email": "test2@test.com", "password": "!!Test1234"}
-        response = await client.post("/api/services/login/", json=login_data)
+        response = await client.post("/api/user/login/", json=login_data)
         access_token.append(response.json()["data"]["access_token"])
 
         return access_token

@@ -10,7 +10,7 @@ from app.domain.user.user_models import BaseUser
 from app.utils.exception import CustomException
 
 load_dotenv()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/services/login/")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login/")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 1

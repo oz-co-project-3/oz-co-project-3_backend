@@ -31,7 +31,7 @@ async def access_token(client):
             password=hashed_pw,
             user_type="seeker",
             is_active=True,
-            status=BaseUser.Status.ACTIVE,
+            status="active",
             email_verified=True,
             is_superuser=False,
             gender="male",
@@ -44,7 +44,7 @@ async def access_token(client):
         )
 
         login_data = {"email": "test@test.com", "password": "!!Test1234"}
-        response = await client.post("/api/services/login/", json=login_data)
+        response = await client.post("/api/user/login/", json=login_data)
 
         assert response.status_code == 200
         return response.json()["data"]["access_token"]
