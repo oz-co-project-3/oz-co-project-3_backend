@@ -32,12 +32,12 @@ jobs:
           tags: hak2881/senior:latest
           no-cache: true
 
-      - name: Deploy to NCP via SSH
+      - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: 175.45.205.244
-          username: root
-          key: ${{ secrets.NCP_SSH_KEY }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             docker system prune -af
             cd app
