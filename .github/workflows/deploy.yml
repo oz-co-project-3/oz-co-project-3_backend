@@ -38,10 +38,10 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker system prune -af
-            cd app
-            docker pull hak2881/senior:latest
-            docker-compose -f docker-compose.dev.yml down
-            docker-compose -f docker-compose.dev.yml up -d
-#            docker-compose -f docker-compose.prod.yml down
-#            docker-compose -f docker-compose.prod.yml up -d
+            sudo docker system prune -af
+            sudo cd app
+            sudo docker pull hak2881/senior:latest
+            sudo docker-compose -f docker-compose.dev.yml down
+            sudo docker-compose -f docker-compose.dev.yml up -d
+#            sudo docker-compose -f docker-compose.prod.yml down
+#            sudo docker-compose -f docker-compose.prod.yml up -d
