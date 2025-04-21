@@ -23,16 +23,20 @@ TORTOISE_ORM = {
     "apps": {
         "models": {
             "models": [
-                "app.models.chatbot_model",
-                "app.models.success_review_models",
-                "app.models.free_board_models",
-                "app.models.resume_models",
-                "app.models.comment_models",
-                "app.models.job_posting_models",
-                "app.models.user_models",
+                "app.domain.chatbot.chatbot_model",
+                "app.domain.success_review.success_review_models",
+                "app.domain.free_board.free_board_models",
+                "app.domain.resume.resume_models",
+                "app.domain.comment.comment_models",
+                "app.domain.job_posting.job_posting_models",
+                "app.domain.user.user_models",
                 "aerich.models",
             ],
             "default_connection": "default",
         }
     },
 }
+
+# 외부 api
+base_url = os.getenv("BASE_URL")
+api_key = os.getenv("API_KEY")

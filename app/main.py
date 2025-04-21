@@ -5,15 +5,16 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
 from tortoise.contrib.fastapi import register_tortoise
 
-from app.api.routes.admin import admin_router
-from app.api.routes.chatbot import chatbot_router
-from app.api.routes.comment import comment_router
-from app.api.routes.freeboard import free_board_router
-from app.api.routes.jobposting import job_posting_router
-from app.api.routes.postings import posting_router
-from app.api.routes.success_review import success_review_router
-from app.api.routes.user import router as user_router
-from app.api.routes.websocket import websocket_router
+from app.api.v1.admin import admin_router
+from app.api.v1.chatbot import chatbot_router
+from app.api.v1.comment import comment_router
+from app.api.v1.freeboard import free_board_router
+from app.api.v1.jobposting import job_posting_router
+from app.api.v1.postings import posting_router
+from app.api.v1.public_api import public_router
+from app.api.v1.success_review import success_review_router
+from app.api.v1.user import router as user_router
+from app.api.v1.websocket import websocket_router
 from app.core.config import TORTOISE_ORM
 from app.utils.exception import CustomException
 
@@ -29,6 +30,7 @@ app.include_router(job_posting_router)
 app.include_router(chatbot_router)
 app.include_router(websocket_router)
 app.include_router(posting_router)
+app.include_router(public_router)
 
 origins = [
     "http://localhost",
