@@ -30,7 +30,7 @@ async def access_token(client):
             email="test@test.com",
             password=hashed_pw,
             user_type="seeker",
-            status=BaseUser.Status.ACTIVE,
+            status="active",
             email_verified=True,
             is_superuser=True,
             gender="male",
@@ -48,7 +48,7 @@ async def access_token(client):
             email="test2@test.com",
             password=hashed_pw,
             user_type="business",
-            status=BaseUser.Status.ACTIVE,
+            status="active",
             email_verified=True,
             is_superuser=False,
             gender="male",
@@ -66,11 +66,11 @@ async def access_token(client):
         )
 
         login_data = {"email": "test@test.com", "password": "!!Test1234"}
-        response = await client.post("/api/services/login/", json=login_data)
+        response = await client.post("/api/user/login/", json=login_data)
         access_token = [response.json()["data"]["access_token"]]
 
         login_data = {"email": "test2@test.com", "password": "!!Test1234"}
-        response = await client.post("/api/services/login/", json=login_data)
+        response = await client.post("/api/user/login/", json=login_data)
         access_token.append(response.json()["data"]["access_token"])
 
         return access_token
@@ -86,7 +86,7 @@ async def test_admin_create_chatbot(client, access_token):
         "options": "선택1,선택2",
         "answer": "답변",
     }
-    response = await client.post("/api/schemas/chatbot/", json=data, headers=headers)
+    response = await client.post("/api/admin/chatbot/", json=data, headers=headers)
 
     assert response.status_code == 201
     assert response.json()["step"] == 3
@@ -95,13 +95,13 @@ async def test_admin_create_chatbot(client, access_token):
     assert response.json()["options"] == "선택1,선택2"
     assert response.json()["answer"] == "답변"
 
-    await client.post("/api/schemas/chatbot/", json=data, headers=headers)
-    await client.post("/api/schemas/chatbot/", json=data, headers=headers)
+    await client.post("/api/admin/chatbot/", json=data, headers=headers)
+    await client.post("/api/admin/chatbot/", json=data, headers=headers)
 
     assert await ChatBot.all().count() == 3
 
     headers = {"Authorization": f"Bearer {access_token[1]}"}
-    response = await client.post("/api/schemas/chatbot/", json=data, headers=headers)
+    response = await client.post("/api/admin/chatbot/", json=data, headers=headers)
 
     assert response.status_code == 403
     assert response.json()["message"]["code"] == "permission_denied"
@@ -110,7 +110,7 @@ async def test_admin_create_chatbot(client, access_token):
 @pytest.mark.asyncio
 async def test_admin_get_chatbot(client, access_token):
     headers = {"Authorization": f"Bearer {access_token[0]}"}
-    response = await client.get("/api/schemas/chatbot/", headers=headers)
+    response = await client.get("/api/admin/chatbot/", headers=headers)
 
     assert response.status_code == 200
     assert len(response.json()) == 3
@@ -127,7 +127,7 @@ async def test_admin_update_chatbot(client, access_token):
     }
     id = 1
     response = await client.patch(
-        f"/api/schemas/chatbot/{id}/", json=data, headers=headers
+        f"/api/admin/chatbot/{id}/", json=data, headers=headers
     )
 
     assert response.status_code == 200
@@ -137,7 +137,7 @@ async def test_admin_update_chatbot(client, access_token):
 async def test_delete_chatbot(client, access_token):
     headers = {"Authorization": f"Bearer {access_token[0]}"}
     id = 1
-    response = await client.delete(f"/api/schemas/chatbot/{id}/", headers=headers)
+    response = await client.delete(f"/api/admin/chatbot/{id}/", headers=headers)
 
     assert response.status_code == 200
     assert await ChatBot.all().count() == 2

@@ -15,7 +15,7 @@ from app.domain.chatbot.chatbot_services import (
 )
 from app.domain.user.user_models import BaseUser
 
-chatbot_router = APIRouter(prefix="/api/schemas/chatbot", tags=["chatbot"])
+chatbot_router = APIRouter(prefix="/api/admin/chatbot", tags=["chatbot"])
 
 
 @chatbot_router.post(

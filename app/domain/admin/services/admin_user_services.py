@@ -13,22 +13,22 @@ async def get_user_all(current_user: BaseUser, seeker: bool, corp: bool, search:
         if search:
             seeker_users = (
                 await SeekerUser.filter(user__email__icontains=search)
-                .select_related("services")
+                .select_related("user")
                 .all()
             )
         else:
-            seeker_users = await SeekerUser.all().select_related("services")
+            seeker_users = await SeekerUser.all().select_related("user")
         for s in seeker_users:
             result.append({"base": s.user, "seeker": s})
     if corp or (not seeker and not corp):
         if search:
             corp_users = (
                 await CorporateUser.filter(user__email__icontains=search)
-                .select_related("services")
+                .select_related("user")
                 .all()
             )
         else:
-            corp_users = await CorporateUser.all().select_related("services")
+            corp_users = await CorporateUser.all().select_related("user")
         for c in corp_users:
             result.append({"base": c.user, "corp": c})
     return result

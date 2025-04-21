@@ -20,14 +20,14 @@ async def get_all_resumes(current_user: BaseUser, name: str):
     if name:
         resumes = (
             await Resume.filter(name__icontains=name)
-            .select_related("services")
+            .select_related("user")
             .prefetch_related("work_experiences")
             .all()
         )
     else:
         resumes = (
             await Resume.all()
-            .select_related("services")
+            .select_related("user")
             .prefetch_related("work_experiences")
         )
     return resumes
@@ -38,7 +38,7 @@ async def get_resume_by_id(current_user: BaseUser, id: int):
 
     resume = (
         await Resume.filter(id=id)
-        .select_related("services")
+        .select_related("user")
         .prefetch_related("work_experiences")
         .first()
     )
@@ -49,6 +49,6 @@ async def get_resume_by_id(current_user: BaseUser, id: int):
 
 async def delete_resume_by_id(current_user: BaseUser, id: int):
     check_superuser(current_user)
-    resume = await Resume.filter(id=id).select_related("services").first()
+    resume = await Resume.filter(id=id).select_related("user").first()
     check_resume(resume)
     await resume.delete()

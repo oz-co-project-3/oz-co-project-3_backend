@@ -37,7 +37,7 @@ async def access_token(client):
             email="test@test.com",
             password=hashed_pw,
             user_type="seeker",
-            status=BaseUser.Status.ACTIVE,
+            status="active",
             email_verified=True,
             is_superuser=True,
             gender="male",
@@ -55,7 +55,7 @@ async def access_token(client):
             email="test2@test.com",
             password=hashed_pw,
             user_type="business",
-            status=BaseUser.Status.ACTIVE,
+            status="active",
             email_verified=True,
             is_superuser=False,
             gender="male",
@@ -151,11 +151,11 @@ async def access_token(client):
         )
 
         login_data = {"email": "test@test.com", "password": "!!Test1234"}
-        response = await client.post("/api/services/login/", json=login_data)
+        response = await client.post("/api/user/login/", json=login_data)
         access_token = [response.json()["data"]["access_token"]]
 
         login_data = {"email": "test2@test.com", "password": "!!Test1234"}
-        response = await client.post("/api/services/login/", json=login_data)
+        response = await client.post("/api/user/login/", json=login_data)
         access_token.append(response.json()["data"]["access_token"])
 
         return access_token
@@ -164,13 +164,13 @@ async def access_token(client):
 @pytest.mark.asyncio
 async def test_admin_get_list_user(client, access_token):
     headers = {"Authorization": f"Bearer {access_token[0]}"}
-    response = await client.get("/api/schemas/services/", headers=headers)
+    response = await client.get("/api/admin/user/", headers=headers)
 
     assert response.status_code == 200
     assert await BaseUser.all().count() == 2
 
     headers = {"Authorization": f"Bearer {access_token[1]}"}
-    response = await client.get("/api/schemas/services/", headers=headers)
+    response = await client.get("/api/admin/user/", headers=headers)
     assert response.status_code == 403
     assert response.json()["message"]["code"] == "permission_denied"
 
@@ -179,11 +179,11 @@ async def test_admin_get_list_user(client, access_token):
 async def test_admin_get_user_by_id(client, access_token):
     id = 1
     headers = {"Authorization": f"Bearer {access_token[0]}"}
-    response = await client.get(f"/api/schemas/services/{id}/", headers=headers)
+    response = await client.get(f"/api/admin/user/{id}/", headers=headers)
     assert response.status_code == 200
 
     headers = {"Authorization": f"Bearer {access_token[1]}"}
-    response = await client.get(f"/api/schemas/services/{id}/", headers=headers)
+    response = await client.get(f"/api/admin/user/{id}/", headers=headers)
     assert response.status_code == 403
     assert response.json()["message"]["code"] == "permission_denied"
 
@@ -193,9 +193,7 @@ async def test_admin_patch_user_by_id(client, access_token):
     id = 1
     headers = {"Authorization": f"Bearer {access_token[0]}"}
     data = {"status": "suspend"}
-    response = await client.patch(
-        f"/api/schemas/services/{id}/", json=data, headers=headers
-    )
+    response = await client.patch(f"/api/admin/user/{id}/", json=data, headers=headers)
 
     assert response.status_code == 200
     assert response.json()["status"] == "suspend"
@@ -204,12 +202,12 @@ async def test_admin_patch_user_by_id(client, access_token):
 @pytest.mark.asyncio
 async def test_admin_get_all_resumes(client, access_token):
     headers = {"Authorization": f"Bearer {access_token[0]}"}
-    response = await client.get("/api/schemas/resume/", headers=headers)
+    response = await client.get("/api/admin/resume/", headers=headers)
     assert response.status_code == 200
     assert await Resume.all().count() == 2
 
     headers = {"Authorization": f"Bearer {access_token[1]}"}
-    response = await client.get("/api/schemas/resume/", headers=headers)
+    response = await client.get("/api/admin/resume/", headers=headers)
     assert response.status_code == 403
     assert response.json()["message"]["code"] == "permission_denied"
 
@@ -218,13 +216,13 @@ async def test_admin_get_all_resumes(client, access_token):
 async def test_admin_get_resume_by_id(client, access_token):
     id = 1
     headers = {"Authorization": f"Bearer {access_token[0]}"}
-    response = await client.get(f"/api/schemas/resume/{id}/", headers=headers)
+    response = await client.get(f"/api/admin/resume/{id}/", headers=headers)
 
     assert response.status_code == 200
     assert response.json()["title"] == "테스트 이력서"
 
     headers = {"Authorization": f"Bearer {access_token[1]}"}
-    response = await client.get(f"/api/schemas/resume/{id}/", headers=headers)
+    response = await client.get(f"/api/admin/resume/{id}/", headers=headers)
     assert response.status_code == 403
 
 
@@ -232,25 +230,25 @@ async def test_admin_get_resume_by_id(client, access_token):
 async def test_admin_delete_resume_by_id(client, access_token):
     id = 1
     headers = {"Authorization": f"Bearer {access_token[0]}"}
-    response = await client.delete(f"/api/schemas/resume/{id}/", headers=headers)
+    response = await client.delete(f"/api/admin/resume/{id}/", headers=headers)
     assert response.status_code == 200
     assert await Resume.all().count() == 1
 
     id = 2
     headers = {"Authorization": f"Bearer {access_token[1]}"}
-    response = await client.delete(f"/api/schemas/resume/{id}/", headers=headers)
+    response = await client.delete(f"/api/admin/resume/{id}/", headers=headers)
     assert response.status_code == 403
 
 
 @pytest.mark.asyncio
 async def test_admin_get_all_job_postings(client, access_token):
     headers = {"Authorization": f"Bearer {access_token[0]}"}
-    response = await client.get("/api/schemas/job-posting/", headers=headers)
+    response = await client.get("/api/admin/job-posting/", headers=headers)
     assert response.status_code == 200
     assert await JobPosting.all().count() == 2
 
     headers = {"Authorization": f"Bearer {access_token[1]}"}
-    response = await client.get("/api/schemas/job-posting/", headers=headers)
+    response = await client.get("/api/admin/job-posting/", headers=headers)
     assert response.status_code == 403
 
 
@@ -258,13 +256,13 @@ async def test_admin_get_all_job_postings(client, access_token):
 async def test_admin_get_job_posting_by_id(client, access_token):
     id = 1
     headers = {"Authorization": f"Bearer {access_token[0]}"}
-    response = await client.get(f"/api/schemas/job-posting/{id}/", headers=headers)
+    response = await client.get(f"/api/admin/job-posting/{id}/", headers=headers)
 
     assert response.status_code == 200
     assert response.json()["company"] == "테스트 주식회사"
 
     headers = {"Authorization": f"Bearer {access_token[1]}"}
-    response = await client.get(f"/api/schemas/job-posting/{id}/", headers=headers)
+    response = await client.get(f"/api/admin/job-posting/{id}/", headers=headers)
     assert response.status_code == 403
 
 
@@ -274,14 +272,14 @@ async def test_admin_patch_job_posting_by_id(client, access_token):
     data = {"status": "반려됨"}
     headers = {"Authorization": f"Bearer {access_token[0]}"}
     response = await client.patch(
-        f"/api/schemas/job-posting/{id}/", json=data, headers=headers
+        f"/api/admin/job-posting/{id}/", json=data, headers=headers
     )
 
     assert response.status_code == 200
     assert response.json()["status"] == "반려됨"
 
     headers = {"Authorization": f"Bearer {access_token[1]}"}
-    response = await client.get(f"/api/schemas/job-posting/{id}/", headers=headers)
+    response = await client.get(f"/api/admin/job-posting/{id}/", headers=headers)
     assert response.status_code == 403
 
 
@@ -294,7 +292,7 @@ async def test_create_reject_posting(client, access_token):
 
     # when
     response = await client.post(
-        f"/api/schemas/job-posting/{job_posting_id}/reject-posting/",
+        f"/api/admin/job-posting/{job_posting_id}/reject-posting/",
         json=data,
         headers=headers,
     )
@@ -304,5 +302,5 @@ async def test_create_reject_posting(client, access_token):
     res_json = response.json()
     assert "id" in res_json
     assert res_json["content"] == data["content"]
-    assert "services" in res_json
+    assert "user" in res_json
     assert "job_posting" in res_json
