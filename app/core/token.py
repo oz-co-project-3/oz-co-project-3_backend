@@ -6,11 +6,11 @@ from dotenv import load_dotenv
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from app.models.user_models import BaseUser
+from app.domain.user.user_models import BaseUser
 from app.utils.exception import CustomException
 
 load_dotenv()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login/")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/services/login/")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 1
