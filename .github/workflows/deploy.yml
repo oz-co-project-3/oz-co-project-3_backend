@@ -39,7 +39,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             sudo docker system prune -af
-            sudo cd app
+            cd app
             sudo docker pull hak2881/senior:latest
             sudo docker-compose -f docker-compose.dev.yml down
             sudo docker-compose -f docker-compose.dev.yml up -d
