@@ -1,13 +1,12 @@
-version: '3.9'
 
 services:
-  web:
+  backend-fast:
     image: hak2881/senior:latest
     container_name: fast-app-prod
     working_dir: /app
     restart: always
-    ports:
-      - "8000:8000"
+    expose:
+      - :"8000"
     env_file:
       - .envs/.prod.env
     environment:
@@ -15,13 +14,18 @@ services:
       - PYTHONPATH=/app
     depends_on:
       - redis
+    networks:
+      - front
+      - back
 
   redis:
     image: redis:alpine
     container_name: redis-prod
     restart: always
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379"
+    networks:
+      - back
 
   nginx:
     image: nginx:latest
@@ -31,5 +35,8 @@ services:
     volumes:
       - ./nginx/conf.d/prod.conf:/etc/nginx/conf.d/prod.conf
       - /dev/null:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
-      - web
+      - backend-fast
+    networks:
+      - front
