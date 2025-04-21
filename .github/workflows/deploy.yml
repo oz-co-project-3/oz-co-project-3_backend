@@ -42,6 +42,6 @@ jobs:
             sudo docker pull hak2881/senior:latest
             sudo docker compose -f docker-compose.dev.yml down
             sudo docker compose -f docker-compose.dev.yml up -d
+            sudo docker system prune -f
 #            sudo docker compose -f docker-compose.prod.yml down
 #            sudo docker compose -f docker-compose.prod.yml up -d
-            sudo docker system prune -f
