@@ -28,6 +28,12 @@ class MethodEnum(str, Enum):
     Dispatch = "파견직"
 
 
+class CareerEnum(str, Enum):
+    New = "신입"
+    Experienced = "경력직"
+    Irrelevant = "경력무관"
+
+
 class JobPosting(TimestampMixin, Model):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField(
@@ -52,6 +58,9 @@ class JobPosting(TimestampMixin, Model):
     status = fields.CharEnumField(StatusEnum, default=StatusEnum.Open)
     view_count = fields.IntField(default=0)
     report = fields.IntField(default=0)
+    career = fields.CharEnumField(
+        CareerEnum, default=CareerEnum.Irrelevant, max_length=10
+    )
 
     class Meta:
         table = "job_postings"

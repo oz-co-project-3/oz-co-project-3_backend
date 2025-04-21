@@ -15,9 +15,12 @@ async def websocket_endpoint(websocket: WebSocket):
     while True:
         message = await websocket.receive_text()
         selected.append(message)
-        path = "/".join(selected)
-        chatbot_response = await ChatBot.filter(selection_path=path).first()
+        if selected and selected[0] == "":
+            path = "/".join(selected[1:])
+        else:
+            path = "/".join(selected)
 
+        chatbot_response = await ChatBot.filter(selection_path=path).first()
         if not chatbot_response:
             await websocket.send_json(
                 {"code": "path_not_found", "error": "경로에 없는 선택지입니다."}

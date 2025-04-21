@@ -34,7 +34,7 @@ from app.domain.admin.services.admin_user_services import (
 )
 from app.domain.user.user_models import BaseUser
 
-admin_router = APIRouter(prefix="/api/schemas", tags=["schemas"])
+admin_router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 
 @admin_router.get(

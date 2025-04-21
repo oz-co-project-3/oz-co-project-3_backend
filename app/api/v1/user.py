@@ -65,7 +65,7 @@ from app.domain.user.user_schema import (
     VerifyPasswordRequest,
 )
 
-router = APIRouter(prefix="/api/services", tags=["services"])
+router = APIRouter(prefix="/api/user", tags=["user"])
 
 
 # 이메일 인증 요청 부분
