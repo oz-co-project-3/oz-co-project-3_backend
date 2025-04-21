@@ -33,7 +33,6 @@ posting_router = APIRouter(
     """,
 )
 async def get_list_postings(
-    current_user: BaseUser = Depends(get_current_user),
     search_keyword=None,
     filter_type=None,
     filter_keyword=None,
@@ -55,7 +54,7 @@ async def get_list_postings(
     - `404` `code`:`posting_not_found` 공고를 찾지 못했습니다..\n
     """,
 )
-async def get_posting(id: int, current_user: BaseUser = Depends(get_current_user)):
+async def get_posting(id: int):
     return await get_posting_by_id(id)
 
 
@@ -63,7 +62,7 @@ async def get_posting(id: int, current_user: BaseUser = Depends(get_current_user
     "/{id}/applicant/",
     response_model=ApplicantResponseSchema,
     status_code=status.HTTP_201_CREATED,
-    summary="공고 상세 조회",
+    summary="공고 지원자 생성",
     description="""
     - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     - `404` `code`:`posting_not_found` 공고를 찾지 못했습니다.\n
@@ -81,7 +80,7 @@ async def create_posting_applicant(
     "/{id}/applicant/{applicant_id}/",
     response_model=ApplicantResponseSchema,
     status_code=status.HTTP_201_CREATED,
-    summary="공고 상세 조회",
+    summary="공고 지원자 수정",
     description="""
     - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     - `403` `code`:`permission_denied` 유효하지 않은 토큰입니다.\n

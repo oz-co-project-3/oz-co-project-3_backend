@@ -47,7 +47,11 @@ async def get_all_postings(
     # 검색 키워드 처리 (제목 + 회사명)
     if search_keyword:
         query = query.filter(
-            Q(title__icontains=search_keyword) | Q(company__icontains=search_keyword)
+            Q(title__icontains=search_keyword)
+            | Q(company__icontains=search_keyword)
+            | Q(summary__icontains=search_keyword)
+            | Q(position__icontains=search_keyword)
+            | Q(location__icontains=search_keyword)
         )
 
     # 필터 조건 처리
@@ -78,7 +82,8 @@ async def get_all_postings(
             )
 
     total = await query.count()
-    results = await query.offset(offset).limit(limit).select_related("user")
+    start = offset * limit
+    results = await query.offset(start).limit(limit).select_related("user")
 
     return {"total": total, "offset": offset, "limit": limit, "data": results}
 
