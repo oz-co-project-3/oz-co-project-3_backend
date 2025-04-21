@@ -1,5 +1,5 @@
-from app.domain.comment.comment_models import Comment
-from app.domain.comment.commnet_schemas import CommentCreateUpdateSchema
+from app.domain.comment.models import Comment
+from app.domain.comment.schemas import CommentCreateUpdateSchema
 from app.domain.user.user_models import BaseUser
 from app.utils.exception import CustomException
 

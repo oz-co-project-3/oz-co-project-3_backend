@@ -23,11 +23,11 @@ TORTOISE_ORM = {
     "apps": {
         "models": {
             "models": [
-                "app.domain.chatbot.chatbot_model",
-                "app.domain.success_review.success_review_models",
-                "app.domain.free_board.free_board_models",
+                "app.domain.chatbot.model",
+                "app.domain.success_review.models",
+                "app.domain.free_board.models",
                 "app.domain.resume.resume_models",
-                "app.domain.comment.comment_models",
+                "app.domain.comment.models",
                 "app.domain.job_posting.job_posting_models",
                 "app.domain.user.user_models",
                 "aerich.models",

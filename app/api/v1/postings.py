@@ -1,17 +1,17 @@
 from fastapi import APIRouter, Depends, Query, status
 
 from app.core.token import get_current_user
-from app.domain.posting.postings_schemas import (
+from app.domain.posting.schemas import (
     ApplicantCreateUpdateSchema,
     ApplicantResponseSchema,
     JobPostingResponseSchema,
     PaginatedJobPostingsResponseSchema,
 )
-from app.domain.posting.postings_services import (
-    create_posting_applicant_by_id,
-    get_all_postings,
-    get_posting_by_id,
-    patch_posting_applicant_by_id,
+from app.domain.posting.services import (
+    create_applicant_service,
+    get_all_postings_service,
+    get_posting_by_id_service,
+    patch_posting_applicant_by_id_service,
 )
 from app.domain.user.user_models import BaseUser
 
@@ -41,7 +41,7 @@ async def get_list_postings(
     offset: int = Query(0, description="페이지 번호 (0부터 시작)"),
     limit: int = Query(10, description="페이지당 항목 수"),
 ):
-    return await get_all_postings(
+    return await get_all_postings_service(
         search_keyword=search_keyword,
         location=location,
         employment_type=employment_type,
@@ -65,7 +65,7 @@ async def get_list_postings(
     """,
 )
 async def get_posting(id: int):
-    return await get_posting_by_id(id)
+    return await get_posting_by_id_service(id)
 
 
 @posting_router.post(
@@ -78,12 +78,12 @@ async def get_posting(id: int):
     - `404` `code`:`posting_not_found` 공고를 찾지 못했습니다.\n
     """,
 )
-async def create_posting_applicant(
+async def create_applicant(
     id: int,
     applicant: ApplicantCreateUpdateSchema,
     current_user: BaseUser = Depends(get_current_user),
 ):
-    return await create_posting_applicant_by_id(id, current_user, applicant)
+    return await create_applicant_service(id, current_user, applicant)
 
 
 @posting_router.patch(
@@ -102,9 +102,9 @@ async def create_posting_applicant(
 async def patch_posting_applicant(
     id: int,
     applicant_id: int,
-    applicant: ApplicantCreateUpdateSchema,
+    patch_applicant: ApplicantCreateUpdateSchema,
     current_user: BaseUser = Depends(get_current_user),
 ):
-    return await patch_posting_applicant_by_id(
-        id, current_user, applicant, applicant_id
+    return await patch_posting_applicant_by_id_service(
+        id, current_user, patch_applicant, applicant_id
     )

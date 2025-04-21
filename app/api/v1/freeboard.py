@@ -3,11 +3,8 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from app.core.token import get_current_user
-from app.domain.free_board.freeboard_schemas import (
-    FreeBoardCreateUpdate,
-    FreeBoardResponse,
-)
-from app.domain.free_board.freeboard_services import (
+from app.domain.free_board.schemas import FreeBoardCreateUpdate, FreeBoardResponse
+from app.domain.free_board.services import (
     create_free_board_by_id,
     delete_free_board_by_id,
     get_all_free_board,

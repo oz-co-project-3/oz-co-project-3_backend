@@ -1,5 +1,5 @@
-from app.domain.free_board.free_board_models import FreeBoard
-from app.domain.free_board.freeboard_schemas import FreeBoardCreateUpdate
+from app.domain.free_board.models import FreeBoard
+from app.domain.free_board.schemas import FreeBoardCreateUpdate
 from app.domain.user.user_models import BaseUser
 from app.utils.exception import CustomException
 
