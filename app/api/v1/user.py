@@ -35,6 +35,7 @@ from app.domain.user.services.user_profile_services import (
     update_user_profile,
 )
 from app.domain.user.services.user_register_services import (
+    check_email_duplicate,
     delete_user,
     register_company_user,
     register_user,
@@ -46,6 +47,8 @@ from app.domain.user.user_schema import (
     CompanyRegisterRequest,
     CompanyRegisterResponse,
     CorporateProfileUpdateRequest,
+    EmailCheckRequest,
+    EmailCheckResponse,
     FindEmailRequest,
     FindPasswordRequest,
     LoginRequest,
@@ -80,7 +83,6 @@ class EmailVerifyRequest(BaseModel):
     status_code=status.HTTP_201_CREATED,
     summary="일반 회원가입",
     description="""
-- `400` `code`:`duplicate_email` : 이미 존재하는 이메일입니다
 - `400` `code`:`invalid_password` : 비밀번호는 8자 이상, 특수문자를 포함해야 합니다
 - `400` `code`:`password_mismatch` : 비밀번호와 확인이 일치하지 않습니다
 """,
@@ -95,13 +97,25 @@ async def register(request: UserRegisterRequest):
     status_code=status.HTTP_201_CREATED,
     summary="기업 회원가입",
     description="""
-- `400` `code`:`duplicate_email` : 이미 존재하는 이메일입니다
 - `400` `code`:`invalid_password` : 비밀번호는 8자 이상, 특수문자를 포함해야 합니다
 - `400` `code`:`password_mismatch` : 비밀번호와 확인이 일치하지 않습니다
 """,
 )
 async def register_company(request: CompanyRegisterRequest):
     return await register_company_user(request)
+
+
+@router.post(
+    "/check-email/",
+    response_model=EmailCheckResponse,
+    status_code=status.HTTP_200_OK,
+    summary="이메일 중복 확인",
+    description="""
+- `200` `code`:`is_available=false` : 이미 존재하는 이메일입니다
+""",
+)
+async def check_email(request: EmailCheckRequest):
+    return await check_email_duplicate(request.email)
 
 
 @router.delete(

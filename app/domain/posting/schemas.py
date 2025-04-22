@@ -38,6 +38,9 @@ class ApplicantCreateUpdateSchema(BaseModel):
     status: str
     memo: Optional[str] = None
 
+    class Config:
+        from_attributes = True
+
 
 class ApplicantResponseSchema(BaseModel):
     id: int
@@ -47,9 +50,15 @@ class ApplicantResponseSchema(BaseModel):
     status: str
     memo: Optional[str]
 
+    class Config:
+        from_attributes = True
+
 
 class PaginatedJobPostingsResponseSchema(BaseModel):
     total: int
     offset: int
     limit: int
     data: List[JobPostingResponseSchema]
+
+    class Config:
+        from_attributes = True
