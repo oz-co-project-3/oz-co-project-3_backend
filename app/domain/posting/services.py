@@ -9,17 +9,9 @@ from app.domain.posting.repository import (
     get_resume_query,
     patch_posting_applicant_by_id,
 )
-from app.domain.posting.validator import check_author
-from app.utils.exception import CustomException, check_existing
+from app.utils.auth import check_author
+from app.utils.exception import check_existing
 from app.utils.pagination import paginate_query
-
-
-def author_applicant(applicant, user):
-    """작성자인지 확인하는 함수"""
-    if applicant.user != user and not user.is_superuser:
-        raise CustomException(
-            error="작성자가 아닙니다.", code="permission_denied", status_code=403
-        )
 
 
 async def get_all_postings_service(
