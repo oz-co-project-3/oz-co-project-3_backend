@@ -1,5 +1,5 @@
+from app.domain.services.verification import CustomException
 from app.domain.success_review.models import SuccessReview
-from app.utils.exception import CustomException
 
 
 def existing_review(review):

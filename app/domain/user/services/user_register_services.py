@@ -4,6 +4,7 @@ from typing import Optional
 
 from passlib.hash import bcrypt
 
+from app.domain.services.verification import CustomException
 from app.domain.user.services.email_services import send_email_code
 from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 from app.domain.user.user_schema import (
@@ -15,7 +16,6 @@ from app.domain.user.user_schema import (
     UserRegisterResponse,
     UserRegisterResponseData,
 )
-from app.utils.exception import CustomException
 
 
 async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:

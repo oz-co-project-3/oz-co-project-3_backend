@@ -9,10 +9,17 @@ from app.domain.comment.repository import (
     patch_comment_by_id,
 )
 from app.domain.comment.schemas import CommentCreateUpdateSchema
+from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser
-from app.utils.auth import check_author
-from app.utils.exception import check_existing
 
+def existing_comment(comment):
+    """존재하는 게시판인지 확인"""
+    if not comment:
+        raise CustomException(
+            error="해당 댓글을 찾을 수 없습니다.",
+            code="comment_not_found",
+            status_code=404,
+        )
 
 async def create_comment_by_id_service(
     comment_data: Any,

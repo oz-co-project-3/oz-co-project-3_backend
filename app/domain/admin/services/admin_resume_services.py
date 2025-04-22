@@ -1,8 +1,8 @@
 from fastapi import status
 
 from app.domain.resume.resume_models import Resume
+from app.domain.services.verification import CustomException, check_superuser
 from app.domain.user.user_models import BaseUser
-from app.utils.exception import CustomException, check_superuser
 
 
 def check_resume(resume: Resume):

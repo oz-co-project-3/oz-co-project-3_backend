@@ -1,4 +1,4 @@
-from app.utils.exception import CustomException
+from app.domain.services.verification import CustomException
 
 
 async def check_author(obj, current_user):

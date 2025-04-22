@@ -1,8 +1,8 @@
 from passlib.hash import bcrypt
 
+from app.domain.services.verification import CustomException
 from app.domain.user.services.email_services import send_email_code
 from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
-from app.utils.exception import CustomException
 
 
 # 아이디 찾기

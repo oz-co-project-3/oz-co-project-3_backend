@@ -10,8 +10,10 @@ from app.domain.posting.repository import (
     paginate_query,
     patch_posting_applicant_by_id,
 )
-from app.utils.auth import check_author
-from app.utils.exception import check_existing
+
+from app.domain.services.pagination import paginate_query
+from app.domain.services.permission import check_author
+from app.domain.services.verification import check_existing
 
 
 async def get_all_postings_service(

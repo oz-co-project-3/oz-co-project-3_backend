@@ -1,8 +1,8 @@
 from fastapi import status
 
 from app.domain.admin.schemas.admin_user_schemas import UserUpdateSchema
+from app.domain.services.verification import CustomException, check_superuser
 from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
-from app.utils.exception import CustomException, check_superuser
 
 
 async def get_user_all(current_user: BaseUser, seeker: bool, corp: bool, search: str):
