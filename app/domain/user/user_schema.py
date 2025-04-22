@@ -63,6 +63,16 @@ class CompanyRegisterResponse(BaseModel):
     data: CompanyRegisterResponseData
 
 
+# 이메일 중복검사 체크스키마
+class EmailCheckRequest(BaseModel):
+    email: EmailStr
+
+
+class EmailCheckResponse(BaseModel):
+    message: str
+    is_available: bool
+
+
 # 구직자 프로필 조회 응답용
 class SeekerProfileResponse(BaseModel):
     id: int
