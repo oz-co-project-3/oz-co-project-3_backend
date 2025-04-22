@@ -1,11 +1,14 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, status
 
 from app.core.token import get_current_user
-from app.domain.comment.schemas import CommentCreateUpdateSchema
+from app.domain.comment.schemas import CommentCreateUpdateSchema, CommentResponseDTO
 from app.domain.comment.services import (
-    create_comment_by_id,
-    delete_comment_by_id,
-    patch_comment_by_id,
+    create_comment_by_id_service,
+    delete_comment_by_id_service,
+    get_all_comments_service,
+    patch_comment_by_id_service,
 )
 from app.domain.user.user_models import BaseUser
 
@@ -15,6 +18,7 @@ comment_router = APIRouter(prefix="/api/free-board/{id}/comment", tags=["FreeBoa
 @comment_router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
+    response_model=CommentResponseDTO,
     summary="자유게시판 댓글 생성",
     description=(
         """
@@ -29,7 +33,7 @@ async def create_comment(
     comment: CommentCreateUpdateSchema,
     current_user: BaseUser = Depends(get_current_user),
 ):
-    return await create_comment_by_id(
+    return await create_comment_by_id_service(
         id=id, comment_data=comment, current_user=current_user
     )
 
@@ -37,6 +41,7 @@ async def create_comment(
 @comment_router.get(
     "/",
     status_code=status.HTTP_200_OK,
+    response_model=List[CommentResponseDTO],
     summary="자유게시판 조회",
     description=(
         """
@@ -48,12 +53,13 @@ async def create_comment(
 async def get_list_comments(
     id: int, current_user: BaseUser = Depends(get_current_user)
 ):
-    return await get_all_comments(id=id)
+    return await get_all_comments_service(id=id)
 
 
 @comment_router.patch(
     "/{comment_id}/",
     summary="자유게시판 댓글 수정",
+    response_model=CommentResponseDTO,
     status_code=status.HTTP_200_OK,
     description="""
 - `401` `code`:`auth_required` 인증이 필요합니다.\n
@@ -67,7 +73,7 @@ async def patch_comment(
     comment_id: int,
     current_user: BaseUser = Depends(get_current_user),
 ):
-    return await patch_comment_by_id(comment_data, comment_id, current_user)
+    return await patch_comment_by_id_service(comment_data, comment_id, current_user)
 
 
 @comment_router.delete(
@@ -84,5 +90,5 @@ async def patch_comment(
 async def delete_comment(
     comment_id: int, current_user: BaseUser = Depends(get_current_user)
 ):
-    await delete_comment_by_id(comment_id, current_user)
+    await delete_comment_by_id_service(comment_id, current_user)
     return {"message": "댓글이 삭제되었습니다."}
