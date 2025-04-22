@@ -1,7 +1,7 @@
 from app.domain.comment.models import Comment
 from app.domain.comment.schemas import CommentCreateUpdateSchema
+from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser
-from app.utils.exception import CustomException
 
 
 def existing_comment(comment):

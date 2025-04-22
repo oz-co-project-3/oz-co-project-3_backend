@@ -6,8 +6,8 @@ from app.domain.job_posting.jobposting_schemas import (
     JobPostingSummaryResponse,
 )
 from app.domain.job_posting.jobposting_services import JobPostingService
+from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser, CorporateUser
-from app.utils.exception import CustomException
 
 job_posting_router = APIRouter(
     prefix="/api/job_posting",

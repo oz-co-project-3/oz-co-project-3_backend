@@ -1,6 +1,6 @@
 import httpx
 
-from app.utils.exception import CustomException
+from app.domain.services.verification import CustomException
 
 
 class ExternalAPIService:

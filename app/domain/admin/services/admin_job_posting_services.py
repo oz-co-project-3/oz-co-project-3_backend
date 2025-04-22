@@ -7,8 +7,8 @@ from app.domain.admin.schemas.admin_job_posting_schemas import (
     StatusEnum,
 )
 from app.domain.job_posting.job_posting_models import JobPosting, RejectPosting
+from app.domain.services.verification import CustomException, check_superuser
 from app.domain.user.user_models import BaseUser
-from app.utils.exception import CustomException, check_superuser
 
 
 def check_job_posting(job_posting: JobPosting):

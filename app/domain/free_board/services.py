@@ -7,8 +7,8 @@ from app.domain.free_board.repository import (
     get_free_boards_query,
     patch_free_board_by_id,
 )
-from app.utils.auth import check_author
-from app.utils.exception import check_existing
+from app.domain.services.permission import check_author
+from app.domain.services.verification import check_existing
 
 
 async def create_free_board_by_id_service(free_board: Any, current_user):

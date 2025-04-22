@@ -3,8 +3,8 @@ from app.domain.job_posting.jobposting_schemas import (
     JobPostingCreateUpdate,
     JobPostingResponse,
 )
+from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser, CorporateUser
-from app.utils.exception import CustomException
 
 
 def ensure_resource_exists(

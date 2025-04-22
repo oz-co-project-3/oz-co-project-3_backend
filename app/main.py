@@ -16,7 +16,7 @@ from app.api.v1.success_review import success_review_router
 from app.api.v1.user import router as user_router
 from app.api.v1.websocket import websocket_router
 from app.core.config import TORTOISE_ORM
-from app.utils.exception import CustomException
+from app.domain.services.verification import CustomException
 
 bearer_scheme = HTTPBearer()
 app = FastAPI()
