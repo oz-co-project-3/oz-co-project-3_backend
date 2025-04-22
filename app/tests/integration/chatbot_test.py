@@ -4,7 +4,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from passlib.handlers.bcrypt import bcrypt
 
-from app.domain.chatbot.chatbot_model import ChatBot
+from app.domain.chatbot.model import ChatBot
 from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 from app.main import app
 
