@@ -10,6 +10,7 @@ from app.domain.user.user_schema import (
     CompanyRegisterRequest,
     CompanyRegisterResponse,
     CompanyRegisterResponseData,
+    EmailCheckResponse,
     UserRegisterRequest,
     UserRegisterResponse,
     UserRegisterResponseData,
@@ -82,20 +83,6 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
 async def register_company_user(
     request: CompanyRegisterRequest,
 ) -> CompanyRegisterResponse:
-    existing_user = await BaseUser.get_or_none(email=request.email)
-    if existing_user:
-        raise CustomException(
-            status_code=400, error="중복된 이메일입니다.", code="duplicate_email"
-        )
-
-    manager_exists = await CorporateUser.get_or_none(
-        manager_email=request.manager_email
-    )
-    if manager_exists:
-        raise CustomException(
-            status_code=400, error="중복된 관리자 이메일입니다.", code="duplicate_manager_email"
-        )
-
     if len(request.password) < 8 or not re.search(
         r"[!@#$%^&*(),.?\":{}|<>]", request.password
     ):
@@ -168,3 +155,11 @@ async def delete_user(
     await current_user.save()
 
     return {"message": "회원 탈퇴가 완료되었습니다."}
+
+
+# 이메일 중복 검사 함수
+async def check_email_duplicate(email: str) -> EmailCheckResponse:
+    existing_user = await BaseUser.get_or_none(email=email)
+    if existing_user:
+        return EmailCheckResponse(message="이미 사용 중인 이메일입니다.", is_available=False)
+    return EmailCheckResponse(message="사용 가능한 이메일입니다.", is_available=True)
