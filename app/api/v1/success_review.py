@@ -3,11 +3,11 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from app.core.token import get_current_user
-from app.domain.success_review.success_review_schemas import (
+from app.domain.success_review.schemas import (
     SuccessReviewCreateUpdateSchema,
     SuccessReviewResponseSchema,
 )
-from app.domain.success_review.success_review_services import (
+from app.domain.success_review.services import (
     create_success_review_by_id,
     delete_success_review_by_id,
     get_all_success_reviews,

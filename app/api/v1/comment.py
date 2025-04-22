@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, status
 
 from app.core.token import get_current_user
-from app.domain.comment.comment_services import (
+from app.domain.comment.schemas import CommentCreateUpdateSchema
+from app.domain.comment.services import (
     create_comment_by_id,
     delete_comment_by_id,
     get_all_comments,
     patch_comment_by_id,
 )
-from app.domain.comment.commnet_schemas import CommentCreateUpdateSchema
 from app.domain.user.user_models import BaseUser
 
 comment_router = APIRouter(prefix="/api/free-board/{id}/comment", tags=["FreeBoard"])

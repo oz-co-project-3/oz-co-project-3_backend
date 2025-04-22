@@ -1,7 +1,7 @@
 from fastapi import status
 
-from app.domain.chatbot.chatbot_model import ChatBot
-from app.domain.chatbot.chatbot_schemas import ChatBotCreateUpdate
+from app.domain.chatbot.model import ChatBot
+from app.domain.chatbot.schemas import ChatBotCreateUpdate
 from app.domain.user.user_models import BaseUser
 from app.utils.exception import CustomException, check_superuser
 

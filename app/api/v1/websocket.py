@@ -1,6 +1,6 @@
 from fastapi import APIRouter, WebSocket
 
-from app.domain.chatbot.chatbot_model import ChatBot
+from app.domain.chatbot.model import ChatBot
 
 websocket_router = APIRouter(
     prefix="/api/ws",

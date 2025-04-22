@@ -4,7 +4,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from passlib.handlers.bcrypt import bcrypt
 
-from app.domain.free_board.free_board_models import FreeBoard
+from app.domain.free_board.models import FreeBoard
 from app.domain.user.user_models import BaseUser, SeekerUser
 from app.main import app
 

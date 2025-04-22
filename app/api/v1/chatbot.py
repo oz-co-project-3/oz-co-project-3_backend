@@ -3,11 +3,8 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from app.core.token import get_current_user
-from app.domain.chatbot.chatbot_schemas import (
-    ChatBotCreateUpdate,
-    ChatBotResponseSchema,
-)
-from app.domain.chatbot.chatbot_services import (
+from app.domain.chatbot.schemas import ChatBotCreateUpdate, ChatBotResponseSchema
+from app.domain.chatbot.services import (
     create_chatbot_by_id,
     delete_chatbot_by_id,
     get_all_chatbot,

@@ -15,3 +15,12 @@ def check_superuser(current_user):
             error="접근 권한이 없습니다",
             code="permission_denied",
         )
+
+
+def check_existing(obj, error_message: str, code: str):
+    if not obj:
+        raise CustomException(
+            error=error_message,
+            code=code,
+            status_code=404,
+        )

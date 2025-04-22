@@ -1,4 +1,4 @@
-from app.domain.success_review.success_review_models import SuccessReview
+from app.domain.success_review.models import SuccessReview
 from app.utils.exception import CustomException
 
 
