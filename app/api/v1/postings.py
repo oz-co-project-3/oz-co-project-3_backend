@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, Query, status
 from app.core.token import get_current_user
 from app.domain.posting.schemas import (
     ApplicantCreateUpdateSchema,
-    ApplicantResponseSchema,
-    JobPostingResponseSchema,
-    PaginatedJobPostingsResponseSchema,
+    ApplicantResponseDTO,
+    JobPostingResponseDTO,
+    PaginatedJobPostingsResponseDTO,
 )
 from app.domain.posting.services import (
     create_applicant_service,
@@ -23,7 +23,7 @@ posting_router = APIRouter(
 
 @posting_router.get(
     "/",
-    response_model=PaginatedJobPostingsResponseSchema,
+    response_model=PaginatedJobPostingsResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="공고 전체 조회",
     description="""
@@ -56,7 +56,7 @@ async def get_list_postings(
 
 @posting_router.get(
     "/{id}/",
-    response_model=JobPostingResponseSchema,
+    response_model=JobPostingResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="공고 상세 조회",
     description="""
@@ -70,7 +70,7 @@ async def get_posting(id: int):
 
 @posting_router.post(
     "/{id}/applicant/",
-    response_model=ApplicantResponseSchema,
+    response_model=ApplicantResponseDTO,
     status_code=status.HTTP_201_CREATED,
     summary="공고 지원자 생성",
     description="""
@@ -88,7 +88,7 @@ async def create_applicant(
 
 @posting_router.patch(
     "/{id}/applicant/{applicant_id}/",
-    response_model=ApplicantResponseSchema,
+    response_model=ApplicantResponseDTO,
     status_code=status.HTTP_201_CREATED,
     summary="공고 지원자 수정",
     description="""

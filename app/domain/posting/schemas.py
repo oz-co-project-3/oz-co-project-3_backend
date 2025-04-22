@@ -8,7 +8,7 @@ class UserSchema(BaseModel):
     id: int
 
 
-class JobPostingResponseSchema(BaseModel):
+class JobPostingResponseDTO(BaseModel):
     id: int
     user: UserSchema
     company: str
@@ -42,7 +42,7 @@ class ApplicantCreateUpdateSchema(BaseModel):
         from_attributes = True
 
 
-class ApplicantResponseSchema(BaseModel):
+class ApplicantResponseDTO(BaseModel):
     id: int
     job_posting: int
     resume: int
@@ -54,11 +54,11 @@ class ApplicantResponseSchema(BaseModel):
         from_attributes = True
 
 
-class PaginatedJobPostingsResponseSchema(BaseModel):
+class PaginatedJobPostingsResponseDTO(BaseModel):
     total: int
     offset: int
     limit: int
-    data: List[JobPostingResponseSchema]
+    data: List[JobPostingResponseDTO]
 
     class Config:
         from_attributes = True
