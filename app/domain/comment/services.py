@@ -12,6 +12,7 @@ from app.domain.comment.schemas import CommentCreateUpdateSchema
 from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser
 
+
 def existing_comment(comment):
     """존재하는 게시판인지 확인"""
     if not comment:
@@ -20,6 +21,7 @@ def existing_comment(comment):
             code="comment_not_found",
             status_code=404,
         )
+
 
 async def create_comment_by_id_service(
     comment_data: Any,
