@@ -3,12 +3,13 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from app.core.token import get_current_user
-from app.domain.chatbot.schemas import ChatBotCreateUpdate, ChatBotResponseSchema
+from app.domain.chatbot.schemas import ChatBotCreateUpdate, ChatBotResponseDTO
 from app.domain.chatbot.services import (
-    create_chatbot_by_id,
-    delete_chatbot_by_id,
-    get_all_chatbot,
+    create_chatbot_by_id_service,
+    delete_chatbot_by_id_service,
+    get_all_chatbots_service,
     patch_chatbot_by_id,
+    patch_chatbot_by_id_service,
 )
 from app.domain.user.user_models import BaseUser
 
@@ -18,6 +19,7 @@ chatbot_router = APIRouter(prefix="/api/admin/chatbot", tags=["chatbot"])
 @chatbot_router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
+    response_model=ChatBotResponseDTO,
     summary="챗봇 프롬프트 생성",
     description=(
         """
@@ -31,12 +33,12 @@ chatbot_router = APIRouter(prefix="/api/admin/chatbot", tags=["chatbot"])
 async def create_chatbot(
     chatbot: ChatBotCreateUpdate, current_user: BaseUser = Depends(get_current_user)
 ):
-    return await create_chatbot_by_id(current_user, chatbot)
+    return await create_chatbot_by_id_service(current_user, chatbot)
 
 
 @chatbot_router.get(
     "/",
-    response_model=List[ChatBotResponseSchema],
+    response_model=List[ChatBotResponseDTO],
     status_code=status.HTTP_200_OK,
     summary="챗봇 프롬프트 조회",
     description=(
@@ -49,12 +51,12 @@ async def create_chatbot(
     ),
 )
 async def get_list_chatbots(current_user: BaseUser = Depends(get_current_user)):
-    return await get_all_chatbot(current_user)
+    return await get_all_chatbots_service(current_user)
 
 
 @chatbot_router.patch(
     "/{id}/",
-    response_model=ChatBotResponseSchema,
+    response_model=ChatBotResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="챗봇 프롬프트 수정",
     description=(
@@ -72,7 +74,7 @@ async def patch_chatbot(
     chatbot: ChatBotCreateUpdate,
     current_user: BaseUser = Depends(get_current_user),
 ):
-    return await patch_chatbot_by_id(id, current_user, chatbot)
+    return await patch_chatbot_by_id_service(id, current_user, chatbot)
 
 
 @chatbot_router.delete(
@@ -93,5 +95,5 @@ async def delete_chatbot(
     id: int,
     current_user: BaseUser = Depends(get_current_user),
 ):
-    await delete_chatbot_by_id(id, current_user)
+    await delete_chatbot_by_id_service(id, current_user)
     return {"message": "프롬프트가 삭자되었습니다."}
