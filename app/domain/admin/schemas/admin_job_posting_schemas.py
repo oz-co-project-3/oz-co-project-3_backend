@@ -34,7 +34,7 @@ class RejectPostingSchema(BaseModel):
         from_attributes = True
 
 
-class JobPostingResponseSchema(BaseModel):
+class JobPostingResponseDTO(BaseModel):
     id: int
     user: UserSchema
     title: str
@@ -75,5 +75,5 @@ class RejectPostingCreateSchema(BaseModel):
 class RejectPostingResponseSchema(BaseModel):
     id: int
     user: UserSchema
-    job_posting: JobPostingResponseSchema
+    job_posting: JobPostingResponseDTO
     content: str

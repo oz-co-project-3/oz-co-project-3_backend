@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, status
 
 from app.core.token import get_current_user
 from app.domain.admin.schemas.admin_job_posting_schemas import (
-    JobPostingResponseSchema,
+    JobPostingResponseDTO,
     JobPostingUpdateSchema,
     RejectPostingCreateSchema,
     RejectPostingResponseSchema,
@@ -156,7 +156,7 @@ async def delete_resume(
 
 @admin_router.get(
     "/job-posting/",
-    response_model=List[JobPostingResponseSchema],
+    response_model=List[JobPostingResponseDTO],
     status_code=status.HTTP_200_OK,
     summary="관리자 공고 전체 조회",
     description="""
@@ -176,7 +176,7 @@ async def get_list_job_postings(
 
 @admin_router.get(
     "/job-posting/{id}/",
-    response_model=JobPostingResponseSchema,
+    response_model=JobPostingResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="관리자 공고 상세 조회",
     description="""
@@ -195,7 +195,7 @@ async def get_job_posting(
 
 @admin_router.patch(
     "/job-posting/{id}/",
-    response_model=JobPostingResponseSchema,
+    response_model=JobPostingResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="관리자 공고 상세 조회",
     description="""
