@@ -8,7 +8,6 @@ from app.domain.chatbot.services import (
     create_chatbot_by_id_service,
     delete_chatbot_by_id_service,
     get_all_chatbots_service,
-    patch_chatbot_by_id,
     patch_chatbot_by_id_service,
 )
 from app.domain.user.user_models import BaseUser

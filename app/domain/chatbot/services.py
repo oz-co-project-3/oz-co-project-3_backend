@@ -1,8 +1,5 @@
 from typing import Any, List
 
-from fastapi import status
-
-from app.domain.chatbot.model import ChatBot
 from app.domain.chatbot.repository import (
     create_chatbot,
     delete_chatbot,
@@ -11,11 +8,7 @@ from app.domain.chatbot.repository import (
     patch_chatbot_by_id,
 )
 from app.domain.chatbot.schemas import ChatBotCreateUpdate, ChatBotResponseDTO
-from app.domain.services.verification import (
-    CustomException,
-    check_existing,
-    check_superuser,
-)
+from app.domain.services.verification import check_existing, check_superuser
 
 
 async def get_all_chatbots_service(current_user: Any) -> List[ChatBotResponseDTO]:
