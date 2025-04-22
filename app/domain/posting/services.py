@@ -7,11 +7,11 @@ from app.domain.posting.repository import (
     get_postings_query,
     get_resume_id_by_applicant_id,
     get_resume_query,
+    paginate_query,
     patch_posting_applicant_by_id,
 )
 from app.utils.auth import check_author
 from app.utils.exception import check_existing
-from app.utils.pagination import paginate_query
 
 
 async def get_all_postings_service(
@@ -34,13 +34,7 @@ async def get_all_postings_service(
         education,
         view_count,
     )
-    total, results = await paginate_query(query, offset, limit)
-    return {
-        "total": total,
-        "offset": offset,
-        "limit": limit,
-        "data": results,
-    }
+    return await paginate_query(query, offset, limit)
 
 
 async def get_posting_by_id_service(id: int):
