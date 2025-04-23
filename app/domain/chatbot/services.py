@@ -2,7 +2,7 @@ from typing import Any, List
 
 from app.domain.chatbot.repository import (
     create_chatbot,
-    delete_chatbot,
+    delete_chatbot_by_id,
     get_all_chatbots,
     get_chatbot_by_id,
     patch_chatbot_by_id,
@@ -24,9 +24,10 @@ async def create_chatbot_by_id_service(
 
 
 async def patch_chatbot_by_id_service(
-    id: int, update_chatbot: ChatBotCreateUpdate
+    id: int, current_user: Any, update_chatbot: ChatBotCreateUpdate
 ) -> ChatBotResponseDTO:
-    chatbot = get_chatbot_by_id(id)
+    check_superuser(current_user)
+    chatbot = await get_chatbot_by_id(id)
     check_existing(chatbot, "해당 챗봇 프롬프트가 없습니다.", "chatbot_not_found")
 
     chatbot = await patch_chatbot_by_id(chatbot, update_chatbot)
@@ -39,6 +40,6 @@ async def delete_chatbot_by_id_service(
     current_user: Any,
 ):
     check_superuser(current_user)
-    chatbot = get_chatbot_by_id(id)
+    chatbot = await get_chatbot_by_id(id)
     check_existing(chatbot, "해당 챗봇 프롬프트가 없습니다.", "chatbot_not_found")
-    await delete_chatbot(chatbot)
+    await delete_chatbot_by_id(chatbot)
