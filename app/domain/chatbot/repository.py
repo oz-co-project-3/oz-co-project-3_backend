@@ -25,5 +25,5 @@ async def patch_chatbot_by_id(chatbot, update_chatbot):
     return chatbot
 
 
-async def delete_chatbot(chatbot):
+async def delete_chatbot_by_id(chatbot):
     await chatbot.delete()
