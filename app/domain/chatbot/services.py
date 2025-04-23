@@ -1,53 +1,44 @@
-from fastapi import status
+from typing import Any, List
 
-from app.domain.chatbot.model import ChatBot
-from app.domain.chatbot.schemas import ChatBotCreateUpdate
-from app.domain.user.user_models import BaseUser
-from app.utils.exception import CustomException, check_superuser
+from app.domain.chatbot.repository import (
+    create_chatbot,
+    delete_chatbot,
+    get_all_chatbots,
+    get_chatbot_by_id,
+    patch_chatbot_by_id,
+)
+from app.domain.chatbot.schemas import ChatBotCreateUpdate, ChatBotResponseDTO
+from app.domain.services.verification import check_existing, check_superuser
 
 
-async def get_all_chatbot(current_user: BaseUser):
+async def get_all_chatbots_service(current_user: Any) -> List[ChatBotResponseDTO]:
     check_superuser(current_user)
-    return await ChatBot.all()
+    return await get_all_chatbots()
 
 
-async def create_chatbot_by_id(current_user: BaseUser, chatbot: ChatBotCreateUpdate):
+async def create_chatbot_by_id_service(
+    current_user: Any, chatbot: ChatBotCreateUpdate
+) -> ChatBotResponseDTO:
     check_superuser(current_user)
-    return await ChatBot.create(**chatbot.dict())
+    return await create_chatbot(chatbot)
 
 
-async def patch_chatbot_by_id(
-    id: int, current_user: BaseUser, update_chatbot: ChatBotCreateUpdate
-):
-    check_superuser(current_user)
-    chatbot = await ChatBot.filter(id=id).first()
-    if not chatbot:
-        raise CustomException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            code="chatbot_not_found",
-            error="해당 챗봇 프롬프트가 없습니다.",
-        )
+async def patch_chatbot_by_id_service(
+    id: int, update_chatbot: ChatBotCreateUpdate
+) -> ChatBotResponseDTO:
+    chatbot = get_chatbot_by_id(id)
+    check_existing(chatbot, "해당 챗봇 프롬프트가 없습니다.", "chatbot_not_found")
 
-    chatbot.step = update_chatbot.step
-    chatbot.is_terminate = update_chatbot.is_terminate
-    chatbot.selection_path = update_chatbot.selection_path
-    chatbot.options = update_chatbot.options
-    chatbot.answer = update_chatbot.answer
-    await chatbot.save()
+    chatbot = await patch_chatbot_by_id(chatbot, update_chatbot)
 
     return chatbot
 
 
-async def delete_chatbot_by_id(
+async def delete_chatbot_by_id_service(
     id: int,
-    current_user: BaseUser,
+    current_user: Any,
 ):
     check_superuser(current_user)
-    chatbot = await ChatBot.filter(id=id).first()
-    if not chatbot:
-        raise CustomException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            code="chatbot_not_found",
-            error="해당 챗봇 프롬프트가 없습니다.",
-        )
-    await chatbot.delete()
+    chatbot = get_chatbot_by_id(id)
+    check_existing(chatbot, "해당 챗봇 프롬프트가 없습니다.", "chatbot_not_found")
+    await delete_chatbot(chatbot)

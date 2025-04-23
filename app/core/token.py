@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
+from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser
-from app.utils.exception import CustomException
 
 load_dotenv()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login/")

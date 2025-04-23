@@ -1,13 +1,13 @@
 from datetime import date, datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, model_validator
 
-from app.utils.exception import CustomException
+from app.domain.services.verification import CustomException
 
 
-class UserResponseSchema(BaseModel):
+class UserResponseDTO(BaseModel):
     id: int
     email: EmailStr
     user_type: str
@@ -54,10 +54,13 @@ class CorpUserResponseSchema(BaseModel):
         from_attributes = True
 
 
-class UserUnionResponseSchema(BaseModel):
-    base: UserResponseSchema
+class UserUnionResponseDTO(BaseModel):
+    base: UserResponseDTO
     seeker: Optional[SeekerUserResponseSchema] = None
     corp: Optional[CorpUserResponseSchema] = None
+
+    class Config:
+        from_attributes = True
 
 
 class Status(str, Enum):

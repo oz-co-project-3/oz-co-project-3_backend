@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, model_validator
 
-from app.utils.exception import CustomException
+from app.domain.services.verification import CustomException
 
 
 class UserSchema(BaseModel):

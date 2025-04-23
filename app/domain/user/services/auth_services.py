@@ -12,6 +12,7 @@ from app.core.token import (
     create_jwt_tokens,
     create_token,
 )
+from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 from app.domain.user.user_schema import (
     LoginRequest,
@@ -21,7 +22,6 @@ from app.domain.user.user_schema import (
     RefreshTokenResponse,
     RefreshTokenResponseData,
 )
-from app.utils.exception import CustomException
 
 
 # 비밀번호 검증

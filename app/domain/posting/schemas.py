@@ -1,4 +1,3 @@
-from operator import truediv
 from typing import List, Optional
 
 from pydantic import BaseModel
@@ -8,7 +7,7 @@ class UserSchema(BaseModel):
     id: int
 
 
-class JobPostingResponseSchema(BaseModel):
+class JobPostingResponseDTO(BaseModel):
     id: int
     user: UserSchema
     company: str
@@ -38,8 +37,11 @@ class ApplicantCreateUpdateSchema(BaseModel):
     status: str
     memo: Optional[str] = None
 
+    class Config:
+        from_attributes = True
 
-class ApplicantResponseSchema(BaseModel):
+
+class ApplicantResponseDTO(BaseModel):
     id: int
     job_posting: int
     resume: int
@@ -47,9 +49,15 @@ class ApplicantResponseSchema(BaseModel):
     status: str
     memo: Optional[str]
 
+    class Config:
+        from_attributes = True
 
-class PaginatedJobPostingsResponseSchema(BaseModel):
+
+class PaginatedJobPostingsResponseDTO(BaseModel):
     total: int
     offset: int
     limit: int
-    data: List[JobPostingResponseSchema]
+    data: List[JobPostingResponseDTO]
+
+    class Config:
+        from_attributes = True

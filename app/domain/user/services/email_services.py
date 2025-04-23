@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, EmailStr
 
 from app.core.redis import redis
+from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser
 from app.domain.user.user_schema import ResendEmailRequest
-from app.utils.exception import CustomException
 
 load_dotenv()
 

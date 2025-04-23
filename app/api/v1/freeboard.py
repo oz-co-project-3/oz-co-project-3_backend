@@ -3,13 +3,13 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from app.core.token import get_current_user
-from app.domain.free_board.schemas import FreeBoardCreateUpdate, FreeBoardResponse
+from app.domain.free_board.schemas import FreeBoardCreateUpdate, FreeBoardResponseDTO
 from app.domain.free_board.services import (
-    create_free_board_by_id,
-    delete_free_board_by_id,
-    get_all_free_board,
-    get_free_board_by_id,
-    patch_free_board_by_id,
+    create_free_board_by_id_service,
+    delete_free_board_by_id_service,
+    get_all_free_board_service,
+    get_free_board_by_id_service,
+    patch_free_board_by_id_service,
 )
 from app.domain.user.user_models import BaseUser
 
@@ -19,6 +19,7 @@ free_board_router = APIRouter(prefix="/api/free-board", tags=["FreeBoard"])
 @free_board_router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
+    response_model=FreeBoardResponseDTO,
     summary="자유게시판 글 생성",
     description=(
         """
@@ -32,12 +33,12 @@ async def create_free_board(
     free_board: FreeBoardCreateUpdate,
     current_user: BaseUser = Depends(get_current_user),
 ):
-    return await create_free_board_by_id(free_board, current_user)
+    return await create_free_board_by_id_service(free_board, current_user)
 
 
 @free_board_router.get(
     "/",
-    response_model=List[FreeBoardResponse],
+    response_model=List[FreeBoardResponseDTO],
     status_code=status.HTTP_200_OK,
     summary="자유게시판 전체 조회",
     description="""
@@ -46,12 +47,12 @@ async def create_free_board(
     """,
 )
 async def get_list_free_board(current_user: BaseUser = Depends(get_current_user)):
-    return await get_all_free_board()
+    return await get_all_free_board_service()
 
 
 @free_board_router.get(
     "/{id}/",
-    response_model=FreeBoardResponse,
+    response_model=FreeBoardResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="자유게시판 상세 조회",
     description="""
@@ -63,12 +64,12 @@ async def get_list_free_board(current_user: BaseUser = Depends(get_current_user)
 async def get_detail_free_board(
     id: int, current_user: BaseUser = Depends(get_current_user)
 ):
-    return await get_free_board_by_id(id)
+    return await get_free_board_by_id_service(id)
 
 
 @free_board_router.patch(
     "/{id}/",
-    response_model=FreeBoardResponse,
+    response_model=FreeBoardResponseDTO,
     summary="자유게시판 수정",
     status_code=status.HTTP_200_OK,
     description="""
@@ -83,7 +84,7 @@ async def patch_free_board(
     free_board: FreeBoardCreateUpdate,
     current_user: BaseUser = Depends(get_current_user),
 ):
-    return await patch_free_board_by_id(id, free_board, current_user)
+    return await patch_free_board_by_id_service(id, free_board, current_user)
 
 
 @free_board_router.delete(
@@ -101,5 +102,5 @@ async def delete_free_board(
     id: int,
     current_user: BaseUser = Depends(get_current_user),
 ):
-    await delete_free_board_by_id(id, current_user)
+    await delete_free_board_by_id_service(id, current_user)
     return {"message": "삭제가 완료되었습니다."}
