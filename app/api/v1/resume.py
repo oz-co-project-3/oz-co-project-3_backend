@@ -7,7 +7,7 @@ from app.domain.resume.schema import ResumeRequestSchema, ResumeResponseSchema
 from app.domain.resume.service import ResumeService
 from app.domain.user.user_models import SeekerUser
 
-resume_router = APIRouter(prefix="/api/resumes", tags=["resumes"])
+resume_router = APIRouter(prefix="/api/resume", tags=["resumes"])
 
 
 @resume_router.post(
