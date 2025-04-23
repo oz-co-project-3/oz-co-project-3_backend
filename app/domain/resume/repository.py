@@ -28,8 +28,18 @@ class ResumeRepository:
         return False
 
     @staticmethod
-    async def get_all_resumes(offset: int = 0, limit: int = 10) -> List[Resume]:
-        return await Resume.all().offset(offset).limit(limit)
+    async def get_resumes_by_user_id(
+        user_id: int, offset: int = 0, limit: int = 10
+    ) -> List[Resume]:
+        return await Resume.filter(user_id=user_id).offset(offset).limit(limit)
+
+    @staticmethod
+    async def get_total_resume_count_by_user_id(user_id: int) -> int:
+        return await Resume.filter(user_id=user_id).count()
+
+    @staticmethod
+    async def get_total_resume_count() -> int:
+        return await Resume.all().count()
 
 
 class WorkExpRepository:
