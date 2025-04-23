@@ -8,11 +8,11 @@ async def create_comment_by_id(comment: Any, id, current_user):
 
 
 async def get_comments_query(id):
-    return await Comment.filter(free_board_id=id).all()
+    return await Comment.filter(free_board_id=id).select_related("user").all()
 
 
 async def get_comment_query(id):
-    return await Comment.filter(pk_id=id).select_related("user").first()
+    return await Comment.filter(pk=id).select_related("user").first()
 
 
 async def patch_comment_by_id(comment, patch_comment):
