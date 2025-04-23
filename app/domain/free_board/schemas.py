@@ -29,7 +29,7 @@ class FreeBoardCreateUpdate(BaseModel):
         return self
 
 
-class FreeBoardResponse(BaseModel):
+class FreeBoardResponseDTO(BaseModel):
     id: int
     user: UserSchema
     title: str

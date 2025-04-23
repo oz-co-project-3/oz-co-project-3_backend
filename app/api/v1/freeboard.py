@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from app.core.token import get_current_user
-from app.domain.free_board.schemas import FreeBoardCreateUpdate, FreeBoardResponse
+from app.domain.free_board.schemas import FreeBoardCreateUpdate, FreeBoardResponseDTO
 from app.domain.free_board.services import (
     create_free_board_by_id_service,
     delete_free_board_by_id_service,
@@ -19,6 +19,7 @@ free_board_router = APIRouter(prefix="/api/free-board", tags=["FreeBoard"])
 @free_board_router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
+    response_model=FreeBoardResponseDTO,
     summary="자유게시판 글 생성",
     description=(
         """
@@ -37,7 +38,7 @@ async def create_free_board(
 
 @free_board_router.get(
     "/",
-    response_model=List[FreeBoardResponse],
+    response_model=List[FreeBoardResponseDTO],
     status_code=status.HTTP_200_OK,
     summary="자유게시판 전체 조회",
     description="""
@@ -51,7 +52,7 @@ async def get_list_free_board(current_user: BaseUser = Depends(get_current_user)
 
 @free_board_router.get(
     "/{id}/",
-    response_model=FreeBoardResponse,
+    response_model=FreeBoardResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="자유게시판 상세 조회",
     description="""
@@ -68,7 +69,7 @@ async def get_detail_free_board(
 
 @free_board_router.patch(
     "/{id}/",
-    response_model=FreeBoardResponse,
+    response_model=FreeBoardResponseDTO,
     summary="자유게시판 수정",
     status_code=status.HTTP_200_OK,
     description="""
