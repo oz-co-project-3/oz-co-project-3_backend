@@ -62,3 +62,11 @@ class WorkExpRepository:
     @staticmethod
     async def get_work_experiences_by_resume_id(resume_id: int) -> List[WorkExp]:
         return await WorkExp.filter(resume_id=resume_id).all()
+
+    @staticmethod
+    async def delete_work_experiences_by_resume_id(resume_id: int) -> bool:
+        """
+        특정 이력서 ID와 연결된 모든 경력 사항을 삭제합니다.
+        """
+        deleted_count = await WorkExp.filter(resume_id=resume_id).delete()
+        return deleted_count > 0
