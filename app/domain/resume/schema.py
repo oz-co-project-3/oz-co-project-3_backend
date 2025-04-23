@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class StatusEnum(str, Enum):
@@ -37,6 +37,8 @@ class ResumeRequestSchema(BaseModel):
     document_url: Optional[str] = None
     work_experiences: Optional[List[WorkExpRequestSchema]] = None  # 경력 사항 추가
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 # 경력 조회
 class WorkExpResponseSchema(BaseModel):
@@ -45,6 +47,9 @@ class WorkExpResponseSchema(BaseModel):
     company: str
     period: str
     position: str
+
+
+model_config = ConfigDict(from_attributes=True)
 
 
 # 이력서 조회
@@ -68,3 +73,5 @@ class ResumeResponseSchema(BaseModel):
     work_experiences: Optional[List[WorkExpResponseSchema]] = None  # 경력 사항 추가
     created_at: str
     updated_at: str
+
+    model_config = ConfigDict(from_attributes=True)
