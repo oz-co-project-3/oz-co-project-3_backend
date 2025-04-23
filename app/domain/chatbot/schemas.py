@@ -14,7 +14,7 @@ class ChatBotCreateUpdate(BaseModel):
         from_attributes = True
 
 
-class ChatBotResponseSchema(BaseModel):
+class ChatBotResponseDTO(BaseModel):
     id: int
     step: int
     is_terminate: bool
