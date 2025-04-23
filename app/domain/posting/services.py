@@ -7,11 +7,16 @@ from app.domain.posting.repository import (
     get_postings_query,
     get_resume_id_by_applicant_id,
     get_resume_query,
+    paginate_query,
     patch_posting_applicant_by_id,
 )
-from app.utils.auth import check_author
-from app.utils.exception import check_existing
-from app.utils.pagination import paginate_query
+from app.domain.posting.schemas import (
+    ApplicantResponseDTO,
+    JobPostingResponseDTO,
+    PaginatedJobPostingsResponseDTO,
+)
+from app.domain.services.permission import check_author
+from app.domain.services.verification import check_existing
 
 
 async def get_all_postings_service(
@@ -24,7 +29,7 @@ async def get_all_postings_service(
     view_count: Optional[int] = 0,
     offset: int = 0,
     limit: int = 10,
-):
+) -> PaginatedJobPostingsResponseDTO:
     query = await get_postings_query(
         search_keyword,
         location,
@@ -34,39 +39,35 @@ async def get_all_postings_service(
         education,
         view_count,
     )
-    total, results = await paginate_query(query, offset, limit)
-    return {
-        "total": total,
-        "offset": offset,
-        "limit": limit,
-        "data": results,
-    }
+    return await paginate_query(query, offset, limit)
 
 
-async def get_posting_by_id_service(id: int):
+async def get_posting_by_id_service(id: int) -> JobPostingResponseDTO:
     posting = await get_posting_query(id)
     check_existing(posting, "공고를 찾을 수 없습니다.", "posting_not_found")
     return posting
 
 
-async def create_applicant_service(id: int, current_user: Any, applicant: Any):
+async def create_applicant_service(
+    id: int, current_user: Any, applicant: Any
+) -> ApplicantResponseDTO:
     posting = await get_posting_query(id)
     check_existing(posting, "공고를 찾을 수 없습니다.", "posting_not_found")
-    resume = await get_resume_query(applicant)
+    resume = await get_resume_query(applicant.resume)
     check_existing(resume, "이력서를 찾을 수 없습니다.", "resume_not_found")
 
     created_applicant = await create_posting_applicant(
         applicant, current_user, resume, posting
     )
 
-    return {
-        "id": created_applicant["id"],
-        "job_posting": created_applicant["job_posting_id"],
-        "resume": created_applicant["resume_id"],
-        "user": created_applicant["user_id"],
-        "status": created_applicant["status"],
-        "memo": created_applicant["memo"],
-    }
+    return ApplicantResponseDTO(
+        id=created_applicant["id"],
+        job_posting=created_applicant["job_posting_id"],
+        resume=created_applicant["resume_id"],
+        user=created_applicant["user_id"],
+        status=created_applicant["status"],
+        memo=created_applicant["memo"],
+    )
 
 
 async def patch_posting_applicant_by_id_service(
@@ -74,7 +75,7 @@ async def patch_posting_applicant_by_id_service(
     current_user: Any,
     patch_applicant: Any,
     applicant_id: int,
-):
+) -> ApplicantResponseDTO:
     posting = await get_posting_query(id)
     check_existing(posting, "공고를 찾을 수 없습니다.", "posting_not_found")
 
@@ -93,11 +94,11 @@ async def patch_posting_applicant_by_id_service(
         applicant, resume, patch_applicant
     )
 
-    return {
-        "id": patch_applicant["id"],
-        "job_posting": patch_applicant["job_posting_id"],
-        "resume": patch_applicant["resume_id"],
-        "user": patch_applicant["user_id"],
-        "status": patch_applicant["status"],
-        "memo": patch_applicant["memo"],
-    }
+    return ApplicantResponseDTO(
+        id=patch_applicant["id"],
+        job_posting=patch_applicant["job_posting_id"],
+        resume=patch_applicant["resume_id"],
+        user=patch_applicant["user_id"],
+        status=patch_applicant["status"],
+        memo=patch_applicant["memo"],
+    )

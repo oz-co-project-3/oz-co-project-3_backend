@@ -4,6 +4,7 @@ import httpx
 
 from app.core.redis import redis
 from app.core.token import create_jwt_tokens
+from app.domain.services.verification import CustomException
 from app.domain.user.user_models import (
     BaseUser,
     Gender,
@@ -13,7 +14,6 @@ from app.domain.user.user_models import (
     UserType,
 )
 from app.domain.user.user_schema import LoginResponse, LoginResponseData
-from app.utils.exception import CustomException
 
 
 # 카카오 url 이동

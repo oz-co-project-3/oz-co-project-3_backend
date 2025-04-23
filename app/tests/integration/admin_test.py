@@ -4,7 +4,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from passlib.handlers.bcrypt import bcrypt
 
-from app.domain.admin.schemas.admin_job_posting_schemas import EmploymentEnum
+from app.domain.admin.schemas.job_posting_schemas import EmploymentEnum
 from app.domain.job_posting.job_posting_models import (
     JobPosting,
     MethodEnum,

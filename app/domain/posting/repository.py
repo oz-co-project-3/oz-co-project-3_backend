@@ -3,9 +3,7 @@ from typing import Optional
 from tortoise.expressions import Q
 
 from app.domain.job_posting.job_posting_models import Applicants, JobPosting
-from app.domain.posting.schemas import ApplicantCreateUpdateSchema
 from app.domain.resume.resume_models import Resume
-from app.domain.user.user_models import BaseUser
 
 
 async def get_postings_query(
@@ -69,6 +67,46 @@ async def get_postings_query(
         query = query.filter(view_count__gte=view_count)
 
     return query
+
+
+async def paginate_query(query, offset: int, limit: int):
+    total = await query.count()
+    start = offset * limit
+    raw_results = await query.offset(start).limit(limit)
+
+    results = [
+        {
+            "id": item.id,
+            "user": {
+                "id": item.user.id,
+            },
+            "company": item.company,
+            "title": item.title,
+            "location": item.location,
+            "employment_type": item.employment_type,
+            "employ_method": item.employ_method,
+            "work_time": item.work_time,
+            "position": item.position,
+            "history": item.history,
+            "recruitment_count": item.recruitment_count,
+            "education": item.education,
+            "deadline": item.deadline,
+            "salary": item.salary,
+            "summary": item.summary,
+            "description": item.description,
+            "status": item.status,
+            "view_count": item.view_count,
+            "report": item.report,
+        }
+        for item in raw_results
+    ]
+
+    return {
+        "total": total,
+        "offset": offset,
+        "limit": limit,
+        "data": results,
+    }
 
 
 async def get_posting_query(id):

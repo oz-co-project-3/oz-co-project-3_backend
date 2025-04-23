@@ -1,9 +1,8 @@
 import os
 
 import httpx
-from dotenv import load_dotenv
 
-from app.utils.exception import CustomException
+from app.domain.services.verification import CustomException
 
 BIZINFO_API_KEY = os.getenv("BIZINFO_API_KEY")
 
