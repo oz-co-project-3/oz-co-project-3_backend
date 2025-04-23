@@ -12,6 +12,7 @@ from app.api.v1.freeboard import free_board_router
 from app.api.v1.jobposting import job_posting_router
 from app.api.v1.postings import posting_router
 from app.api.v1.public_api import public_router
+from app.api.v1.resume import resume_router
 from app.api.v1.success_review import success_review_router
 from app.api.v1.user import router as user_router
 from app.api.v1.websocket import websocket_router
@@ -31,6 +32,7 @@ app.include_router(chatbot_router)
 app.include_router(websocket_router)
 app.include_router(posting_router)
 app.include_router(public_router)
+app.include_router(resume_router)
 
 origins = [
     "http://localhost",
