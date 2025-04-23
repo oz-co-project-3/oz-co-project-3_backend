@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from app.domain.resume.models import Resume, WorkExp
+from app.utils.exception import CustomException
 
 
 class ResumeRepository:
@@ -48,8 +49,28 @@ class WorkExpRepository:
         return await WorkExp.create(**data)
 
     @staticmethod
-    async def get_work_experience_by_id(work_exp_id: int) -> Optional[WorkExp]:
+    async def update_work_experience(work_exp_id: int, data: dict) -> Optional[WorkExp]:
+        """
+        특정 경력 사항을 업데이트합니다.
+        """
+        work_exp = await WorkExp.filter(id=work_exp_id).first()
+        if work_exp:
+            await WorkExp.filter(id=work_exp_id).update(**data)
         return await WorkExp.filter(id=work_exp_id).first()
+
+    @staticmethod
+    async def get_work_experience_by_id(work_exp_id: int) -> WorkExp:
+        """
+        특정 ID로 경력 사항을 조회합니다.
+        """
+        work_exp = await WorkExp.filter(id=work_exp_id).first()
+        if not work_exp:
+            raise CustomException(
+                error="이력서가 없습니다.",
+                code="work_exp_not_found",
+                status_code=404,
+            )
+        return work_exp
 
     @staticmethod
     async def delete_work_experience(work_exp_id: int) -> bool:
@@ -61,7 +82,14 @@ class WorkExpRepository:
 
     @staticmethod
     async def get_work_experiences_by_resume_id(resume_id: int) -> List[WorkExp]:
-        return await WorkExp.filter(resume_id=resume_id).all()
+        """
+        특정 이력서 ID로 연결된 경력 사항을 가져옵니다.
+        """
+        return (
+            await WorkExp.filter(resume_id=resume_id)
+            .only("id", "company", "period", "position")
+            .all()
+        )
 
     @staticmethod
     async def delete_work_experiences_by_resume_id(resume_id: int) -> bool:
