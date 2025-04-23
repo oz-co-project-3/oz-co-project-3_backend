@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -10,7 +10,15 @@ class StatusEnum(str, Enum):
     Closed = "완료"
 
 
-# 생성 및 수정 - 이력서
+# 경력 생성 및 수정
+class WorkExpRequestSchema(BaseModel):
+    resume_id: int
+    company: str
+    period: str
+    position: str
+
+
+# 이력서 생성 및 수정
 class ResumeRequestSchema(BaseModel):
     user_id: int
     title: str
@@ -25,12 +33,14 @@ class ResumeRequestSchema(BaseModel):
     school_name: Optional[str] = None
     graduation_status: Optional[str] = None
     introduce: str
-    status: StatusEnum
+    status: str
     document_url: Optional[str] = None
+    work_experiences: Optional[List[WorkExpRequestSchema]] = None  # 경력 사항 추가
 
 
-# 경력 생성 및 수정
-class WorkExpRequestSchema(BaseModel):
+# 경력 조회
+class WorkExpResponseSchema(BaseModel):
+    id: int
     resume_id: int
     company: str
     period: str
@@ -53,16 +63,8 @@ class ResumeResponseSchema(BaseModel):
     school_name: Optional[str] = None
     graduation_status: Optional[str] = None
     introduce: str
-    status: StatusEnum
+    status: str
     document_url: Optional[str] = None
+    work_experiences: Optional[List[WorkExpResponseSchema]] = None  # 경력 사항 추가
     created_at: str
     updated_at: str
-
-
-# 경력 조회
-class WorkExpResponseSchema(BaseModel):
-    id: int
-    resume_id: int
-    company: str
-    period: str
-    position: str
