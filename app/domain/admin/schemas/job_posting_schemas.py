@@ -46,7 +46,7 @@ class JobPostingResponseDTO(BaseModel):
     recruitment_count: int
     education: str
     deadline: str
-    salary: int
+    salary: str
     summary: str
     description: str
     status: StatusEnum
@@ -72,7 +72,7 @@ class RejectPostingCreateSchema(BaseModel):
         from_attributes = True
 
 
-class RejectPostingResponseSchema(BaseModel):
+class RejectPostingResponseDTO(BaseModel):
     id: int
     user: UserSchema
     job_posting: JobPostingResponseDTO

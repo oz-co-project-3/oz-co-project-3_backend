@@ -17,7 +17,7 @@ class UserSchema(BaseModel):
         from_attributes = True
 
 
-class WorkExpResponseSchema(BaseModel):
+class WorkExpResponseDTO(BaseModel):
     id: int
     company: str
     period: str
@@ -27,7 +27,7 @@ class WorkExpResponseSchema(BaseModel):
         from_attributes = True
 
 
-class ResumeResponseSchema(BaseModel):
+class ResumeResponseDTO(BaseModel):
     id: int
     user: UserSchema
     title: str
@@ -44,7 +44,7 @@ class ResumeResponseSchema(BaseModel):
     introduce: str
     status: StatusEnum
     document_url: Optional[str] = None
-    work_experiences: List[WorkExpResponseSchema] = Field(default_factory=list)
+    work_experiences: List[WorkExpResponseDTO] = Field(default_factory=list)
 
     class Config:
         from_attributes = True
