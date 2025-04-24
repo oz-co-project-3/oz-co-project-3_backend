@@ -26,7 +26,7 @@ class ResumeService:
         check_existing(resume, error_message="이력서를 찾을 수 없습니다.", code="resume_not_found")
         if not resume or not getattr(resume, "user", None):
             raise CustomException(
-                error="Invalid resume data.",
+                error="올바르지 않은 접근입니다.",
                 code="invalid_resume",
                 status_code=400,
             )
