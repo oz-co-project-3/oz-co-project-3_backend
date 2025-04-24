@@ -28,6 +28,7 @@ class Resume(TimestampMixin):
     education = fields.CharField(max_length=10, null=True)
     school_name = fields.CharField(max_length=20, null=True)
     graduation_status = fields.CharField(max_length=20, null=True)
+    work_experiences = fields.ReverseRelation["WorkExp"]
     introduce = fields.TextField(default="")
     status = fields.CharEnumField(StatusEnum, default=StatusEnum.Writing)
     document_url = fields.CharField(max_length=255, null=True)
