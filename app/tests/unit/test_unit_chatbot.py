@@ -210,6 +210,7 @@ async def test_delete_chatbot_by_id_service_not_found(
     # when
     result = await delete_chatbot_by_id_service(dummy_id, dummy_user)
 
+    # then
     assert result is None
     mock_get_chatbot.assert_called_once_with(dummy_id)
     mock_check_superuser.assert_called_once_with(dummy_user)
