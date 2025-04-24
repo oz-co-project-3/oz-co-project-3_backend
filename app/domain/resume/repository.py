@@ -30,16 +30,26 @@ class ResumeRepository:
 
     @staticmethod
     async def get_resumes_by_user_id(
-        user_id: int, offset: int = 0, limit: int = 10
+        user_id: int, page: int = 1, limit: int = 10
     ) -> List[Resume]:
-        return await Resume.filter(user_id=user_id).offset(offset).limit(limit)
+        """
+        페이지 번호 기반으로 특정 사용자 ID의 이력서들을 가져옵니다.
+        """
+        start = (page - 1) * limit  # 시작 지점 계산
+        return await Resume.filter(user_id=user_id).offset(start).limit(limit).all()
 
     @staticmethod
     async def get_total_resume_count_by_user_id(user_id: int) -> int:
+        """
+        특정 사용자 ID의 전체 이력서 개수를 반환합니다.
+        """
         return await Resume.filter(user_id=user_id).count()
 
     @staticmethod
     async def get_total_resume_count() -> int:
+        """
+        전체 이력서 개수를 반환합니다.
+        """
         return await Resume.all().count()
 
 
@@ -66,7 +76,7 @@ class WorkExpRepository:
         work_exp = await WorkExp.filter(id=work_exp_id).first()
         if not work_exp:
             raise CustomException(
-                error="이력서가 없습니다.",
+                error="경력 사항이 없습니다.",
                 code="work_exp_not_found",
                 status_code=404,
             )
