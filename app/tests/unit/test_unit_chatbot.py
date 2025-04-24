@@ -126,7 +126,7 @@ async def test_patch_chatbot_by_id_service_not_found(
 @patch("app.domain.chatbot.services.check_superuser", new_callable=AsyncMock)
 @patch("app.domain.chatbot.services.check_existing", new_callable=AsyncMock)
 @patch("app.domain.chatbot.services.patch_chatbot_by_id", new_callable=AsyncMock)
-async def test_patch_chatbot_by_id_service_not_found(
+async def test_patch_chatbot_by_id_service(
     mock_patch, mock_check_existing, mock_check_superuser, mock_get_chatbot
 ):
     dummy_id = 1
@@ -171,7 +171,7 @@ async def test_delete_chatbot_by_id_service_not_superuser():
 @pytest.mark.asyncio
 @patch("app.domain.chatbot.services.check_superuser", new_callable=AsyncMock)
 @patch("app.domain.chatbot.services.get_chatbot_by_id", new_callable=AsyncMock)
-async def test_patch_chatbot_by_id_service_not_found(
+async def test_delete_chatbot_by_id_service_not_found(
     get_chatbot_by_id, mock_check_superuser
 ):
     # given
