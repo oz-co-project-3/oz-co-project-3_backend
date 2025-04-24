@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from app.domain.resume.models import Resume, WorkExp
-from app.utils.exception import CustomException
+from app.domain.services.verification import CustomException
 
 
 class ResumeRepository:

@@ -86,22 +86,31 @@ class ResumeService:
 
     @staticmethod
     async def get_all_resume_service(
-        current_user: Any, offset: int = 0, limit: int = 10
+        current_user: Any, offset: int = 0, limit: int = 10, filters: dict = None
     ):
-        # 사용자 이력서 조회
-        resumes = await ResumeRepository.get_resumes_by_user_id(
-            user_id=current_user.id, offset=offset, limit=limit
-        )
-        total_count = await ResumeRepository.get_total_resume_count_by_user_id(
-            current_user.id
-        )
+        # 사용자 ID 필터 기본 적용
+        query: QuerySet = Resume.filter(user_id=current_user.id)
 
-        # 응답 데이터 구성
+        # 추가 필터 적용
+        if filters:
+            query = query.filter(**filters)
+
+        # 정렬 (예: 생성일 내림차순)
+        query = query.order_by("-created_at")
+
+        # 페이지네이션 적용
+        total_count = await query.count()  # 전체 데이터 개수 계산
+        paginated_resumes = query.offset(offset * limit).limit(limit).all()
+
+        # 데이터 변환 및 응답 생성
         return {
             "total": total_count,
             "offset": offset,
             "limit": limit,
-            "data": [ResumeResponseSchema.model_validate(resume) for resume in resumes],
+            "data": [
+                ResumeResponseSchema.model_validate(resume)
+                for resume in await paginated_resumes
+            ],
         }
 
     @staticmethod
