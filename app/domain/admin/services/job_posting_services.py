@@ -25,15 +25,6 @@ from app.domain.services.verification import (
 from app.domain.user.user_models import BaseUser
 
 
-def check_job_posting(job_posting: JobPosting):
-    if not job_posting:
-        raise CustomException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            code="job_posting_not_found",
-            error="해당 이력서를 찾지 못했습니다.",
-        )
-
-
 async def get_all_job_postings_service(
     current_user: BaseUser,
     search_type: str,
