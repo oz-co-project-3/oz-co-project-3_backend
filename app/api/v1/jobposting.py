@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from app.core.token import get_current_user  # 인증된 사용자 가져오기 서비스 함수
 from app.domain.job_posting.jobposting_schemas import (
     JobPostingCreateUpdate,
     JobPostingResponse,
@@ -15,8 +16,7 @@ job_posting_router = APIRouter(
 )
 
 
-async def fake_current_user():
-    user = await CorporateUser.get_or_none(pk=1)
+async def current_user_dependency(user: BaseUser = Depends(get_current_user)):
     if not user:
         raise CustomException(
             error="로그인이 필요합니다.",
@@ -38,9 +38,9 @@ async def fake_current_user():
 )
 async def create_job_posting(
     data: JobPostingCreateUpdate,  # 요청 데이터 검증
-    user: dict = Depends(fake_current_user),  # 인증된 사용자 정보
+    current_user: BaseUser = Depends(current_user_dependency),  # 인증된 사용자 정보
 ):
-    return await JobPostingService.create_job_posting(user, data)
+    return await JobPostingService.create_job_posting(current_user, data)
 
 
 @job_posting_router.get(
@@ -54,7 +54,10 @@ async def create_job_posting(
              - `404` `code`: `notification_not_found` 등록된 공고를 찾을 수 없습니다.\n
              """,
 )
-async def get_job_postings_by_company(company_id: int):
+async def get_job_postings_by_company(
+    company_id: int,
+    current_user: BaseUser = Depends(current_user_dependency),  # 인증된 사용자 정보
+):
     return await JobPostingService.get_job_postings_by_company(company_id)
 
 
@@ -69,8 +72,11 @@ async def get_job_postings_by_company(company_id: int):
              - `404` `code`: `notification_not_found` 해당 공고를 찾을 수 없습니다.\n
              """,
 )
-async def get_specific_job_posting(company_id: int, job_posting_id: int):
-    # 특정 회사 ID와 공고 ID로 공고 조회
+async def get_specific_job_posting(
+    company_id: int,
+    job_posting_id: int,
+    current_user: BaseUser = Depends(current_user_dependency),  # 인증된 사용자 정보
+):
     job_posting = await JobPostingService.get_specific_job_posting(
         company_id, job_posting_id
     )
@@ -91,9 +97,11 @@ async def get_specific_job_posting(company_id: int, job_posting_id: int):
 async def patch_job_posting(
     job_posting_id: int,
     updated_data: JobPostingCreateUpdate,
-    user: CorporateUser = Depends(fake_current_user),
+    current_user: CorporateUser = Depends(current_user_dependency),
 ):
-    return await JobPostingService.patch_job_posting(user, job_posting_id, updated_data)
+    return await JobPostingService.patch_job_posting(
+        current_user, job_posting_id, updated_data
+    )
 
 
 @job_posting_router.delete(
@@ -108,6 +116,6 @@ async def patch_job_posting(
 )
 async def delete_job_posting_endpoint(
     job_posting_id: int,
-    current_user: BaseUser = Depends(fake_current_user),  # 인증된 현재 사용자
+    current_user: BaseUser = Depends(current_user_dependency),  # 인증된 현재 사용자
 ):
     return await JobPostingService.delete_job_posting(current_user, job_posting_id)
