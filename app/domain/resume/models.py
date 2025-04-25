@@ -22,7 +22,7 @@ class Resume(TimestampMixin):
     name = fields.CharField(max_length=30)
     phone_number = fields.CharField(max_length=40)
     email = fields.CharField(max_length=50)
-    image_profile = fields.CharField(max_length=255, null=True)
+    image_url = fields.CharField(max_length=255, null=True)
     interests = fields.CharField(max_length=100, null=True)
     desired_area = fields.CharField(max_length=50)
     education = fields.CharField(max_length=10, null=True)

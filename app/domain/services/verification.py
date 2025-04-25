@@ -9,7 +9,7 @@ class CustomException(HTTPException):
 
 
 def check_superuser(current_user):
-    if not current_user.is_superuser:
+    if current_user.user_type != "SUPER":
         raise CustomException(
             status_code=status.HTTP_403_FORBIDDEN,
             error="접근 권한이 없습니다",

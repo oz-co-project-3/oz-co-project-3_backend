@@ -53,6 +53,7 @@ class JobPostingResponseDTO(BaseModel):
     view_count: int
     report: int
     reject_postings: List[RejectPostingSchema] = Field(default_factory=list)
+    image_url: str
 
     class Config:
         from_attributes = True

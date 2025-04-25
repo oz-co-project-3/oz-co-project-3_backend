@@ -8,11 +8,6 @@ class Gender(str, Enum):
     FEMALE = "female"
 
 
-class UserType(str, Enum):
-    SEEKER = "seeker"
-    BUSINESS = "business"
-
-
 class UserStatus(str, Enum):
     ACTIVE = "active"
     SUSPEND = "suspend"
@@ -30,10 +25,10 @@ class BaseUser(models.Model):
     id = fields.IntField(pk=True)
     password = fields.CharField(max_length=80, null=False)
     email = fields.CharField(max_length=50, unique=True)
-    user_type = fields.CharEnumField(UserType, max_length=20, default=UserType.SEEKER)
+    user_type = fields.CharField(max_length=20, null=False)
+    signinMethod = fields.CharField(max_length=20, null=False)
     status = fields.CharEnumField(UserStatus, max_length=20, default=UserStatus.PENDING)
     email_verified = fields.BooleanField(default=False)
-    is_superuser = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     deleted_at = fields.DatetimeField(null=True)
     gender = fields.CharEnumField(Gender, max_length=10)

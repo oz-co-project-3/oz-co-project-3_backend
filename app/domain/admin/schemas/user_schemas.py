@@ -11,9 +11,9 @@ class UserResponseDTO(BaseModel):
     id: int
     email: EmailStr
     user_type: str
+    signinMethod: str
     status: str
     email_verified: bool
-    is_superuser: bool
     created_at: datetime
     deleted_at: Optional[datetime] = None
     gender: str

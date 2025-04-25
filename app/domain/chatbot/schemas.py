@@ -9,6 +9,7 @@ class ChatBotCreateUpdate(BaseModel):
     selection_path: str
     options: Optional[str] = None
     answer: Optional[str] = None
+    path_url: Optional[str] = None
 
     class Config:
         from_attributes = True
