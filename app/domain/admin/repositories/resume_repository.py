@@ -1,4 +1,4 @@
-from app.domain.resume.resume_models import Resume
+from app.domain.resume.models import Resume
 
 
 async def get_resumes_by_name(name: str):
