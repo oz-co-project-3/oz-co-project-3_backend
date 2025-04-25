@@ -14,7 +14,11 @@ async def websocket_endpoint(websocket: WebSocket):
     selected = []
     while True:
         message = await websocket.receive_text()
-        selected.append(message)
+        if message == "reverse":
+            selected.pop()
+        else:
+            selected.append(message)
+
         if selected and selected[0] == "":
             path = "/".join(selected[1:])
         else:
