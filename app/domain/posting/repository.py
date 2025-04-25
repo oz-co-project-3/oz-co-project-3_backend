@@ -3,7 +3,7 @@ from typing import Optional
 from tortoise.expressions import Q
 
 from app.domain.job_posting.job_posting_models import Applicants, JobPosting
-from app.domain.resume.resume_models import Resume
+from app.domain.resume.models import Resume
 
 
 async def get_postings_query(
