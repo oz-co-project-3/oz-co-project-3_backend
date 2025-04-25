@@ -26,7 +26,7 @@ TORTOISE_ORM = {
                 "app.domain.chatbot.model",
                 "app.domain.success_review.models",
                 "app.domain.free_board.models",
-                "app.domain.resume.resume_models",
+                "app.domain.resume.models",
                 "app.domain.comment.models",
                 "app.domain.job_posting.job_posting_models",
                 "app.domain.user.user_models",
