@@ -1,6 +1,7 @@
 from enum import Enum
 
 from tortoise import fields, models
+from tortoise.contrib.postgres import fields as postgres_fields
 
 
 class Gender(str, Enum):
@@ -15,18 +16,30 @@ class UserStatus(str, Enum):
     PENDING = "pending"  # 메일 인증 미 완료시 상태 추가
 
 
+class UserTypeEnum(str, Enum):
+    NORMAL = "normal"
+    BUSINESS = "business"
+    ADMIN = "admin"
+
+
 class SeekerStatus(str, Enum):
     SEEKING = "seeking"
     EMPLOYED = "employed"
     NOT_SEEKING = "not_seeking"
 
 
+class SignInEnum(str, Enum):
+    EMAIL = "email"
+    Kakao = "kakao"
+    Naver = "naver"
+
+
 class BaseUser(models.Model):
     id = fields.IntField(pk=True)
     password = fields.CharField(max_length=80, null=False)
     email = fields.CharField(max_length=50, unique=True)
-    user_type = fields.CharField(max_length=20, null=False)
-    signinMethod = fields.CharField(max_length=20, null=False)
+    user_type = postgres_fields.ArrayField(fields.CharEnumField(UserTypeEnum))
+    signinMethod = postgres_fields.ArrayField(fields.CharEnumField(SignInEnum))
     status = fields.CharEnumField(UserStatus, max_length=20, default=UserStatus.PENDING)
     email_verified = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
