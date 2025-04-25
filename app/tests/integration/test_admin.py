@@ -11,7 +11,7 @@ from app.domain.job_posting.job_posting_models import (
     RejectPosting,
     StatusEnum,
 )
-from app.domain.resume.resume_models import Resume, WorkExp
+from app.domain.resume.models import Resume, WorkExp
 from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 from app.main import app
 
