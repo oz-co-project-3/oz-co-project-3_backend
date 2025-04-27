@@ -115,6 +115,7 @@ async def logout_user(user: BaseUser):
             error="유효하지 않은 인증 토큰입니다.",
             code="invalid_token",
         )
+    return {"message": "로그아웃이 완료되었습니다."}
 
 
 # 리프레시 토큰 재발급
