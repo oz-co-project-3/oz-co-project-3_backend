@@ -1,8 +1,14 @@
 from passlib.hash import bcrypt
 
-from app.domain.services.verification import CustomException
 from app.domain.user.services.email_services import send_email_code
 from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
+from app.exceptions.auth_exceptions import PasswordMismatchException
+from app.exceptions.server_exceptions import UnknownUserTypeException
+from app.exceptions.user_exceptions import (
+    PasswordInvalidException,
+    PasswordPreviouslyUsedException,
+    UserNotFoundException,
+)
 
 
 # 아이디 찾기
@@ -21,7 +27,7 @@ async def find_email(name: str, phone_number: str):
         if corp:
             email = corp.user.email
         else:
-            raise CustomException(404, "일치하는 사용자 정보가 없습니다.", "user_not_found")
+            raise UserNotFoundException()
 
     # 이메일 마스킹 처리 x = 프론트에서 진행한다고 함
     return {"message": "아이디 찾기 성공", "data": {"email": email}}
@@ -35,12 +41,12 @@ async def find_password(name: str, phone_number: str, email: str):
     user = await user_qs.first()
 
     if not user:
-        raise CustomException(404, "일치하는 사용자 정보가 없습니다.", "user_not_found")
+        raise UserNotFoundException()
 
     if user.user_type == "seeker":
         seeker = await user.seeker_profiles.all().first()  # 리스트 중 첫 번째
         if not seeker or seeker.name != name or seeker.phone_number != phone_number:
-            raise CustomException(404, "일치하는 사용자 정보가 없습니다.", "user_not_found")
+            raise UserNotFoundException()
 
     elif user.user_type == "business":
         corp = await user.corporate_profiles.all().first()  # 리스트 중 첫 번째
@@ -49,10 +55,10 @@ async def find_password(name: str, phone_number: str, email: str):
             or corp.manager_name != name
             or corp.manager_phone_number != phone_number
         ):
-            raise CustomException(404, "일치하는 사용자 정보가 없습니다.", "user_not_found")
+            raise UserNotFoundException()
 
     else:
-        raise CustomException(500, "알 수 없는 사용자 유형입니다.", "unknown_user_type")
+        raise UnknownUserTypeException()
 
     # 이메일로 재설정 링크 전송
     await send_email_code(email=email, purpose="비밀번호 찾기")
@@ -63,31 +69,19 @@ async def find_password(name: str, phone_number: str, email: str):
 # 새로운 비밀번호 생성 함수
 async def reset_password(email: str, new_password: str, new_password_check: str):
     if new_password != new_password_check:
-        raise CustomException(
-            status_code=400, error="새 비밀번호와 확인이 일치하지 않습니다.", code="password_mismatch"
-        )
+        raise PasswordMismatchException()
 
     if len(new_password) < 8 or not any(
         char in "!@#$%^&*()_+{}:<>?" for char in new_password
     ):
-        raise CustomException(
-            status_code=400,
-            error="비밀번호는 8자 이상이며 특수 문자를 포함해야 합니다.",
-            code="invalid_password",
-        )
+        raise PasswordInvalidException()
 
     user = await BaseUser.get_or_none(email=email)
     if not user:
-        raise CustomException(
-            status_code=404, error="유저를 찾을 수 없습니다.", code="user_not_found"
-        )
+        raise UserNotFoundException()
 
     if bcrypt.verify(new_password, user.password):
-        raise CustomException(
-            status_code=400,
-            error="이전에 사용했던 비밀번호는 사용할 수 없습니다.",
-            code="password_previously_used",
-        )
+        raise PasswordPreviouslyUsedException()
 
     user.password = bcrypt.hash(new_password)
     await user.save()

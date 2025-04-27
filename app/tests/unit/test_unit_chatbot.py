@@ -9,7 +9,7 @@ from app.domain.chatbot.services import (
     get_all_chatbots_service,
     patch_chatbot_by_id_service,
 )
-from app.domain.services.verification import CustomException
+from app.exceptions.base_exceptions import CustomException
 
 
 @pytest.mark.asyncio

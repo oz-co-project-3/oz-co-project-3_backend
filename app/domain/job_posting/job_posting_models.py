@@ -61,6 +61,7 @@ class JobPosting(TimestampMixin, Model):
     career = fields.CharEnumField(
         CareerEnum, default=CareerEnum.Irrelevant, max_length=10
     )
+    image_url = fields.CharField(max_length=255, null=True)
 
     class Meta:
         table = "job_postings"

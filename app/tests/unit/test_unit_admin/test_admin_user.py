@@ -14,7 +14,7 @@ from app.domain.admin.services.user_services import (
     get_user_all_service,
     get_user_by_id_service,
 )
-from app.domain.services.verification import CustomException
+from app.exceptions.base_exceptions import CustomException
 
 
 @pytest.mark.asyncio

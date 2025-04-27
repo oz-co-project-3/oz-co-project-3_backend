@@ -9,7 +9,7 @@ from app.domain.comment.services import (
     get_all_comments_service,
     patch_comment_by_id_service,
 )
-from app.domain.services.verification import CustomException
+from app.exceptions.base_exceptions import CustomException
 
 
 @pytest.mark.asyncio

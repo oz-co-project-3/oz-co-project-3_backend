@@ -4,8 +4,6 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr, model_validator
 
-from app.domain.services.verification import CustomException
-
 
 class UserResponseDTO(BaseModel):
     id: int
