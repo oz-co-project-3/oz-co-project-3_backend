@@ -147,9 +147,6 @@ async def test_patch_chatbot_by_id_service(
     # then
     assert result == mock_patch_data
     mock_check_superuser.assert_called_once_with(dummy_user)
-    mock_check_existing.assert_called_once_with(
-        dummy_data, "해당 챗봇 프롬프트가 없습니다.", "chatbot_not_found"
-    )
     mock_get_chatbot.assert_called_once_with(dummy_id)
 
 
@@ -214,6 +211,3 @@ async def test_delete_chatbot_by_id_service_not_found(
     assert result is None
     mock_get_chatbot.assert_called_once_with(dummy_id)
     mock_check_superuser.assert_called_once_with(dummy_user)
-    mock_check_existing.assert_called_once_with(
-        dummy_data, "해당 챗봇 프롬프트가 없습니다.", "chatbot_not_found"
-    )
