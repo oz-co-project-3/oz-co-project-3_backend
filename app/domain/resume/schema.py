@@ -33,7 +33,7 @@ class ResumeRequestSchema(BaseModel):
     school_name: Optional[str] = None
     graduation_status: Optional[str] = None
     introduce: str
-    status: str
+    status: StatusEnum
     document_url: Optional[str] = None
     work_experiences: Optional[List[WorkExpRequestSchema]] = None  # 경력 사항 추가
 
