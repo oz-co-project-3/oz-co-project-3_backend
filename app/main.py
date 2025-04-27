@@ -82,9 +82,17 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
-        title="My API",
+        title="Senior-tomorrow",
         version="1.0.0",
-        description="This is my API",
+        description=(
+            """
+            Senior-tomorrow API 문서입니다.\n\n
+            - 시니어를 위한 구인/구직 서비스를 지원합니다.\n
+            - 프론트엔드 및 외부 서비스 연동을 위해 사용됩니다.\n
+            - 로그인, 공고 조회를 제외한 모든 API는 Bearer JWT 인증을 필요로 합니다.\n
+            - 버전: v1.0.0
+            """
+        ),
         routes=app.routes,
     )
     openapi_schema["components"]["securitySchemes"] = {

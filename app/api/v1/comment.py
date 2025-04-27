@@ -22,9 +22,9 @@ comment_router = APIRouter(prefix="/api/free-board/{id}/comment", tags=["FreeBoa
     summary="자유게시판 댓글 생성",
     description=(
         """
-    - `400` `code`:`required_field` 필수 필드 누락\n
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `400` `code`:`required_field` 필수 필드 누락
+    `401` `code`:`auth_required` 인증이 필요합니다.
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
     """
     ),
 )
@@ -45,8 +45,8 @@ async def create_comment(
     summary="자유게시판 조회",
     description=(
         """
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `401` `code`:`auth_required` 인증이 필요합니다.
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
     """
     ),
 )
@@ -62,10 +62,10 @@ async def get_list_comments(
     response_model=CommentResponseDTO,
     status_code=status.HTTP_200_OK,
     description="""
-- `401` `code`:`auth_required` 인증이 필요합니다.\n
-- `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-- `403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
-- `404` `code`:`comment_not_found` 존재하지 않는 자유게시판 입니다..\n
+`401` `code`:`auth_required` 인증이 필요합니다.
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
+`403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.
+`404` `code`:`comment_not_found` 존재하지 않는 자유게시판 입니다.
 """,
 )
 async def patch_comment(
@@ -81,10 +81,10 @@ async def patch_comment(
     status_code=status.HTTP_200_OK,
     summary="자유게시판 댓글 삭제",
     description="""
-- `401` `code`:`auth_required` 인증이 필요합니다.\n
-- `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-- `403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
-- `404` `code`:`comment_not_found` 존재하지 않는 자유게시판 입니다..\n
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
+`404` `code`:`comment_not_found` 존재하지 않는 자유게시판 입니다.\n
 """,
 )
 async def delete_comment(

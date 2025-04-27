@@ -32,8 +32,8 @@ async def current_user_dependency(user: BaseUser = Depends(get_current_user)):
     status_code=201,
     summary="구인 공고 작성",
     description="""
-             - `401` `code`: `invalid_token` 로그인이 필요합니다.\n
-             - `403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
+             `401` `code`: `invalid_token` 로그인이 필요합니다.\n
+             `403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
              """,
 )
 async def create_job_posting(
@@ -49,9 +49,9 @@ async def create_job_posting(
     status_code=200,
     summary="특정 회사 공고 조회",
     description="""
-             - `401` `code`: `invalid_token` 로그인이 필요합니다.\n
-             - `403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
-             - `404` `code`: `notification_not_found` 등록된 공고를 찾을 수 없습니다.\n
+             `401` `code`: `invalid_token` 로그인이 필요합니다.\n
+             `403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
+             `404` `code`: `notification_not_found` 등록된 공고를 찾을 수 없습니다.\n
              """,
 )
 async def get_job_postings_by_company(
@@ -67,9 +67,9 @@ async def get_job_postings_by_company(
     status_code=200,
     summary="특정 회사의 특정 공고 조회",
     description="""
-             - `401` `code`: `invalid_token` 로그인이 필요합니다.\n
-             - `403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
-             - `404` `code`: `notification_not_found` 해당 공고를 찾을 수 없습니다.\n
+             `401` `code`: `invalid_token` 로그인이 필요합니다.\n
+             `403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
+             `404` `code`: `notification_not_found` 해당 공고를 찾을 수 없습니다.\n
              """,
 )
 async def get_specific_job_posting(
@@ -89,9 +89,9 @@ async def get_specific_job_posting(
     status_code=200,
     summary="구인 공고 수정",
     description="""
-             - `401` `code`: `invalid_token` 로그인이 필요합니다.\n
-             - `403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
-             - `404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.\n
+             `401` `code`: `invalid_token` 로그인이 필요합니다.\n
+             `403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
+             `404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.\n
              """,
 )
 async def patch_job_posting(
@@ -109,9 +109,9 @@ async def patch_job_posting(
     status_code=200,
     summary="구인 공고 삭제",
     description="""
-         - `401` `code`: `invalid_token` 유효하지 않은 토큰입니다.\n
-         - `403` `code`: `permission_denied` 해당 작업을 처리할 권한이 없습니다.\n
-         - `404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.\n
+         `401` `code`: `invalid_token` 유효하지 않은 토큰입니다.\n
+         `403` `code`: `permission_denied` 해당 작업을 처리할 권한이 없습니다.\n
+         `404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.\n
          """,
 )
 async def delete_job_posting_endpoint(

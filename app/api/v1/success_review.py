@@ -25,9 +25,9 @@ success_review_router = APIRouter(prefix="/api/success-review", tags=["success-r
     status_code=status.HTTP_201_CREATED,
     summary="자유게시판 글 생성",
     description="""
-    - `400` `code`:`required_field` 필수 필드 누락\n
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `400` `code`:`required_field` 필수 필드 누락\n
+    `401` `code`:`auth_required` 인증이 필요합니다.\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     """,
 )
 async def create_success_review(
@@ -43,8 +43,8 @@ async def create_success_review(
     summary="자유게시판 글 전체 조회",
     status_code=status.HTTP_200_OK,
     description="""
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `401` `code`:`auth_required` 인증이 필요합니다.\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     """,
 )
 async def get_list_success_reviews(
@@ -59,9 +59,9 @@ async def get_list_success_reviews(
     summary="자유게시판 글 상세 조회",
     status_code=status.HTTP_200_OK,
     description="""
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-    - `404` `code`:`success_review_not_found` 존재하지 않는 성공 후기 입니다.\n
+    `401` `code`:`auth_required` 인증이 필요합니다.\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `404` `code`:`success_review_not_found` 존재하지 않는 성공 후기 입니다.\n
     """,
 )
 async def get_success_review(
@@ -77,10 +77,10 @@ async def get_success_review(
     summary="자유게시판 글 수정",
     status_code=status.HTTP_200_OK,
     description="""
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-    - `403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
-    - `404` `code`:`success_review_not_found` 존재하지 않는 성공 후기 입니다.\n
+    `401` `code`:`auth_required` 인증이 필요합니다.\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
+    `404` `code`:`success_review_not_found` 존재하지 않는 성공 후기 입니다.\n
     """,
 )
 async def patch_success_review(
@@ -96,10 +96,10 @@ async def patch_success_review(
     summary="자유게시판 글 삭제",
     status_code=status.HTTP_200_OK,
     description="""
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-    - `403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
-    - `404` `code`:`success_review_not_found` 존재하지 않는 성공 후기 입니다.\n
+    `401` `code`:`auth_required` 인증이 필요합니다.\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
+    `404` `code`:`success_review_not_found` 존재하지 않는 성공 후기 입니다.\n
     """,
 )
 async def delete_success_review(

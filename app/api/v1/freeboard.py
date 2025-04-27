@@ -23,9 +23,9 @@ free_board_router = APIRouter(prefix="/api/free-board", tags=["FreeBoard"])
     summary="자유게시판 글 생성",
     description=(
         """
-    - `400` `code`:`required_field` 필수 필드 누락\n
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `400` `code`:`required_field` 필수 필드 누락\n
+    `401` `code`:`auth_required` 인증이 필요합니다.\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     """
     ),
 )
@@ -42,8 +42,8 @@ async def create_free_board(
     status_code=status.HTTP_200_OK,
     summary="자유게시판 전체 조회",
     description="""
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `401` `code`:`auth_required` 인증이 필요합니다.\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     """,
 )
 async def get_list_free_board(current_user: BaseUser = Depends(get_current_user)):
@@ -56,9 +56,9 @@ async def get_list_free_board(current_user: BaseUser = Depends(get_current_user)
     status_code=status.HTTP_200_OK,
     summary="자유게시판 상세 조회",
     description="""
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-    - `404` `code`:`free_board_not_found` 존재하지 않는 자유게시판 입니다..\n
+    `401` `code`:`auth_required` 인증이 필요합니다.\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `404` `code`:`free_board_not_found` 존재하지 않는 자유게시판 입니다..\n
     """,
 )
 async def get_detail_free_board(
@@ -73,10 +73,10 @@ async def get_detail_free_board(
     summary="자유게시판 수정",
     status_code=status.HTTP_200_OK,
     description="""
-- `401` `code`:`auth_required` 인증이 필요합니다.\n
-- `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-- `403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
-- `404` `code`:`free_board_not_found` 존재하지 않는 자유게시판 입니다..\n
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
+`404` `code`:`free_board_not_found` 존재하지 않는 자유게시판 입니다..\n
 """,
 )
 async def patch_free_board(
@@ -92,10 +92,10 @@ async def patch_free_board(
     status_code=status.HTTP_200_OK,
     summary="자유게시판 삭제",
     description="""
-- `401` `code`:`auth_required` 인증이 필요합니다.\n
-- `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-- `403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
-- `404` `code`:`free_board_not_found` 존재하지 않는 자유게시판 입니다..\n
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
+`404` `code`:`free_board_not_found` 존재하지 않는 자유게시판 입니다..\n
 """,
 )
 async def delete_free_board(

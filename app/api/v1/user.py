@@ -83,8 +83,8 @@ class EmailVerifyRequest(BaseModel):
     status_code=status.HTTP_201_CREATED,
     summary="일반 회원가입",
     description="""
-- `400` `code`:`invalid_password` : 비밀번호는 8자 이상, 특수문자를 포함해야 합니다
-- `400` `code`:`password_mismatch` : 비밀번호와 확인이 일치하지 않습니다
+`400` `code`:`invalid_password` : 비밀번호는 8자 이상, 특수문자를 포함해야 합니다
+`400` `code`:`password_mismatch` : 비밀번호와 확인이 일치하지 않습니다
 """,
 )
 async def register(request: UserRegisterRequest):
@@ -97,8 +97,8 @@ async def register(request: UserRegisterRequest):
     status_code=status.HTTP_201_CREATED,
     summary="기업 회원가입",
     description="""
-- `400` `code`:`invalid_password` : 비밀번호는 8자 이상, 특수문자를 포함해야 합니다
-- `400` `code`:`password_mismatch` : 비밀번호와 확인이 일치하지 않습니다
+`400` `code`:`invalid_password` : 비밀번호는 8자 이상, 특수문자를 포함해야 합니다
+`400` `code`:`password_mismatch` : 비밀번호와 확인이 일치하지 않습니다
 """,
 )
 async def register_company(request: CompanyRegisterRequest):
@@ -111,7 +111,7 @@ async def register_company(request: CompanyRegisterRequest):
     status_code=status.HTTP_200_OK,
     summary="이메일 중복 확인",
     description="""
-- `200` `code`:`is_available=false` : 이미 존재하는 이메일입니다
+`200` `code`:`is_available=false` : 이미 존재하는 이메일입니다
 """,
 )
 async def check_email(request: EmailCheckRequest):
@@ -123,7 +123,7 @@ async def check_email(request: EmailCheckRequest):
     status_code=status.HTTP_200_OK,
     summary="회원 탈퇴",
     description="""
-- `400` `code`:`invalid_password` : 비밀번호가 일치하지 않습니다.
+`400` `code`:`invalid_password` : 비밀번호가 일치하지 않습니다.
 """,
 )
 async def delete_profile(
@@ -140,7 +140,7 @@ async def delete_profile(
     status_code=status.HTTP_200_OK,
     summary="아이디(이메일) 찾기",
     description="""
-- `404` `code`:`user_not_found` : 일치하는 사용자 정보가 없습니다
+`404` `code`:`user_not_found` : 일치하는 사용자 정보가 없습니다
 """,
 )
 async def find_email_route(request: FindEmailRequest):
@@ -152,7 +152,7 @@ async def find_email_route(request: FindEmailRequest):
     status_code=status.HTTP_200_OK,
     summary="비밀번호 찾기",
     description="""
-- `404` `code`:`user_not_found` : 일치하는 사용자 정보가 없습니다
+`404` `code`:`user_not_found` : 일치하는 사용자 정보가 없습니다
 """,
 )
 async def find_password_route(request: FindPasswordRequest):
@@ -182,10 +182,10 @@ async def verify_password(
     status_code=200,
     summary="비밀번호 재설정",
     description="""
-- `400` `code`:`password_mismatch` : 새 비밀번호와 확인이 다름
-- `400` `code`:`invalid_password` : 비밀번호 조건 불충족
-- `400` `code`:`password_previously_used` : 이전 비밀번호 재사용
-- `404` `code`:`user_not_found` : 이메일에 해당하는 유저 없음
+`400` `code`:`password_mismatch` : 새 비밀번호와 확인이 다름
+`400` `code`:`invalid_password` : 비밀번호 조건 불충족
+`400` `code`:`password_previously_used` : 이전 비밀번호 재사용
+`404` `code`:`user_not_found` : 이메일에 해당하는 유저 없음
 """,
 )
 async def reset_password_route(request: ResetPasswordRequest):
@@ -202,9 +202,9 @@ async def reset_password_route(request: ResetPasswordRequest):
     status_code=status.HTTP_200_OK,
     summary="로그인한 사용자 프로필 조회",
     description="""
-- `401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다
-- `404` `code`:`user_not_found` : 사용자 정보를 찾을 수 없습니다
-- `500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다
+`401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다
+`404` `code`:`user_not_found` : 사용자 정보를 찾을 수 없습니다
+`500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다
 """,
 )
 async def profile(current_user: BaseUser = Depends(get_current_user)):

@@ -27,7 +27,7 @@ posting_router = APIRouter(
     status_code=status.HTTP_200_OK,
     summary="공고 전체 조회",
     description="""
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     """,
 )
 async def get_list_postings(
@@ -60,8 +60,8 @@ async def get_list_postings(
     status_code=status.HTTP_200_OK,
     summary="공고 상세 조회",
     description="""
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-    - `404` `code`:`posting_not_found` 공고를 찾지 못했습니다..\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `404` `code`:`posting_not_found` 공고를 찾지 못했습니다..\n
     """,
 )
 async def get_posting(id: int):
@@ -74,8 +74,8 @@ async def get_posting(id: int):
     status_code=status.HTTP_201_CREATED,
     summary="공고 지원자 생성",
     description="""
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-    - `404` `code`:`posting_not_found` 공고를 찾지 못했습니다.\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `404` `code`:`posting_not_found` 공고를 찾지 못했습니다.\n
     """,
 )
 async def create_applicant(
@@ -92,11 +92,11 @@ async def create_applicant(
     status_code=status.HTTP_201_CREATED,
     summary="공고 지원자 수정",
     description="""
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-    - `403` `code`:`permission_denied` 유효하지 않은 토큰입니다.\n
-    - `404` `code`:`posting_not_found` 공고를 찾지 못했습니다.\n
-    - `404` `code`:`applicant_not_found` 공고를 찾지 못했습니다.\n
-    - `404` `code`:`resume_not_found` 이력서를 찾지 못했습니다.\n
+    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+    `403` `code`:`permission_denied` 유효하지 않은 토큰입니다.\n
+    `404` `code`:`posting_not_found` 공고를 찾지 못했습니다.\n
+    `404` `code`:`applicant_not_found` 공고를 찾지 못했습니다.\n
+    `404` `code`:`resume_not_found` 이력서를 찾지 못했습니다.\n
     """,
 )
 async def patch_posting_applicant(
