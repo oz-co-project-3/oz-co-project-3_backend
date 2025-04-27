@@ -4,7 +4,6 @@ import httpx
 
 from app.core.redis import redis
 from app.core.token import create_jwt_tokens
-from app.domain.services.verification import CustomException
 from app.domain.user.user_models import (
     BaseUser,
     Gender,
@@ -14,6 +13,10 @@ from app.domain.user.user_models import (
     UserType,
 )
 from app.domain.user.user_schema import LoginResponse, LoginResponseData
+from app.exceptions.social_login_exceptions import (
+    KakaoEmailRequiredException,
+    NaverEmailRequiredException,
+)
 
 
 # 카카오 url 이동
@@ -62,7 +65,7 @@ async def kakao_social_login(kakao_info: dict) -> LoginResponse:
     name = nickname or "카카오유저"
 
     if not email:
-        raise CustomException(400, "카카오 계정에 이메일이 없습니다.", code="kakao_email_required")
+        raise KakaoEmailRequiredException()
 
     user = await BaseUser.get_or_none(email=email)
 
@@ -164,7 +167,7 @@ async def naver_social_login(naver_info: dict) -> LoginResponse:
     name = nickname or "네이버유저"
 
     if not email:
-        raise CustomException(400, "네이버 계정에 이메일이 없습니다.", code="naver_email_required")
+        raise NaverEmailRequiredException()
 
     user = await BaseUser.get_or_none(email=email)
 

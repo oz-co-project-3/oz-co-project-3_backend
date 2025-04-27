@@ -10,6 +10,7 @@ from app.domain.free_board.repository import (
 from app.domain.free_board.schemas import FreeBoardResponseDTO
 from app.domain.services.permission import check_author
 from app.domain.services.verification import check_existing
+from app.exceptions.free_board_exceptions import FreeBoardNotFoundException
 
 
 async def create_free_board_by_id_service(
@@ -26,7 +27,7 @@ async def get_all_free_board_service() -> List[FreeBoardResponseDTO]:
 async def get_free_board_by_id_service(id: int) -> FreeBoardResponseDTO:
     """상세조회"""
     board = await get_free_board_query(id)
-    check_existing(board, "해당 게시글을 찾을 수 없습니다.", "free_board_not_found")
+    check_existing(board, FreeBoardNotFoundException)
     return board
 
 
@@ -35,7 +36,7 @@ async def patch_free_board_by_id_service(
 ) -> FreeBoardResponseDTO:
     """업데이트"""
     board = await get_free_board_query(id)
-    check_existing(board, "해당 게시글을 찾을 수 없습니다.", "free_board_not_found")
+    check_existing(board, FreeBoardNotFoundException)
     await check_author(board, current_user)
     board = await patch_free_board_by_id(board, free_board)
 
@@ -45,6 +46,6 @@ async def patch_free_board_by_id_service(
 async def delete_free_board_by_id_service(id: int, current_user):
     """삭제"""
     board = await get_free_board_query(id)
-    check_existing(board, "해당 게시글을 찾을 수 없습니다.", "free_board_not_found")
+    check_existing(board, FreeBoardNotFoundException)
     await check_author(board, current_user)
     await delete_free_board_by_id(board)

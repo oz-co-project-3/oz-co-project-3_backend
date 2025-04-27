@@ -4,7 +4,6 @@ from typing import Optional
 
 from passlib.hash import bcrypt
 
-from app.domain.services.verification import CustomException
 from app.domain.user.services.email_services import send_email_code
 from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 from app.domain.user.user_schema import (
@@ -16,30 +15,25 @@ from app.domain.user.user_schema import (
     UserRegisterResponse,
     UserRegisterResponseData,
 )
+from app.exceptions.auth_exceptions import (
+    InvalidPasswordException,
+    PasswordMismatchException,
+)
+from app.exceptions.email_exceptions import DuplicateEmailException
 
 
 async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
     existing_user = await BaseUser.get_or_none(email=request.email)
     if existing_user:
-        raise CustomException(
-            status_code=400, error="중복된 이메일입니다.", code="duplicate_email"
-        )
+        raise DuplicateEmailException()
 
     if len(request.password) < 8 or not re.search(
         r"[!@#$%^&*(),.?\":{}|<>]", request.password
     ):
-        raise CustomException(
-            status_code=400,
-            error="비밀번호는 최소 8자 이상이며 특수 문자를 포함해야 합니다.",
-            code="invalid_password",
-        )
+        raise InvalidPasswordException()
 
     if request.password != request.password_check:
-        raise CustomException(
-            status_code=400,
-            error="비밀번호와 비밀번호 확인이 일치하지 않습니다.",
-            code="password_mismatch",
-        )
+        raise PasswordMismatchException()
 
     hashed_password = bcrypt.hash(request.password)
 
@@ -86,19 +80,10 @@ async def register_company_user(
     if len(request.password) < 8 or not re.search(
         r"[!@#$%^&*(),.?\":{}|<>]", request.password
     ):
-        raise CustomException(
-            status_code=400,
-            error="비밀번호는 최소 8자 이상이며 특수 문자를 포함해야 합니다.",
-            code="invalid_password",
-        )
+        raise InvalidPasswordException()
 
     if request.password != request.password_check:
-        raise CustomException(
-            status_code=400,
-            error="비밀번호와 비밀번호 확인이 일치하지 않습니다.",
-            code="password_mismatch",
-        )
-
+        raise PasswordMismatchException()
     hashed_password = bcrypt.hash(request.password)
     base_user = await BaseUser.create(
         email=request.email,
@@ -141,9 +126,7 @@ async def delete_user(
     current_user: BaseUser, password: str, reason: Optional[str] = None
 ):
     if not bcrypt.verify(password, current_user.password):
-        raise CustomException(
-            status_code=400, error="비밀번호가 일치하지 않습니다.", code="invalid_password"
-        )
+        raise PasswordMismatchException()
 
     current_user.deleted_at = datetime.utcnow()
     current_user.email_verified = False

@@ -7,7 +7,6 @@ from app.domain.job_posting.jobposting_schemas import (
     JobPostingSummaryResponse,
 )
 from app.domain.job_posting.jobposting_services import JobPostingService
-from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser, CorporateUser
 
 job_posting_router = APIRouter(
@@ -16,13 +15,8 @@ job_posting_router = APIRouter(
 )
 
 
+# 이 부분도 get_current_user를 바로 쓰면 됩니다.
 async def current_user_dependency(user: BaseUser = Depends(get_current_user)):
-    if not user:
-        raise CustomException(
-            error="로그인이 필요합니다.",
-            code="invalid_token",
-            status_code=401,
-        )
     return user
 
 

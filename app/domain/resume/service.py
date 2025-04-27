@@ -2,10 +2,10 @@ from typing import Any
 
 from app.domain.resume.models import Resume, WorkExp
 from app.domain.resume.schema import ResumeResponseSchema, WorkExpResponseSchema
-from app.domain.services.verification import (
-    CustomException,
-    check_existing,
-    check_superuser,
+from app.domain.services.verification import check_existing, check_superuser
+from app.exceptions.resume_exceptions import (
+    ResumeDeleteFailedException,
+    ResumeNotFoundException,
 )
 
 
@@ -47,7 +47,7 @@ class ResumeService:
             .prefetch_related("work_experiences")
             .first()
         )
-        check_existing(resume, error_message="이력서를 찾을 수 없습니다.", code="resume_not_found")
+        check_existing(resume, ResumeNotFoundException)
 
         # 권한 확인
         check_permission(resume, current_user)
@@ -79,7 +79,7 @@ class ResumeService:
     async def delete_resume_service(resume_id: int, current_user: Any):
         # 이력서 조회
         resume = await Resume.filter(id=resume_id).select_related("user").first()
-        check_existing(resume, error_message="이력서를 찾을 수 없습니다.", code="resume_not_found")
+        check_existing(resume, ResumeNotFoundException)
 
         # 권한 확인
         check_permission(resume, current_user)
@@ -87,10 +87,6 @@ class ResumeService:
         # 관련된 경력 사항 삭제 및 이력서 삭제
         await WorkExp.filter(resume_id=resume_id).delete()
         if not await Resume.filter(id=resume_id).delete():
-            raise CustomException(
-                error="이력서 삭제에 실패했습니다.",
-                code="resume_delete_failed",
-                status_code=500,
-            )
+            raise ResumeDeleteFailedException()
 
         return {"message": "이력서가 성공적으로 삭제되었습니다."}

@@ -17,6 +17,9 @@ from app.domain.posting.schemas import (
 )
 from app.domain.services.permission import check_author
 from app.domain.services.verification import check_existing
+from app.exceptions.applicant_exceptions import ApplicantNotFoundException
+from app.exceptions.job_posting_exceptions import JobPostingNotFoundException
+from app.exceptions.resume_exceptions import ResumeNotFoundException
 
 
 async def get_all_postings_service(
@@ -44,7 +47,7 @@ async def get_all_postings_service(
 
 async def get_posting_by_id_service(id: int) -> JobPostingResponseDTO:
     posting = await get_posting_query(id)
-    check_existing(posting, "공고를 찾을 수 없습니다.", "posting_not_found")
+    check_existing(posting, JobPostingNotFoundException)
     return posting
 
 
@@ -52,9 +55,9 @@ async def create_applicant_service(
     id: int, current_user: Any, applicant: Any
 ) -> ApplicantResponseDTO:
     posting = await get_posting_query(id)
-    check_existing(posting, "공고를 찾을 수 없습니다.", "posting_not_found")
+    check_existing(posting, JobPostingNotFoundException)
     resume = await get_resume_query(applicant.resume)
-    check_existing(resume, "이력서를 찾을 수 없습니다.", "resume_not_found")
+    check_existing(resume, ResumeNotFoundException)
 
     created_applicant = await create_posting_applicant(
         applicant, current_user, resume, posting
@@ -77,16 +80,14 @@ async def patch_posting_applicant_by_id_service(
     applicant_id: int,
 ) -> ApplicantResponseDTO:
     posting = await get_posting_query(id)
-    check_existing(posting, "공고를 찾을 수 없습니다.", "posting_not_found")
+    check_existing(posting, JobPostingNotFoundException)
 
     applicant = await get_applicant_query(applicant_id)
-    check_existing(applicant, "지원 내역이 없습니다.", "applicant_not_found")
+    check_existing(applicant, ApplicantNotFoundException)
 
     resume_id = await get_resume_id_by_applicant_id(applicant_id)
-    check_existing(resume_id, "이력서를 찾을 수 없습니다.", "resume_not_found")
-
     resume = await get_resume_query(resume_id)
-    check_existing(resume, "이력서를 찾을 수 없습니다.", "resume_not_found")
+    check_existing(resume, ResumeNotFoundException)
 
     await check_author(applicant, current_user)
 

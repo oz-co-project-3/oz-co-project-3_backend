@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, UploadFile
 
-from app.domain.services.verification import CustomException
+from app.exceptions.base_exceptions import CustomException
 from app.utils.s3_upload import upload_file_to_s3
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}

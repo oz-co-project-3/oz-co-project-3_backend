@@ -18,7 +18,7 @@ from app.api.v1.user import router as user_router
 from app.api.v1.websocket import websocket_router
 from app.core.config import TORTOISE_ORM
 from app.domain.services.s3_service import image_upload_router
-from app.domain.services.verification import CustomException
+from app.exceptions.base_exceptions import CustomException
 
 bearer_scheme = HTTPBearer()
 app = FastAPI()

@@ -13,7 +13,7 @@ from app.domain.admin.services.resume_services import (
     get_all_resumes_service,
     get_resume_by_id_service,
 )
-from app.domain.services.verification import CustomException
+from app.exceptions.base_exceptions import CustomException
 
 
 @pytest.mark.asyncio
