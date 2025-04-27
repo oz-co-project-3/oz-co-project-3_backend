@@ -10,7 +10,7 @@ from app.domain.free_board.services import (
     get_free_board_by_id_service,
     patch_free_board_by_id_service,
 )
-from app.domain.services.verification import CustomException
+from app.exceptions.base_exceptions import CustomException
 
 
 @pytest.mark.asyncio

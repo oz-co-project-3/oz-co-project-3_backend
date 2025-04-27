@@ -1,23 +1,7 @@
-from app.domain.services.verification import CustomException
+from app.domain.services.permission import check_author
+from app.domain.services.verification import check_existing
 from app.domain.success_review.models import SuccessReview
-
-
-def existing_review(review):
-    """존재하는 게시판인지 확인"""
-    if not review:
-        raise CustomException(
-            error="해당 게시글을 찾을 수 없습니다.",
-            code="success_review_not_found",
-            status_code=404,
-        )
-
-
-def author_board(review, user):
-    """작성자인지 확인하는 함수"""
-    if review.user != user:
-        raise CustomException(
-            error="작성자가 아닙니다.", code="permission_denied", status_code=403
-        )
+from app.exceptions.success_review_exceptions import SuccessReviewNotFoundException
 
 
 async def create_success_review_by_id(success_review, current_user):
@@ -30,14 +14,14 @@ async def get_all_success_reviews(current_user):
 
 async def get_success_review_by_id(id, current_user):
     review = await SuccessReview.filter(pk=id).select_related("user").first()
-    existing_review(review)
+    check_existing(review, SuccessReviewNotFoundException)
     return review
 
 
 async def patch_success_review_by_id(id, success_review, current_user):
     review = await SuccessReview.filter(pk=id).select_related("user").first()
-    existing_review(review)
-    author_board(review, current_user)
+    check_existing(review, SuccessReviewNotFoundException)
+    await check_author(review, current_user)
 
     review.title = success_review.title
     review.content = success_review.content
@@ -52,7 +36,7 @@ async def patch_success_review_by_id(id, success_review, current_user):
 
 async def delete_success_review_by_id(id, current_user):
     review = await SuccessReview.filter(pk=id).select_related("user").first()
-    existing_review(review)
-    author_board(review, current_user)
+    check_existing(review, SuccessReviewNotFoundException)
+    await check_author(review, current_user)
 
     await review.delete()

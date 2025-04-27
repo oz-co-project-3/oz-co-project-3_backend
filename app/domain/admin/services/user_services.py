@@ -16,6 +16,7 @@ from app.domain.admin.schemas.user_schemas import (
     UserUpdateSchema,
 )
 from app.domain.services.verification import check_existing, check_superuser
+from app.exceptions.user_exceptions import UserNotFoundException
 
 
 async def get_user_all_service(
@@ -54,7 +55,7 @@ async def get_user_by_id_service(
     check_superuser(current_user)
 
     user = await get_user_by_id_query(id)
-    check_existing(user, "존재하지 않는 유저입니다", "user_not_found")
+    check_existing(user, UserNotFoundException)
 
     seeker_user = await get_seeker_user_by_user_id(id)
     corp_user = await get_corp_user_by_user_id(id)
@@ -73,7 +74,7 @@ async def patch_user_by_id_service(
 ) -> UserResponseDTO:
     check_superuser(current_user)
     user = await get_user_by_id_query(id)
-    check_existing(user, "존재하지 않는 유저입니다", "user_not_found")
+    check_existing(user, UserNotFoundException)
 
     user = await patch_user_by_id(user, patch_user)
 

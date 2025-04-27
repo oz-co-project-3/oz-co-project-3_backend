@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser
+from app.exceptions.auth_exceptions import ExpiredTokenException, InvalidTokenException
 
 load_dotenv()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login/")
@@ -41,31 +41,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> BaseUser:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
-            raise CustomException(
-                status_code=401,
-                error="유효하지 않은 인증 토큰입니다.",
-                code="invalid_token",
-            )
+            raise InvalidTokenException()
     except jwt.ExpiredSignatureError:
-        raise CustomException(
-            status_code=401,
-            error="만료된 인증 토큰입니다.",
-            code="expired_token",
-        )
+        raise ExpiredTokenException()
     except jwt.PyJWTError:
-        raise CustomException(
-            status_code=401,
-            error="유효하지 않은 인증 토큰입니다.",
-            code="invalid_token",
-        )
+        raise InvalidTokenException()
 
     user = await BaseUser.get_or_none(id=user_id)
     if user is None:
-        raise CustomException(
-            status_code=401,
-            error="유효하지 않은 인증 토큰입니다.",
-            code="invalid_token",
-        )
+        raise InvalidTokenException()
 
     return user
 

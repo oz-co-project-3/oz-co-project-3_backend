@@ -2,7 +2,8 @@ import os
 
 import httpx
 
-from app.domain.services.verification import CustomException
+from app.exceptions.server_exceptions import ExternalApiErrorException
+from app.exceptions.user_exceptions import InvalidBusinessNumberException
 
 BIZINFO_API_KEY = os.getenv("BIZINFO_API_KEY")
 
@@ -16,18 +17,12 @@ async def verify_business_number(business_number: str):
         response = await client.post(url, headers=headers, json=body)
 
     if response.status_code != 200:
-        raise CustomException(
-            status_code=500, error="국세청 API 요청 실패", code="external_api_error"
-        )
+        raise ExternalApiErrorException()
 
     data = response.json().get("data", [])
 
     if not data:
-        raise CustomException(
-            status_code=400,
-            error="국세청에 등록되지 않은 사업자등록번호입니다.",
-            code="invalid_business_number",
-        )
+        raise InvalidBusinessNumberException()
 
     item = data[0]
 

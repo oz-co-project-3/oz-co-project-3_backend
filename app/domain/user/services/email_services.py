@@ -8,9 +8,13 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, EmailStr
 
 from app.core.redis import redis
-from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser
 from app.domain.user.user_schema import ResendEmailRequest
+from app.exceptions.email_exceptions import (
+    EmailAlreadyVerifiedException,
+    InvalidVerificationCodeException,
+)
+from app.exceptions.user_exceptions import UserNotFoundException
 
 load_dotenv()
 
@@ -73,19 +77,11 @@ class EmailVerifyRequest(BaseModel):
 async def verify_email_code(request: EmailVerifyRequest):
     saved_code = await redis.get(f"email_verify:{request.email}")
     if not saved_code or saved_code != request.verification_code:
-        raise CustomException(
-            status_code=400,
-            error="유효하지 않은 인증코드입니다.",
-            code="invalid_verification_code",
-        )
+        raise InvalidVerificationCodeException()
 
     user = await BaseUser.get_or_none(email=request.email)
     if not user:
-        raise CustomException(
-            status_code=404,
-            error="유저를 찾을 수 없습니다.",
-            code="user_not_found",
-        )
+        raise UserNotFoundException()
 
     user.email_verified = True
     user.status = "active"
@@ -103,17 +99,9 @@ async def verify_email_code(request: EmailVerifyRequest):
 async def resend_verification_email(request: ResendEmailRequest):
     user = await BaseUser.get_or_none(email=request.email)
     if not user:
-        raise CustomException(
-            status_code=404,
-            error="가입된 이메일이 아닙니다.",
-            code="user_not_found",
-        )
+        raise UserNotFoundException()
     if user.email_verified:
-        raise CustomException(
-            status_code=400,
-            error="이미 인증된 계정입니다.",
-            code="already_verified",
-        )
+        raise EmailAlreadyVerifiedException()
 
     await send_email_code(email=user.email, purpose="이메일 재인증")
     return {"message": "인증코드가 재전송되었습니다.", "data": {"email": user.email}}
