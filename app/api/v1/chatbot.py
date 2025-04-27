@@ -22,10 +22,10 @@ chatbot_router = APIRouter(prefix="/api/admin/chatbot", tags=["chatbot"])
     summary="챗봇 프롬프트 생성",
     description=(
         """
-    - `400` `code`:`required_field` 필수 필드 누락\n
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-    - `403` `code`:`permission_denied` 권한이 없습니다.\n
+- `400` `code`:`required_field` 필수 필드 누락\n
+- `401` `code`:`auth_required` 인증이 필요합니다.\n
+- `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+- `403` `code`:`permission_denied` 권한이 없습니다.\n
     """
     ),
 )
@@ -42,10 +42,10 @@ async def create_chatbot(
     summary="챗봇 프롬프트 조회",
     description=(
         """
-    - `400` `code`:`required_field` 필수 필드 누락\n
-    - `401` `code`:`auth_required` 인증이 필요합니다.\n
-    - `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-    - `403` `code`:`permission_denied` 권한이 없습니다.\n
+- `400` `code`:`required_field` 필수 필드 누락\n
+- `401` `code`:`auth_required` 인증이 필요합니다.\n
+- `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+- `403` `code`:`permission_denied` 권한이 없습니다.\n
     """
     ),
 )
@@ -60,11 +60,11 @@ async def get_list_chatbots(current_user: BaseUser = Depends(get_current_user)):
     summary="챗봇 프롬프트 수정",
     description=(
         """
-        `400` `code`:`required_field` 필수 필드 누락
-        `401` `code`:`auth_required` 인증이 필요합니다.
-        `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-        `403` `code`:`permission_denied` 권한이 없습니다.
-        `404` `code`:`chatbot_not_found` 챗봇 프롬프트가 없습니다.
+`400` `code`:`required_field` 필수 필드 누락\n
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
+`404` `code`:`chatbot_not_found` 챗봇 프롬프트가 없습니다.\n
         """
     ),
 )
@@ -82,11 +82,11 @@ async def patch_chatbot(
     summary="챗봇 프롬프트 삭제",
     description=(
         """
-        `400` `code`:`required_field` 필수 필드 누락
-        `401` `code`:`auth_required` 인증이 필요합니다.
-        `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-        `403` `code`:`permission_denied` 권한이 없습니다.
-        `404` `code`:`chatbot_not_found` 챗봇 프롬프트가 없습니다.
+`400` `code`:`required_field` 필수 필드 누락\n
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
+`404` `code`:`chatbot_not_found` 챗봇 프롬프트가 없습니다.\n
         """
     ),
 )

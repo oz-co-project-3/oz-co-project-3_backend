@@ -43,8 +43,8 @@ admin_router = APIRouter(prefix="/api/admin", tags=["admin"])
     status_code=status.HTTP_200_OK,
     summary="관리자 유저 전체 조회",
     description="""
-    `401` 인증이 필요합니다. (`auth_required`, `invalid_token`)
-    `403` 권한이 없습니다. (`permission_denied`)
+`401` 인증이 필요합니다. (`auth_required`, `invalid_token`)\n
+`403` 권한이 없습니다. (`permission_denied`)
     """,
 )
 async def get_list_user(
@@ -62,10 +62,10 @@ async def get_list_user(
     status_code=status.HTTP_200_OK,
     summary="관리자 유저 상세 조회",
     description="""
-        `401` `code`:`auth_required` 인증이 필요합니다.
-        `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-        `403` `code`:`permission_denied` 권한이 없습니다.
-        `404` `code`:`user_not_found` 유저가 없습니다.
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
+`404` `code`:`user_not_found` 유저가 없습니다.\n
         """,
 )
 async def get_user(
@@ -81,11 +81,11 @@ async def get_user(
     status_code=status.HTTP_200_OK,
     summary="관리자 유저 상세 조회",
     description="""
-    `401` `code`:`auth_required` 인증이 필요합니다.
-    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-    `403` `code`:`permission_denied` 권한이 없습니다.
-    `404` `code`:`user_not_found` 유저가 없습니다.
-    """,
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
+`404` `code`:`user_not_found` 유저가 없습니다.\n
+""",
 )
 async def patch_user(
     id: int,
@@ -103,10 +103,10 @@ async def patch_user(
     status_code=status.HTTP_200_OK,
     summary="관리자 이력서 전체 조회",
     description="""
-        `401` `code`:`auth_required` 인증이 필요합니다.
-        `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-        `403` `code`:`permission_denied` 권한이 없습니다.
-        """,
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
+""",
 )
 async def get_list_resumes(
     current_user: BaseUser = Depends(get_current_user), name=Query(default=None)
@@ -120,10 +120,10 @@ async def get_list_resumes(
     status_code=status.HTTP_200_OK,
     summary="관리자 이력서 상세 조회",
     description="""
-        `401` `code`:`auth_required` 인증이 필요합니다.
-        `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-        `403` `code`:`permission_denied` 권한이 없습니다.
-        `404` `code`:`resume_not_found` 이력서가 없습니다.
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
+`404` `code`:`resume_not_found` 이력서가 없습니다.\n
         """,
 )
 async def get_resume(
@@ -138,10 +138,10 @@ async def get_resume(
     status_code=status.HTTP_200_OK,
     summary="관리자 이력서 삭제",
     description="""
-        `401` `code`:`auth_required` 인증이 필요합니다.
-        `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-        `403` `code`:`permission_denied` 권한이 없습니다.
-        `404` `code`:`resume_not_found` 이력서가 없습니다.
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
+`404` `code`:`resume_not_found` 이력서가 없습니다.\n
         """,
 )
 async def delete_resume(
@@ -159,9 +159,9 @@ async def delete_resume(
     status_code=status.HTTP_200_OK,
     summary="관리자 공고 전체 조회",
     description="""
-        `401` `code`:`auth_required` 인증이 필요합니다.
-        `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-        `403` `code`:`permission_denied` 권한이 없습니다.
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
         """,
 )
 async def get_list_job_postings(
@@ -181,10 +181,10 @@ async def get_list_job_postings(
     status_code=status.HTTP_200_OK,
     summary="관리자 공고 상세 조회",
     description="""
-        `401` `code`:`auth_required` 인증이 필요합니다.
-        `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-        `403` `code`:`permission_denied` 권한이 없습니다.
-        `404` `code`:`job_posting_not_found` 공고가 없습니다.
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
+`404` `code`:`job_posting_not_found` 공고가 없습니다.
         """,
 )
 async def get_job_posting(
@@ -200,10 +200,10 @@ async def get_job_posting(
     status_code=status.HTTP_200_OK,
     summary="관리자 공고 수정",
     description="""
-        `401` `code`:`auth_required` 인증이 필요합니다.
-        `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-        `403` `code`:`permission_denied` 권한이 없습니다.
-        `404` `code`:`job_posting_not_found` 공고가 없습니다.
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
+`404` `code`:`job_posting_not_found` 공고가 없습니다.\n
         """,
 )
 async def patch_job_posting(
@@ -221,10 +221,10 @@ async def patch_job_posting(
     status_code=status.HTTP_200_OK,
     summary="관리자 공고 삭제",
     description="""
-        `401` `code`:`auth_required` 인증이 필요합니다.
-        `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-        `403` `code`:`permission_denied` 권한이 없습니다.
-        `404` `code`:`job_posting_not_found` 공고가 없습니다.
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
+`404` `code`:`job_posting_not_found` 공고가 없습니다.\n
         """,
 )
 async def delete_job_posting(
@@ -240,10 +240,10 @@ async def delete_job_posting(
     response_model=RejectPostingResponseDTO,
     summary="관리자 공고 거절 사유 생성",
     description="""
-    `401` `code`:`auth_required` 인증이 필요합니다.
-    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.
-    `403` `code`:`permission_denied` 권한이 없습니다.
-    `404` `code`:`job_posting_not_found` 공고가 없습니다.
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다.\n
+`404` `code`:`job_posting_not_found` 공고가 없습니다.\n
     """,
 )
 async def create_reject_posting(

@@ -16,9 +16,9 @@ resume_router = APIRouter(prefix="/api/resume", tags=["resumes"])
     status_code=status.HTTP_201_CREATED,
     summary="이력서 생성",
     description="""
-    `400` `code`:`required_field` 필수 필드 누락\n
-    `401` `code`:`auth_required` 인증이 필요합니다.\n
-    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`400` `code`:`required_field` 필수 필드 누락\n
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     """,
 )
 async def create_resume(
@@ -40,8 +40,8 @@ async def create_resume(
     status_code=status.HTTP_200_OK,
     summary="이력서 전체 조회",
     description="""
-    `401` `code`:`auth_required` 인증이 필요합니다.\n
-    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     """,
 )
 async def get_all_resumes(
@@ -60,9 +60,9 @@ async def get_all_resumes(
     status_code=status.HTTP_200_OK,
     summary="이력서 상세 조회",
     description="""
-    `401` `code`:`auth_required` 인증이 필요합니다.\n
-    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-    `404` `code`:`resume_not_found` 존재하지 않는 이력서입니다.\n
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`404` `code`:`resume_not_found` 존재하지 않는 이력서입니다.\n
     """,
 )
 async def get_resume(
@@ -83,10 +83,10 @@ async def get_resume(
     status_code=status.HTTP_200_OK,
     summary="이력서 수정",
     description="""
-    `401` `code`:`auth_required` 인증이 필요합니다.\n
-    `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
-    `403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
-    `404` `code`:`resume_not_found` 존재하지 않는 이력서입니다.\n
+`401` `code`:`auth_required` 인증이 필요합니다.\n
+`401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
+`404` `code`:`resume_not_found` 존재하지 않는 이력서입니다.\n
     """,
 )
 async def update_resume(
