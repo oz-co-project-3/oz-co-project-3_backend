@@ -16,19 +16,8 @@ from app.exceptions.job_posting_exceptions import (
 
 def ensure_corporate_user(user: BaseUser):
     """기업 회원인지 확인"""
-    if not user or user.user_type != BaseUser.UserType.BUSINESS.value:
+    if not user or user.user_type != BaseUser.user_type.BUSINESS.value:
         raise PermissionDeniedException()
-
-
-# 이미 get_current_user 에서 처리해서 중복 처리입니다.
-# def ensure_authenticated_user(user: BaseUser):
-#     """인증된 사용자 확인"""
-#     if not user:
-#         raise CustomException(
-#             error="로그인이 필요합니다.",
-#             code="invalid_token",
-#             status_code=401,
-#         )
 
 
 class JobPostingService:
