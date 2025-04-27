@@ -17,7 +17,8 @@ from app.api.v1.success_review import success_review_router
 from app.api.v1.user import router as user_router
 from app.api.v1.websocket import websocket_router
 from app.core.config import TORTOISE_ORM
-from app.domain.services.verification import CustomException
+from app.domain.services.s3_service import image_upload_router
+from app.exceptions.base_exceptions import CustomException
 
 bearer_scheme = HTTPBearer()
 app = FastAPI()
@@ -33,6 +34,7 @@ app.include_router(websocket_router)
 app.include_router(posting_router)
 app.include_router(public_router)
 app.include_router(resume_router)
+app.include_router(image_upload_router)
 
 origins = [
     "http://localhost",
@@ -80,9 +82,17 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
-        title="My API",
+        title="Senior-tomorrow",
         version="1.0.0",
-        description="This is my API",
+        description=(
+            """
+            Senior-tomorrow API 문서입니다.\n\n
+            - 시니어를 위한 구인/구직 서비스를 지원합니다.\n
+            - 프론트엔드 및 외부 서비스 연동을 위해 사용됩니다.\n
+            - 로그인, 공고 조회를 제외한 모든 API는 Bearer JWT 인증을 필요로 합니다.\n
+            - 버전: v1.0.0
+            """
+        ),
         routes=app.routes,
     )
     openapi_schema["components"]["securitySchemes"] = {

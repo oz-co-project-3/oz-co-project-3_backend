@@ -10,6 +10,7 @@ from app.domain.comment.repository import (
 from app.domain.comment.schemas import CommentResponseDTO
 from app.domain.services.permission import check_author
 from app.domain.services.verification import check_existing
+from app.exceptions.comment_exceptions import CommentNotFoundException
 
 
 async def create_comment_by_id_service(
@@ -32,7 +33,7 @@ async def patch_comment_by_id_service(
     current_user: Any,
 ) -> CommentResponseDTO:
     comment = await get_comment_query(id)
-    check_existing(comment, "해당 댓글을 찾을 수 없습니다.", "comment_not_found")
+    check_existing(comment, CommentNotFoundException)
     await check_author(comment, current_user)
     return await patch_comment_by_id(comment, comment_data)
 
@@ -42,7 +43,7 @@ async def delete_comment_by_id_service(
     current_user: Any,
 ):
     comment = await get_comment_query(id)
-    check_existing(comment, "해당 댓글을 찾을 수 없습니다.", "comment_not_found")
+    check_existing(comment, CommentNotFoundException)
     await check_author(comment, current_user)
 
     await delete_comment_by_id(comment)

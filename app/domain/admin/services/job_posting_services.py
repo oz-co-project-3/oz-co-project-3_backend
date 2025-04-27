@@ -1,7 +1,5 @@
 from typing import List
 
-from fastapi import status
-
 from app.domain.admin.repositories.job_posting_repository import (
     create_reject_posting_by_id,
     delete_job_posting_by_id,
@@ -16,13 +14,9 @@ from app.domain.admin.schemas.job_posting_schemas import (
     RejectPostingResponseDTO,
     StatusEnum,
 )
-from app.domain.job_posting.job_posting_models import JobPosting, RejectPosting
-from app.domain.services.verification import (
-    CustomException,
-    check_existing,
-    check_superuser,
-)
+from app.domain.services.verification import check_existing, check_superuser
 from app.domain.user.user_models import BaseUser
+from app.exceptions.job_posting_exceptions import JobPostingNotFoundException
 
 
 async def get_all_job_postings_service(
@@ -48,7 +42,7 @@ async def get_job_posting_by_id_service(
 ) -> JobPostingResponseDTO:
     check_superuser(current_user)
     posting = await get_job_posting_by_id_query(id)
-    check_existing(posting, "해당 이력서를 찾지 못했습니다.", "job_posting_not_found")
+    check_existing(posting, JobPostingNotFoundException)
 
     return posting
 
@@ -60,7 +54,7 @@ async def patch_job_posting_by_id_service(
 ) -> JobPostingResponseDTO:
     check_superuser(current_user)
     posting = await get_job_posting_by_id_query(id)
-    check_existing(posting, "해당 이력서를 찾지 못했습니다.", "job_posting_not_found")
+    check_existing(posting, JobPostingNotFoundException)
     return await patch_job_posting_by_id(posting, patch_job_posting)
 
 
@@ -70,7 +64,7 @@ async def delete_job_posting_by_id_service(
 ):
     check_superuser(current_user)
     posting = await get_job_posting_by_id_query(id)
-    check_existing(posting, "해당 이력서를 찾지 못했습니다.", "job_posting_not_found")
+    check_existing(posting, JobPostingNotFoundException)
     await delete_job_posting_by_id(posting)
 
 
@@ -79,5 +73,5 @@ async def create_reject_posting_by_id_service(
 ) -> RejectPostingResponseDTO:
     check_superuser(current_user)
     posting = await get_job_posting_by_id_query(id)
-    check_existing(posting, "해당 이력서를 찾지 못했습니다.", "job_posting_not_found")
+    check_existing(posting, JobPostingNotFoundException)
     return await create_reject_posting_by_id(reject_posting, posting, current_user)

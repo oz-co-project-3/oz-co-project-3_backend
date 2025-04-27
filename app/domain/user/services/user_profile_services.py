@@ -1,7 +1,6 @@
 from typing import Union
 
 from app.domain.job_posting.job_posting_models import Applicants
-from app.domain.services.verification import CustomException
 from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 from app.domain.user.user_schema import (
     CorporateProfileResponse,
@@ -13,6 +12,7 @@ from app.domain.user.user_schema import (
     UserProfileResponse,
     UserProfileUpdateResponse,
 )
+from app.exceptions.server_exceptions import UnknownUserTypeException
 
 
 async def get_user_profile(current_user: BaseUser) -> UserProfileResponse:
@@ -70,9 +70,7 @@ async def get_user_profile(current_user: BaseUser) -> UserProfileResponse:
         )
 
     else:
-        raise CustomException(
-            status_code=500, error="알 수 없는 사용자 유형입니다.", code="unknown_user_type"
-        )
+        raise UnknownUserTypeException()
 
 
 # 프로필 수정
@@ -154,4 +152,4 @@ async def update_user_profile(
         )
 
     else:
-        raise CustomException(500, "알 수 없는 사용자 유형입니다.", "unknown_user_type")
+        raise UnknownUserTypeException()

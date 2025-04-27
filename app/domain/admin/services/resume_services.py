@@ -8,6 +8,7 @@ from app.domain.admin.repositories.resume_repository import (
 )
 from app.domain.admin.schemas.resume_schemas import ResumeResponseDTO
 from app.domain.services.verification import check_existing, check_superuser
+from app.exceptions.user_exceptions import ResumeNotFoundException
 
 
 async def get_all_resumes_service(
@@ -24,7 +25,7 @@ async def get_resume_by_id_service(current_user: Any, id: int) -> ResumeResponse
     check_superuser(current_user)
 
     resume = await get_resume_by_id(id)
-    check_existing(resume, "해당 이력서를 찾지 못했습니다.", "resume_not_found")
+    check_existing(resume, ResumeNotFoundException)
 
     return resume
 
@@ -32,5 +33,5 @@ async def get_resume_by_id_service(current_user: Any, id: int) -> ResumeResponse
 async def delete_resume_by_id_service(current_user: Any, id: int):
     check_superuser(current_user)
     resume = await get_resume_by_id(id)
-    check_existing(resume, "해당 이력서를 찾지 못했습니다.", "resume_not_found")
+    check_existing(resume, ResumeNotFoundException)
     await delete_resume_by_id(id)

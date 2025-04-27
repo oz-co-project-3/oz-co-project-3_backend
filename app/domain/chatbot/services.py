@@ -9,6 +9,7 @@ from app.domain.chatbot.repository import (
 )
 from app.domain.chatbot.schemas import ChatBotCreateUpdate, ChatBotResponseDTO
 from app.domain.services.verification import check_existing, check_superuser
+from app.exceptions.chatbot_exceptions import ChatBotNotFoundException
 
 
 async def get_all_chatbots_service(current_user: Any) -> List[ChatBotResponseDTO]:
@@ -28,7 +29,7 @@ async def patch_chatbot_by_id_service(
 ) -> ChatBotResponseDTO:
     check_superuser(current_user)
     chatbot = await get_chatbot_by_id(id)
-    check_existing(chatbot, "해당 챗봇 프롬프트가 없습니다.", "chatbot_not_found")
+    check_existing(chatbot, ChatBotNotFoundException)
 
     chatbot = await patch_chatbot_by_id(chatbot, update_chatbot)
 
@@ -41,5 +42,5 @@ async def delete_chatbot_by_id_service(
 ):
     check_superuser(current_user)
     chatbot = await get_chatbot_by_id(id)
-    check_existing(chatbot, "해당 챗봇 프롬프트가 없습니다.", "chatbot_not_found")
+    check_existing(chatbot, ChatBotNotFoundException)
     await delete_chatbot_by_id(chatbot)
