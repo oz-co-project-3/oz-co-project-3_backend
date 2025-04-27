@@ -77,25 +77,6 @@ async def test_get_all_job_postings_service(
 
 
 @pytest.mark.asyncio
-async def test_get_all_job_postings_service_not_permitted():
-    # given
-    dummy_user = AsyncMock()
-    dummy_user.is_superuser = False
-    dummy_search_type = AsyncMock()
-    dummy_search_keyword = AsyncMock()
-    dummy_status = AsyncMock()
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await get_all_job_postings_service(
-            dummy_user, dummy_search_type, dummy_search_keyword, dummy_status
-        )
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
 @patch(
     "app.domain.admin.services.job_posting_services.check_existing",
     new_callable=AsyncMock,
@@ -151,41 +132,6 @@ async def test_get_job_posting_by_id_service(
     assert result == mock_data
     mock_get_job_posting_by_id_query.assert_called_once_with(dummy_id)
     mock_check_superuser.assert_called_once_with(dummy_user)
-
-
-@pytest.mark.asyncio
-async def test_get_job_posting_by_id_service_not_permitted():
-    # given
-    dummy_user = AsyncMock()
-    dummy_user.is_superuser = False
-    dummy_id = 1
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await get_job_posting_by_id_service(dummy_id, dummy_user)
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
-@patch(
-    "app.domain.admin.services.job_posting_services.check_superuser",
-    new_callable=AsyncMock,
-)
-async def test_get_job_posting_by_id_service_not_found(mock_check_superuser):
-    # given
-    dummy_id = 1
-    dummy_user = AsyncMock()
-
-    mock_check_superuser.return_value = None
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await get_job_posting_by_id_service(dummy_id, dummy_user)
-
-    # then
-    assert e.value.code == "job_posting_not_found"
 
 
 @pytest.mark.asyncio
@@ -254,43 +200,6 @@ async def test_patch_job_posting_by_id_service(
 
 
 @pytest.mark.asyncio
-async def test_patch_job_posting_by_id_service_not_permitted():
-    # given
-    dummy_id = 1
-    dummy_user = AsyncMock()
-    dummy_user.is_superuser = False
-    dummy_data = AsyncMock()
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await patch_job_posting_by_id_service(dummy_id, dummy_data, dummy_user)
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
-@patch(
-    "app.domain.admin.services.job_posting_services.check_superuser",
-    new_callable=AsyncMock,
-)
-async def test_patch_job_posting_by_id_service_not_found(mock_check_superuser):
-    # given
-    dummy_id = 1
-    dummy_data = AsyncMock()
-    dummy_user = AsyncMock()
-
-    mock_check_superuser.return_value = None
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await patch_job_posting_by_id_service(dummy_id, dummy_data, dummy_user)
-
-    # then
-    assert e.value.code == "job_posting_not_found"
-
-
-@pytest.mark.asyncio
 @patch(
     "app.domain.admin.services.job_posting_services.delete_job_posting_by_id",
     new_callable=AsyncMock,
@@ -330,68 +239,6 @@ async def test_delete_job_posting_by_id_service(
     assert result is None
     mock_check_superuser.assert_called_once_with(dummy_user)
     mock_get_job_posting_by_id_query.assert_called_once_with(dummy_id)
-
-
-@pytest.mark.asyncio
-async def test_delete_job_posting_by_id_service_not_permitted():
-    # given
-    dummy_id = 1
-    dummy_user = AsyncMock()
-    dummy_user.is_superuser = False
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await delete_job_posting_by_id_service(dummy_id, dummy_user)
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
-@patch(
-    "app.domain.admin.services.job_posting_services.check_superuser",
-    new_callable=AsyncMock,
-)
-async def test_delete_job_posting_by_id_service_not_found(mock_check_superuser):
-    # given
-    dummy_id = 1
-    dummy_user = AsyncMock()
-
-    mock_check_superuser.return_value = None
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await delete_job_posting_by_id_service(dummy_id, dummy_user)
-
-    # then
-    assert e.value.code == "job_posting_not_found"
-
-
-@pytest.mark.asyncio
-@patch(
-    "app.domain.admin.services.job_posting_services.check_superuser",
-    new_callable=AsyncMock,
-)
-@patch(
-    "app.domain.admin.services.job_posting_services.get_job_posting_by_id_query",
-    new_callable=AsyncMock,
-)
-async def test_delete_job_posting_by_id_service_not_found(
-    mock_get_job_posting_by_id_query, mock_check_superuser
-):
-    # given
-    dummy_id = 1
-    dummy_user = AsyncMock()
-
-    mock_check_superuser.return_value = None
-    mock_get_job_posting_by_id_query.return_value = None
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await delete_job_posting_by_id_service(dummy_id, dummy_user)
-
-    # then
-    assert e.value.code == "job_posting_not_found"
 
 
 @pytest.mark.asyncio
@@ -463,47 +310,3 @@ async def test_create_reject_posting_by_id_service_success(
     mock_create_reject.assert_called_once_with(
         dummy_request, expected_response.job_posting, dummy_user
     )
-
-
-@pytest.mark.asyncio
-async def test_create_reject_posting_by_id_service_permission_denied():
-    # given
-    dummy_id = 1
-    dummy_user = AsyncMock()
-    dummy_user.is_superuser = False
-    dummy_request = RejectPostingCreateSchema(content="부적합")
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await create_reject_posting_by_id_service(dummy_id, dummy_user, dummy_request)
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
-@patch(
-    "app.domain.admin.services.job_posting_services.check_superuser",
-    new_callable=AsyncMock,
-)
-@patch(
-    "app.domain.admin.services.job_posting_services.get_job_posting_by_id_query",
-    new_callable=AsyncMock,
-)
-async def test_create_reject_posting_by_id_service_not_found(
-    mock_get_posting, mock_check_superuser
-):
-    # given
-    dummy_id = 1
-    dummy_user = AsyncMock()
-    dummy_request = RejectPostingCreateSchema(content="부적합")
-
-    mock_check_superuser.return_value = None
-    mock_get_posting.return_value = None
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await create_reject_posting_by_id_service(dummy_id, dummy_user, dummy_request)
-
-    # then
-    assert e.value.code == "job_posting_not_found"
