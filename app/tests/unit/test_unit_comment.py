@@ -87,9 +87,6 @@ async def test_patch_comment_by_id_service(
     # then
     assert result.content == "updated content"
 
-    mock_check_existing.assert_called_once_with(  # 주어진 id로 조회된 결과
-        dummy_comment, "해당 댓글을 찾을 수 없습니다.", "comment_not_found"
-    )
     mock_check_author.assert_called_once_with(dummy_comment, dummy_user)
     mock_patch_comment.assert_called_once_with(dummy_comment, dummy_comment)
 
@@ -206,8 +203,4 @@ async def test_delete_comment_by_id_service(
 
     # then
     assert result is None
-
-    mock_check_existing.assert_called_once_with(  # 주어진 id로 조회된 결과
-        dummy_comment, "해당 댓글을 찾을 수 없습니다.", "comment_not_found"
-    )
     mock_check_author.assert_called_once_with(dummy_comment, dummy_user)

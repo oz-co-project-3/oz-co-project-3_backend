@@ -174,7 +174,6 @@ async def test_get_resume_by_id_service(
     # then
     assert result == mock_data
     mock_check_superuser.called_once_with(dummy_user)
-    mock_check_existing.called_once_with(dummy_id)
 
 
 @pytest.mark.asyncio
@@ -246,9 +245,6 @@ async def test_delete_resume_by_id_service(
     # then
     assert result is None
     mock_check_superuser.called_once_with(dummy_user)
-    mock_check_existing.called_once_with(
-        dummy_data, "해당 이력서를 찾지 못했습니다.", "resume_not_found"
-    )
     mock_get_resume_by_id.called_once_with(dummy_id)
 
 

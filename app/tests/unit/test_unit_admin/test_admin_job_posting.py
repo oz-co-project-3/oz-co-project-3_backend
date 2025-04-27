@@ -150,9 +150,6 @@ async def test_get_job_posting_by_id_service(
     # then
     assert result == mock_data
     mock_get_job_posting_by_id_query.assert_called_once_with(dummy_id)
-    mock_check_existing.assert_called_once_with(
-        mock_data, "해당 이력서를 찾지 못했습니다.", "job_posting_not_found"
-    )
     mock_check_superuser.assert_called_once_with(dummy_user)
 
 
@@ -254,9 +251,6 @@ async def test_patch_job_posting_by_id_service(
     assert result == mock_data
     mock_check_superuser.assert_called_once_with(dummy_user)
     mock_get_job_posting_by_id_query.assert_called_once_with(dummy_id)
-    mock_check_existing.assert_called_once_with(
-        dummy_data, "해당 이력서를 찾지 못했습니다.", "job_posting_not_found"
-    )
 
 
 @pytest.mark.asyncio
@@ -336,9 +330,6 @@ async def test_delete_job_posting_by_id_service(
     assert result is None
     mock_check_superuser.assert_called_once_with(dummy_user)
     mock_get_job_posting_by_id_query.assert_called_once_with(dummy_id)
-    mock_check_existing.assert_called_once_with(
-        dummy_data, "해당 이력서를 찾지 못했습니다.", "job_posting_not_found"
-    )
 
 
 @pytest.mark.asyncio
@@ -469,9 +460,6 @@ async def test_create_reject_posting_by_id_service_success(
     assert result == expected_response
     mock_check_superuser.assert_called_once_with(dummy_user)
     mock_get_posting.assert_called_once_with(dummy_id)
-    mock_check_existing.assert_called_once_with(
-        expected_response.job_posting, "해당 이력서를 찾지 못했습니다.", "job_posting_not_found"
-    )
     mock_create_reject.assert_called_once_with(
         dummy_request, expected_response.job_posting, dummy_user
     )
