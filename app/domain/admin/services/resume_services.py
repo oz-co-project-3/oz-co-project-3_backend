@@ -8,7 +8,7 @@ from app.domain.admin.repositories.resume_repository import (
 )
 from app.domain.admin.schemas.resume_schemas import ResumeResponseDTO
 from app.domain.services.verification import check_existing, check_superuser
-from app.exceptions.user_exceptions import ResumeNotFoundException
+from app.exceptions.resume_exceptions import ResumeNotFoundException
 
 
 async def get_all_resumes_service(
