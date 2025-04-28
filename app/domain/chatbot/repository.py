@@ -19,6 +19,7 @@ async def patch_chatbot_by_id(chatbot, update_chatbot):
     chatbot.selection_path = update_chatbot.selection_path
     chatbot.options = update_chatbot.options
     chatbot.answer = update_chatbot.answer
+    chatbot.url = update_chatbot.url
 
     await chatbot.save()
 
