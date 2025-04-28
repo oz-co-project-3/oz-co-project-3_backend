@@ -1,11 +1,12 @@
 from typing import Union
 
 from app.domain.job_posting.job_posting_models import Applicants
-from app.domain.user.repositories.user_repository import (
+from app.domain.user.models import BaseUser
+from app.domain.user.repository import (
     get_corporate_profile_by_user,
     get_seeker_profile_by_user,
 )
-from app.domain.user.schemas.user_schema import (
+from app.domain.user.schema import (
     CorporateProfileResponse,
     CorporateProfileUpdateRequest,
     CorporateProfileUpdateResponse,
@@ -15,7 +16,6 @@ from app.domain.user.schemas.user_schema import (
     UserProfileResponse,
     UserProfileUpdateResponse,
 )
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 from app.exceptions.server_exceptions import UnknownUserTypeException
 
 

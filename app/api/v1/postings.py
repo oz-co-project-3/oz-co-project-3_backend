@@ -13,7 +13,7 @@ from app.domain.posting.services import (
     get_posting_by_id_service,
     patch_posting_applicant_by_id_service,
 )
-from app.domain.user.user_models import BaseUser
+from app.domain.user.models import BaseUser
 
 posting_router = APIRouter(
     prefix="/api/postings",

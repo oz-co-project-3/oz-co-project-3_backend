@@ -3,7 +3,7 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.domain.user.user_models import Gender, SeekerStatus, UserType
+from app.domain.user.models import Gender, SeekerStatus, UserType
 
 
 class UserRegisterRequest(BaseModel):

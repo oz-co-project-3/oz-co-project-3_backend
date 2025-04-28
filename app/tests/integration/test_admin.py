@@ -12,7 +12,7 @@ from app.domain.job_posting.job_posting_models import (
     StatusEnum,
 )
 from app.domain.resume.models import Resume, WorkExp
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
+from app.domain.user.models import BaseUser, CorporateUser, SeekerUser
 from app.main import app
 
 

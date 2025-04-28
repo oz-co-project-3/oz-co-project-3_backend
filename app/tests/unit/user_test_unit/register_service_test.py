@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from passlib.hash import bcrypt
 
-from app.domain.user.schemas.user_schema import VerifyPasswordRequest
+from app.domain.user.schema import VerifyPasswordRequest
 from app.domain.user.services.auth_services import verify_user_password
 from app.main import CustomException
 

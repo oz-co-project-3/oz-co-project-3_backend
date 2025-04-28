@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from app.domain.user.user_models import BaseUser
+from app.domain.user.models import BaseUser
 from app.exceptions.auth_exceptions import ExpiredTokenException, InvalidTokenException
 
 load_dotenv()

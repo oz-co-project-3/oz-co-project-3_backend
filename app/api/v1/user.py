@@ -19,7 +19,8 @@ from app.domain.services.social_account import (
     kakao_social_login,
     naver_social_login,
 )
-from app.domain.user.schemas.user_schema import (
+from app.domain.user.models import BaseUser
+from app.domain.user.schema import (
     BusinessVerifyRequest,
     BusinessVerifyResponse,
     CompanyRegisterRequest,
@@ -66,7 +67,6 @@ from app.domain.user.services.user_register_services import (
     register_company_user,
     register_user,
 )
-from app.domain.user.user_models import BaseUser
 
 router = APIRouter(prefix="/api/user", tags=["user"])
 

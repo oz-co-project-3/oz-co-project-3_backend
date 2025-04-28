@@ -11,7 +11,7 @@ from app.domain.free_board.services import (
     get_free_board_by_id_service,
     patch_free_board_by_id_service,
 )
-from app.domain.user.user_models import BaseUser
+from app.domain.user.models import BaseUser
 
 free_board_router = APIRouter(prefix="/api/free-board", tags=["FreeBoard"])
 

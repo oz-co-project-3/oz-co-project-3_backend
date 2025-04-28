@@ -12,12 +12,21 @@ from app.core.token import (
     create_jwt_tokens,
     create_token,
 )
-from app.domain.user.repositories.user_repository import (
+from app.domain.services.social_account import (
+    get_kakao_access_token,
+    get_kakao_user_info,
+    get_naver_access_token,
+    get_naver_user_info,
+)
+from app.domain.user.models import BaseUser, Gender, SeekerStatus, UserStatus, UserType
+from app.domain.user.repository import (
+    create_base_user,
+    create_seeker_profile,
     get_corporate_profile_by_user,
     get_seeker_profile_by_user,
     get_user_by_email,
 )
-from app.domain.user.schemas.user_schema import (
+from app.domain.user.schema import (
     LoginRequest,
     LoginResponse,
     LoginResponseData,
@@ -25,7 +34,6 @@ from app.domain.user.schemas.user_schema import (
     RefreshTokenResponse,
     RefreshTokenResponseData,
 )
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 from app.exceptions.auth_exceptions import (
     ExpiredRefreshTokenException,
     InvalidRefreshTokenException,
@@ -136,4 +144,97 @@ async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResp
     return RefreshTokenResponse(
         message="토큰이 갱신되었습니다.",
         data=RefreshTokenResponseData(access_token=new_access_token),
+    )
+
+
+# 카카오/네이버 로그인
+async def kakao_login(code: str) -> LoginResponse:
+    access_token = await get_kakao_access_token(code)
+    kakao_info = await get_kakao_user_info(access_token)
+
+    email = kakao_info["kakao_account"].get("email")
+    nickname = kakao_info["kakao_account"]["profile"].get("nickname") or "카카오유저"
+
+    user = await get_user_by_email(email=email)
+
+    if not user:
+        user = await create_base_user(
+            email=email,
+            password="kakao_social_login",
+            user_type=UserType.SEEKER,
+            status=UserStatus.ACTIVE,
+            email_verified=True,
+            gender=Gender.MALE,
+        )
+        await create_seeker_profile(
+            user=user,
+            name=nickname,
+            phone_number="",
+            birth=None,
+            interests="",
+            purposes="",
+            sources="",
+            status=SeekerStatus.SEEKING,
+            is_social=True,
+        )
+
+    access_token, refresh_token = create_jwt_tokens(str(user.id))
+    await redis.set(f"refresh_token:{user.id}", refresh_token)
+
+    return LoginResponse(
+        message="소셜 로그인 성공",
+        data=LoginResponseData(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user_id=user.id,
+            user_type=user.user_type.value,
+            email=user.email,
+            name=nickname,
+        ),
+    )
+
+
+async def naver_login(code: str, state: str) -> LoginResponse:
+    access_token = await get_naver_access_token(code, state)
+    naver_info = await get_naver_user_info(access_token)
+
+    email = naver_info.get("email")
+    nickname = naver_info.get("nickname") or naver_info.get("name") or "네이버유저"
+
+    user = await get_user_by_email(email=email)
+
+    if not user:
+        user = await create_base_user(
+            email=email,
+            password="naver_social_login",
+            user_type=UserType.SEEKER,
+            status=UserStatus.ACTIVE,
+            email_verified=True,
+            gender=Gender.MALE,
+        )
+        await create_seeker_profile(
+            user=user,
+            name=nickname,
+            phone_number="",
+            birth=None,
+            interests="",
+            purposes="",
+            sources="",
+            status=SeekerStatus.SEEKING,
+            is_social=True,
+        )
+
+    access_token, refresh_token = create_jwt_tokens(str(user.id))
+    await redis.set(f"refresh_token:{user.id}", refresh_token)
+
+    return LoginResponse(
+        message="소셜 로그인 성공",
+        data=LoginResponseData(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user_id=user.id,
+            user_type=user.user_type.value,
+            email=user.email,
+            name=nickname,
+        ),
     )

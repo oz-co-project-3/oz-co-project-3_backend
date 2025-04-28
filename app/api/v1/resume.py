@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 from app.core.token import get_current_user
 from app.domain.resume.schema import ResumeRequestSchema, ResumeResponseSchema
 from app.domain.resume.service import ResumeService
-from app.domain.user.user_models import SeekerUser
+from app.domain.user.models import SeekerUser
 
 resume_router = APIRouter(prefix="/api/resume", tags=["resumes"])
 

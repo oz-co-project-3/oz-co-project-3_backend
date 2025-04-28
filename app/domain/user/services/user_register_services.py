@@ -5,13 +5,14 @@ from typing import Optional
 from passlib.hash import bcrypt
 
 from app.domain.services.email_detail import send_email_code
-from app.domain.user.repositories.user_repository import (
+from app.domain.user.models import BaseUser
+from app.domain.user.repository import (
     create_base_user,
     create_corporate_profile,
     create_seeker_profile,
     get_user_by_email,
 )
-from app.domain.user.schemas.user_schema import (
+from app.domain.user.schema import (
     CompanyRegisterRequest,
     CompanyRegisterResponse,
     CompanyRegisterResponseData,
@@ -20,7 +21,6 @@ from app.domain.user.schemas.user_schema import (
     UserRegisterResponse,
     UserRegisterResponseData,
 )
-from app.domain.user.user_models import BaseUser
 from app.exceptions.auth_exceptions import (
     InvalidPasswordException,
     PasswordMismatchException,

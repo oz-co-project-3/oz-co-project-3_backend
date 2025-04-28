@@ -5,7 +5,7 @@ from httpx import ASGITransport, AsyncClient
 from passlib.handlers.bcrypt import bcrypt
 
 from app.domain.free_board.models import FreeBoard
-from app.domain.user.user_models import BaseUser, SeekerUser
+from app.domain.user.models import BaseUser, SeekerUser
 from app.main import app
 
 

@@ -8,10 +8,10 @@ from app.domain.services.email_detail import (
     resend_verification_email,
     verify_email_code,
 )
-from app.domain.user.schemas.user_schema import LoginRequest
+from app.domain.user.models import UserStatus
+from app.domain.user.schema import LoginRequest
 from app.domain.user.services.auth_services import login_user, logout_user
 from app.domain.user.services.user_register_services import check_email_duplicate
-from app.domain.user.user_models import UserStatus
 from app.main import CustomException
 
 """

@@ -1,13 +1,19 @@
 from passlib.hash import bcrypt
 
+from app.core.redis import redis
 from app.domain.services.email_detail import send_email_code
-from app.domain.user.repositories.user_repository import (
+from app.domain.user.repository import (
     get_corporate_by_manager_name_and_phone,
     get_seeker_by_name_and_phone,
     get_user_by_email,
     get_user_with_profiles_by_email,
 )
+from app.domain.user.schema import ResendEmailRequest
 from app.exceptions.auth_exceptions import PasswordMismatchException
+from app.exceptions.email_exceptions import (
+    EmailAlreadyVerifiedException,
+    InvalidVerificationCodeException,
+)
 from app.exceptions.server_exceptions import UnknownUserTypeException
 from app.exceptions.user_exceptions import (
     PasswordInvalidException,
@@ -84,3 +90,44 @@ async def reset_password(email: str, new_password: str, new_password_check: str)
     await user.save()
 
     return {"message": "비밀번호가 성공적으로 변경되었습니다."}
+
+
+# 이메일 인증완료 / 재인증 요청
+
+
+# 이메일 인증 완료 처리
+async def complete_email_verification(email: str, verification_code: str):
+    saved_code = await redis.get(f"email_verify:{email}")
+
+    if not saved_code or saved_code != verification_code:
+        raise InvalidVerificationCodeException()
+
+    user = await get_user_by_email(email=email)
+    if not user:
+        raise UserNotFoundException()
+
+    user.email_verified = True
+    user.status = "active"
+    await user.save()
+
+    return {
+        "message": "이메일 인증이 완료되었습니다.",
+        "data": {
+            "email": user.email,
+            "email_verified": user.email_verified,
+        },
+    }
+
+
+# 이메일 재인증 요청
+async def resend_verification_email_service(request: ResendEmailRequest):
+    user = await get_user_by_email(email=request.email)
+    if not user:
+        raise UserNotFoundException()
+
+    if user.email_verified:
+        raise EmailAlreadyVerifiedException()
+
+    await send_email_code(email=user.email, purpose="이메일 재인증")
+
+    return {"message": "인증코드가 재전송되었습니다.", "data": {"email": user.email}}

@@ -7,7 +7,7 @@ from app.domain.job_posting.jobposting_schemas import (
     JobPostingSummaryResponse,
 )
 from app.domain.job_posting.jobposting_services import JobPostingService
-from app.domain.user.user_models import BaseUser, CorporateUser
+from app.domain.user.models import BaseUser, CorporateUser
 
 job_posting_router = APIRouter(
     prefix="/api/job_posting",

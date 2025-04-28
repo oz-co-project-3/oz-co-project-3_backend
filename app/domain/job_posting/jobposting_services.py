@@ -5,7 +5,7 @@ from app.domain.job_posting.jobposting_schemas import (
 )
 from app.domain.services.permission import check_author
 from app.domain.services.verification import check_existing
-from app.domain.user.user_models import BaseUser, CorporateUser
+from app.domain.user.models import BaseUser, CorporateUser
 from app.exceptions.auth_exceptions import PermissionDeniedException
 from app.exceptions.free_board_exceptions import CompanyNotFoundException
 from app.exceptions.job_posting_exceptions import (

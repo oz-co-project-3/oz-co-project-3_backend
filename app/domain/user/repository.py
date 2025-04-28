@@ -1,6 +1,6 @@
 from typing import Optional
 
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
+from app.domain.user.models import BaseUser, CorporateUser, SeekerUser
 
 
 async def get_user_by_email(email: str) -> Optional[BaseUser]:
@@ -41,14 +41,6 @@ async def get_user_with_profiles_by_email(email: str) -> Optional[BaseUser]:
         .prefetch_related("seeker_profiles", "corporate_profiles")
         .first()
     )
-
-
-async def get_user_by_email(email: str) -> Optional[BaseUser]:
-    return await BaseUser.get_or_none(email=email)
-
-
-async def create_base_user(**kwargs) -> BaseUser:
-    return await BaseUser.create(**kwargs)
 
 
 async def create_seeker_profile(**kwargs) -> SeekerUser:
