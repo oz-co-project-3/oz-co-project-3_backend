@@ -116,7 +116,6 @@ async def create_applicant(
 `404` `code`:`applicant_not_found` 공고를 찾지 못했습니다.\n
 `404` `code`:`resume_not_found` 이력서를 찾지 못했습니다.\n
 `422` : Unprocessable Entity
-
 """,
 )
 async def patch_posting_applicant(
