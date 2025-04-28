@@ -134,6 +134,7 @@ async def test_admin_update_chatbot(client, access_token):
     assert response.json()["answer"] == "답변 수정"
 
 
+@pytest.mark.asyncio
 async def test_delete_chatbot(client, access_token):
     headers = {"Authorization": f"Bearer {access_token[0]}"}
     id = 1
