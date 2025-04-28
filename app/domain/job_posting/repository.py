@@ -20,11 +20,9 @@ class JobPostingRepository:
 
     @staticmethod
     async def get_job_posting_by_company_and_id(
-        company_id: int, job_posting_id: int
+        user_id: int, job_posting_id: int
     ) -> JobPosting:
-        job_posting = await JobPosting.get_or_none(
-            company_id=company_id, id=job_posting_id
-        )
+        job_posting = await JobPosting.get_or_none(user_id=user_id, id=job_posting_id)
         if not job_posting:
             raise NotificationNotFoundException
         return job_posting
@@ -49,10 +47,3 @@ class JobPostingRepository:
     @staticmethod
     async def delete_job_posting(job_posting: JobPosting) -> None:
         await job_posting.delete()
-
-    @staticmethod
-    async def get_corporate_user(user_id: int) -> CorporateUser:
-        corporate_user = await CorporateUser.get_or_none(user_id=user_id)
-        if not corporate_user:
-            raise CompanyNotFoundException
-        return corporate_user

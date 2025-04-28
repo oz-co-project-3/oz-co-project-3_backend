@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends
 
 from app.core.token import get_current_user  # 인증된 사용자 가져오기 서비스 함수
-from app.domain.job_posting.jobposting_schemas import (
+from app.domain.job_posting.schema import (
     JobPostingCreateUpdate,
     JobPostingResponse,
     JobPostingSummaryResponse,
 )
-from app.domain.job_posting.jobposting_services import JobPostingService
+from app.domain.job_posting.services import JobPostingService
 from app.domain.user.user_models import BaseUser, CorporateUser
+from app.exceptions.auth_exceptions import PermissionDeniedException
 
 job_posting_router = APIRouter(
     prefix="/api/job_posting",
@@ -15,8 +16,13 @@ job_posting_router = APIRouter(
 )
 
 
-async def current_user_dependency(user: BaseUser = Depends(get_current_user)):
-    return user
+async def get_corporate_user(
+    current_user: BaseUser = Depends(get_current_user),
+) -> CorporateUser:
+    corporate_user = await CorporateUser.get_or_none(user=current_user)
+    if not corporate_user:
+        raise PermissionDeniedException
+    return corporate_user
 
 
 @job_posting_router.post(
@@ -30,35 +36,29 @@ async def current_user_dependency(user: BaseUser = Depends(get_current_user)):
 """,
 )
 async def create_job_posting(
-    data: JobPostingCreateUpdate,  # 요청 데이터 검증
-    current_user: BaseUser = Depends(current_user_dependency),  # 인증된 사용자 정보
+    data: JobPostingCreateUpdate,
+    current_user: BaseUser = Depends(get_current_user),
 ):
-    return await JobPostingService.create_job_posting(current_user, data)
+    corporate_user = await get_corporate_user(current_user)
+    return await JobPostingService.create_job_posting(corporate_user, data)
 
 
 @job_posting_router.get(
-    "/{company_id}/",
+    "/my_company/job_postings/",
     response_model=list[JobPostingSummaryResponse],
-    status_code=200,
-    summary="특정 회사 공고 조회",
-    description="""
-`401` `code`: `invalid_token` 로그인이 필요합니다.\n
-`403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
-`404` `code`: `notification_not_found` 등록된 공고를 찾을 수 없습니다.\n
-""",
+    summary="내 회사의 전체 공고 조회",
 )
-async def get_job_postings_by_company(
-    company_id: int,
-    current_user: BaseUser = Depends(current_user_dependency),  # 인증된 사용자 정보
+async def get_my_company_job_postings(
+    current_user: CorporateUser = Depends(get_corporate_user),
 ):
-    return await JobPostingService.get_job_postings_by_company(company_id)
+    return await JobPostingService.get_job_postings_by_company_user(current_user)
 
 
 @job_posting_router.get(
-    "/{company_id}/{job_posting_id}/",
+    "/post/{job_posting_id}/",
     response_model=JobPostingResponse,
     status_code=200,
-    summary="특정 회사의 특정 공고 조회",
+    summary="특정 공고 조회",
     description="""
 `401` `code`: `invalid_token` 로그인이 필요합니다.\n
 `403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
@@ -66,12 +66,11 @@ async def get_job_postings_by_company(
 """,
 )
 async def get_specific_job_posting(
-    company_id: int,
     job_posting_id: int,
-    current_user: BaseUser = Depends(current_user_dependency),  # 인증된 사용자 정보
+    current_user: CorporateUser = Depends(get_corporate_user),
 ):
     job_posting = await JobPostingService.get_specific_job_posting(
-        company_id, job_posting_id
+        current_user, job_posting_id
     )
     return job_posting
 
@@ -88,12 +87,12 @@ async def get_specific_job_posting(
 """,
 )
 async def patch_job_posting(
-    jobposting_id: int,
+    job_posting_id: int,
     updated_data: JobPostingCreateUpdate,
-    current_user: CorporateUser = Depends(current_user_dependency),
+    current_user: CorporateUser = Depends(get_corporate_user),
 ):
     return await JobPostingService.patch_job_posting(
-        current_user, jobposting_id, updated_data
+        current_user, job_posting_id, updated_data
     )
 
 
@@ -109,6 +108,8 @@ async def patch_job_posting(
 )
 async def delete_job_posting_endpoint(
     job_posting_id: int,
-    current_user: BaseUser = Depends(current_user_dependency),  # 인증된 현재 사용자
+    current_user: CorporateUser = Depends(get_corporate_user),
 ):
-    return await JobPostingService.delete_job_posting(current_user, job_posting_id)
+    # CorporateUser 객체 자체를 전달
+    await JobPostingService.delete_job_posting(current_user, job_posting_id)
+    return {"message": "공고가 삭제되었습니다."}
