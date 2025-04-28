@@ -266,7 +266,7 @@ async def delete_job_posting(
 `403` `code`:`permission_denied` 권한이 없습니다.\n
 `404` `code`:`job_posting_not_found` 공고가 없습니다.\n
 `422` : Unprocessable Entity(거절 사유 길이 제한 1~1000자 사이 빈값 안됨)
-    """,
+""",
 )
 async def create_reject_posting(
     reject_posting: RejectPostingCreateSchema,

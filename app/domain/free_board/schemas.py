@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 
-from app.exceptions.base_exceptions import CustomException
+from app.exceptions.request_exceptions import RequiredFieldException
 
 
 class UserSchema(BaseModel):
@@ -14,18 +14,16 @@ class UserSchema(BaseModel):
 
 
 class FreeBoardCreateUpdate(BaseModel):
-    title: str
-    content: str
+    title: str = Field(..., max_length=50, description="길이 제한 50")
+    content: str = Field(..., max_length=1000, description="길이 제한 1000")
     image_url: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
     @model_validator(mode="after")
-    def check_fields(self):
-        if not self.title or not self.content:
-            raise CustomException(
-                error="필수 필드 누락", code="required_field", status_code=400
-            )
+    def check_field(self):
+        if self.title is None or self.content is None:
+            raise RequiredFieldException()
         return self
 
 
