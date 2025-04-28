@@ -40,6 +40,7 @@ async def get_list_postings(
     view_count: int = Query(0, description="최소 조회수"),
     offset: int = Query(0, description="페이지 번호 (0부터 시작)"),
     limit: int = Query(10, description="페이지당 항목 수"),
+    employ_method: str = Query("", description="근로 형태: 정규직, 계약직, 일용직, 프리랜서, 파견직"),
 ):
     return await get_all_postings_service(
         search_keyword=search_keyword,
@@ -49,6 +50,7 @@ async def get_list_postings(
         career=career,
         education=education,
         view_count=view_count,
+        employ_method=employ_method,
         offset=offset,
         limit=limit,
     )

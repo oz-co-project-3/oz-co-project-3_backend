@@ -169,6 +169,12 @@ async def test_admin_get_list_user(client, access_token):
     assert response.status_code == 200
     assert await BaseUser.all().count() == 2
 
+    search = "1" * 101
+    response = await client.get(f"/api/admin/user/?search={search}", headers=headers)
+
+    assert response.status_code == 400
+    assert response.json()["message"]["code"] == "search_too_long"
+
     headers = {"Authorization": f"Bearer {access_token[1]}"}
     response = await client.get("/api/admin/user/", headers=headers)
     assert response.status_code == 403

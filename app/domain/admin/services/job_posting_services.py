@@ -17,6 +17,10 @@ from app.domain.admin.schemas.job_posting_schemas import (
 from app.domain.services.verification import check_existing, check_superuser
 from app.domain.user.user_models import BaseUser
 from app.exceptions.job_posting_exceptions import JobPostingNotFoundException
+from app.exceptions.search_exceptions import (
+    InvalidQueryParamsException,
+    SearchKeywordTooLongException,
+)
 
 
 async def get_all_job_postings_service(
@@ -26,6 +30,35 @@ async def get_all_job_postings_service(
     status: StatusEnum,
 ) -> List[JobPostingResponseDTO]:
     check_superuser(current_user)
+
+    if search_keyword and len(search_keyword) > 50:
+        raise SearchKeywordTooLongException(50)
+
+    if search_type and search_keyword:
+        allowed_search_fields = {
+            "company",
+            "title",
+            "location",
+            "employment_type",
+            "employ_method",
+            "work_time",
+            "position",
+            "history",
+            "education",
+            "deadline",
+            "salary",
+            "summary",
+            "description",
+            "status",
+            "career",
+        }
+
+        if search_type not in allowed_search_fields:
+            raise InvalidQueryParamsException("허용되지 않는 검색 타입입니다.")
+
+    allowed_status = {"모집중", "마감 임박", "모집 종료", "블라인드", "대기중", "반려됨"}
+    if status and status not in allowed_status:
+        raise InvalidQueryParamsException("허용되지 않는 공고 상태입니다.")
 
     job_postings = await get_all_job_postings_query(
         search_type=search_type,

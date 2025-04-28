@@ -16,6 +16,10 @@ from app.domain.admin.schemas.user_schemas import (
     UserUpdateSchema,
 )
 from app.domain.services.verification import check_existing, check_superuser
+from app.exceptions.search_exceptions import (
+    InvalidQueryParamsException,
+    SearchKeywordTooLongException,
+)
 from app.exceptions.user_exceptions import UserNotFoundException
 
 
@@ -24,6 +28,9 @@ async def get_user_all_service(
 ) -> List[UserUnionResponseDTO]:
     check_superuser(current_user)
     result: List[UserUnionResponseDTO] = []
+
+    if search and len(search) > 100:
+        raise SearchKeywordTooLongException(100)
 
     if seeker or (not seeker and not corp):
         seeker_users = await get_seeker_users(search)

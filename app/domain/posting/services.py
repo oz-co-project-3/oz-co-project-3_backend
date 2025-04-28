@@ -32,6 +32,7 @@ async def get_all_postings_service(
     view_count: Optional[int] = 0,
     offset: int = 0,
     limit: int = 10,
+    employ_method: Optional[str] = "",
 ) -> PaginatedJobPostingsResponseDTO:
     query = await get_postings_query(
         search_keyword,
@@ -41,6 +42,7 @@ async def get_all_postings_service(
         career,
         education,
         view_count,
+        employ_method,
     )
     return await paginate_query(query, offset, limit)
 
