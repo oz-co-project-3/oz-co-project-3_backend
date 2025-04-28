@@ -6,6 +6,10 @@ from app.core.token import get_current_user
 from app.domain.resume.schema import ResumeRequestSchema, ResumeResponseSchema
 from app.domain.resume.service import ResumeService
 from app.domain.user.user_models import SeekerUser
+from app.exceptions.auth_exceptions import (
+    InvalidTokenException,
+    PermissionDeniedException,
+)
 
 resume_router = APIRouter(prefix="/api/resume", tags=["resumes"])
 
@@ -25,7 +29,10 @@ async def create_resume(
     resume_data: ResumeRequestSchema,
     current_user: SeekerUser = Depends(get_current_user),
 ):
-    resume_data.user_id = current_user.id
+    seeker_user = await SeekerUser.get_or_none(user=current_user)  # 단일 객체 반환
+    if not seeker_user:
+        raise PermissionDeniedException()
+    resume_data.user = seeker_user
     """
     이력서를 생성합니다.
 

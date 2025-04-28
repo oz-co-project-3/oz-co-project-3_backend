@@ -5,7 +5,7 @@ from app.domain.job_posting.jobposting_schemas import (
 )
 from app.domain.services.permission import check_author
 from app.domain.services.verification import check_existing
-from app.domain.user.user_models import BaseUser, CorporateUser
+from app.domain.user.user_models import BaseUser, CorporateUser, UserType
 from app.exceptions.auth_exceptions import PermissionDeniedException
 from app.exceptions.free_board_exceptions import CompanyNotFoundException
 from app.exceptions.job_posting_exceptions import (
@@ -14,10 +14,9 @@ from app.exceptions.job_posting_exceptions import (
 )
 
 
-def ensure_corporate_user(user: BaseUser):
-    """기업 회원인지 확인"""
-    if not user or user.user_type != BaseUser.user_type.BUSINESS.value:
-        raise PermissionDeniedException()
+async def ensure_corporate_user(user: CorporateUser):
+    if not user or not user.user or user.user.user_type != UserType.BUSINESS.value:
+        raise PermissionDeniedException
 
 
 class JobPostingService:
@@ -28,8 +27,9 @@ class JobPostingService:
         """
         사용자 권한 및 리소스 검증
         """
-        # 사용자 인증 및 권한 확인
-        ensure_corporate_user(user)
+        # BaseUser가 CorporateUser인지 확인
+        corporate_user = await CorporateUser.get_or_none(user_id=user.id)
+        await ensure_corporate_user(corporate_user)
 
         # 회사 존재 확인
         if company_id:
@@ -69,17 +69,18 @@ class JobPostingService:
     async def create_job_posting(
         current_user: BaseUser, data: JobPostingCreateUpdate
     ) -> dict:
-        # 권한 확인
-        await JobPostingService.validate_user_permissions(current_user)
+        # CorporateUser 확인
+        corporate_user = await CorporateUser.get_or_none(
+            user_id=current_user.id
+        )  # 단일 객체 반환
+        if not corporate_user:
+            raise PermissionDeniedException()
 
         # JobPosting 생성
-        job_posting = JobPosting(user_id=current_user.id, **data.model_dump())
+        job_posting = JobPosting(user=corporate_user, **data.model_dump())
         await job_posting.save()
 
-        return {
-            "message": "구인 공고가 등록되었습니다.",
-            "data": JobPostingService.job_posting_response(job_posting),
-        }
+        return JobPostingService.job_posting_response(job_posting)
 
     @staticmethod
     async def patch_job_posting(

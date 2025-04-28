@@ -36,6 +36,8 @@ class ResumeService:
             work_exp["resume_id"] = resume.id
             await WorkExp.create(**work_exp)
 
+        await resume.fetch_related("work_experiences")
+
         return serialize_resume(resume)
 
     @staticmethod

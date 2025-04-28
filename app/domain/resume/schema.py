@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 
@@ -20,13 +21,13 @@ class WorkExpRequestSchema(BaseModel):
 
 # 이력서 생성 및 수정
 class ResumeRequestSchema(BaseModel):
-    user_id: int
+    user: Optional[int] = None
     title: str
     visibility: bool
     name: str
     phone_number: str
     email: str
-    image_profile: Optional[str] = None
+    image_url: Optional[str] = None
     interests: Optional[str] = None
     desired_area: str
     education: Optional[str] = None
@@ -48,30 +49,35 @@ class WorkExpResponseSchema(BaseModel):
     period: str
     position: str
 
+    model_config = ConfigDict(from_attributes=True)
 
-model_config = ConfigDict(from_attributes=True)
+
+class UserSchema(BaseModel):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # 이력서 조회
 class ResumeResponseSchema(BaseModel):
     id: int
-    user_id: int
+    user: UserSchema
     title: str
     visibility: bool
     name: str
     phone_number: str
     email: str
-    image_profile: Optional[str] = None
+    image_url: Optional[str] = None
     interests: Optional[str] = None
     desired_area: str
     education: Optional[str] = None
     school_name: Optional[str] = None
     graduation_status: Optional[str] = None
     introduce: str
-    status: str
+    status: StatusEnum
     document_url: Optional[str] = None
     work_experiences: Optional[List[WorkExpResponseSchema]] = None  # 경력 사항 추가
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
