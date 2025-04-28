@@ -4,9 +4,14 @@ from typing import Optional
 
 from passlib.hash import bcrypt
 
-from app.domain.user.services.email_services import send_email_code
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
-from app.domain.user.user_schema import (
+from app.domain.services.email_detail import send_email_code
+from app.domain.user.repositories.user_repository import (
+    create_base_user,
+    create_corporate_profile,
+    create_seeker_profile,
+    get_user_by_email,
+)
+from app.domain.user.schemas.user_schema import (
     CompanyRegisterRequest,
     CompanyRegisterResponse,
     CompanyRegisterResponseData,
@@ -15,6 +20,7 @@ from app.domain.user.user_schema import (
     UserRegisterResponse,
     UserRegisterResponseData,
 )
+from app.domain.user.user_models import BaseUser
 from app.exceptions.auth_exceptions import (
     InvalidPasswordException,
     PasswordMismatchException,
@@ -23,7 +29,7 @@ from app.exceptions.email_exceptions import DuplicateEmailException
 
 
 async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
-    existing_user = await BaseUser.get_or_none(email=request.email)
+    existing_user = await get_user_by_email(email=request.email)
     if existing_user:
         raise DuplicateEmailException()
 
@@ -37,7 +43,7 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
 
     hashed_password = bcrypt.hash(request.password)
 
-    base_user = await BaseUser.create(
+    base_user = await create_base_user(
         email=request.email,
         password=hashed_password,
         user_type="seeker",
@@ -46,7 +52,7 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
         status="pending",
     )
 
-    seeker_user = await SeekerUser.create(
+    seeker_user = await create_seeker_profile(
         user=base_user,
         name=request.name,
         phone_number=request.phone_number,
@@ -85,7 +91,8 @@ async def register_company_user(
     if request.password != request.password_check:
         raise PasswordMismatchException()
     hashed_password = bcrypt.hash(request.password)
-    base_user = await BaseUser.create(
+
+    base_user = await create_base_user(
         email=request.email,
         password=hashed_password,
         user_type="business",
@@ -93,7 +100,7 @@ async def register_company_user(
         status="pending",
     )
 
-    corp_user = await CorporateUser.create(
+    corp_user = await create_corporate_profile(
         user=base_user,
         company_name=request.company_name,
         business_number=request.business_number,
@@ -142,7 +149,7 @@ async def delete_user(
 
 # 이메일 중복 검사 함수
 async def check_email_duplicate(email: str) -> EmailCheckResponse:
-    existing_user = await BaseUser.get_or_none(email=email)
+    existing_user = await get_user_by_email(email=email)
     if existing_user:
         return EmailCheckResponse(message="이미 사용 중인 이메일입니다.", is_available=False)
     return EmailCheckResponse(message="사용 가능한 이메일입니다.", is_available=True)

@@ -12,8 +12,12 @@ from app.core.token import (
     create_jwt_tokens,
     create_token,
 )
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
-from app.domain.user.user_schema import (
+from app.domain.user.repositories.user_repository import (
+    get_corporate_profile_by_user,
+    get_seeker_profile_by_user,
+    get_user_by_email,
+)
+from app.domain.user.schemas.user_schema import (
     LoginRequest,
     LoginResponse,
     LoginResponseData,
@@ -21,6 +25,7 @@ from app.domain.user.user_schema import (
     RefreshTokenResponse,
     RefreshTokenResponseData,
 )
+from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 from app.exceptions.auth_exceptions import (
     ExpiredRefreshTokenException,
     InvalidRefreshTokenException,
@@ -33,7 +38,7 @@ from app.exceptions.user_exceptions import UnverifiedOrInactiveAccountException
 
 # 비밀번호 검증
 async def authenticate_user(email: str, password: str) -> BaseUser:
-    user = await BaseUser.get_or_none(email=email)
+    user = await get_user_by_email(email=email)
     if not user or not bcrypt.verify(password, user.password):
         raise PasswordMismatchException()
     return user
@@ -70,10 +75,10 @@ async def login_user(request: LoginRequest) -> LoginResponse:
 
     # 이름 정보 가져오기
     if user.user_type == "seeker":
-        profile = await SeekerUser.get(user=user)
+        profile = await get_seeker_profile_by_user(user)
         name = profile.name
     elif user.user_type == "business":
-        profile = await CorporateUser.get(user=user)
+        profile = await get_corporate_profile_by_user(user)
         name = profile.company_name
     else:
         raise UnknownUserTypeException()

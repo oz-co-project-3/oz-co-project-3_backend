@@ -4,6 +4,12 @@ import httpx
 
 from app.core.redis import redis
 from app.core.token import create_jwt_tokens
+from app.domain.user.repositories.user_repository import (
+    create_base_user,
+    create_seeker_profile,
+    get_user_by_email,
+)
+from app.domain.user.schemas.user_schema import LoginResponse, LoginResponseData
 from app.domain.user.user_models import (
     BaseUser,
     Gender,
@@ -12,7 +18,6 @@ from app.domain.user.user_models import (
     UserStatus,
     UserType,
 )
-from app.domain.user.user_schema import LoginResponse, LoginResponseData
 from app.exceptions.social_login_exceptions import (
     KakaoEmailRequiredException,
     NaverEmailRequiredException,
@@ -67,11 +72,11 @@ async def kakao_social_login(kakao_info: dict) -> LoginResponse:
     if not email:
         raise KakaoEmailRequiredException()
 
-    user = await BaseUser.get_or_none(email=email)
+    user = await get_user_by_email(email=email)
 
     # 신규 유저라면 BaseUser/SeekerUser 생성
     if not user:
-        user = await BaseUser.create(
+        user = await create_base_user(
             email=email,
             password="kakao_social_login",  # 소셜 로그인은 패스워드 안 씀
             user_type=UserType.SEEKER,
@@ -79,7 +84,7 @@ async def kakao_social_login(kakao_info: dict) -> LoginResponse:
             email_verified=True,
             gender=Gender.MALE,  # 기본값, 성별 나중에 추가입력받게 할 수 있음
         )
-        seeker = await SeekerUser.create(
+        seeker = await create_seeker_profile(
             user=user,
             name=nickname or "소셜유저",
             phone_number="",
@@ -169,10 +174,10 @@ async def naver_social_login(naver_info: dict) -> LoginResponse:
     if not email:
         raise NaverEmailRequiredException()
 
-    user = await BaseUser.get_or_none(email=email)
+    user = await get_user_by_email(email=email)
 
     if not user:
-        user = await BaseUser.create(
+        user = await create_base_user(
             email=email,
             password="naver_social_login",
             user_type=UserType.SEEKER,
@@ -180,7 +185,7 @@ async def naver_social_login(naver_info: dict) -> LoginResponse:
             email_verified=True,
             gender=Gender.MALE,
         )
-        await SeekerUser.create(
+        await create_seeker_profile(
             user=user,
             name=name,
             phone_number="",

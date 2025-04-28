@@ -1,7 +1,12 @@
 from passlib.hash import bcrypt
 
-from app.domain.user.services.email_services import send_email_code
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
+from app.domain.services.email_detail import send_email_code
+from app.domain.user.repositories.user_repository import (
+    get_corporate_by_manager_name_and_phone,
+    get_seeker_by_name_and_phone,
+    get_user_by_email,
+    get_user_with_profiles_by_email,
+)
 from app.exceptions.auth_exceptions import PasswordMismatchException
 from app.exceptions.server_exceptions import UnknownUserTypeException
 from app.exceptions.user_exceptions import (
@@ -14,16 +19,12 @@ from app.exceptions.user_exceptions import (
 # 아이디 찾기
 async def find_email(name: str, phone_number: str):
     # 구직자에서 먼저 검색
-    seeker = await SeekerUser.get_or_none(
-        name=name, phone_number=phone_number
-    ).prefetch_related("user")
+    seeker = await get_seeker_by_name_and_phone(name, phone_number)
     if seeker:
         email = seeker.user.email
     else:
         # 2. 없으면 기업회원에서 검색
-        corp = await CorporateUser.get_or_none(
-            manager_name=name, manager_phone_number=phone_number
-        ).prefetch_related("user")
+        corp = await get_corporate_by_manager_name_and_phone(name, phone_number)
         if corp:
             email = corp.user.email
         else:
@@ -34,11 +35,7 @@ async def find_email(name: str, phone_number: str):
 
 
 async def find_password(name: str, phone_number: str, email: str):
-    # seeker_profiles, corporate_profiles는 실제 related_name
-    user_qs = BaseUser.filter(email=email).prefetch_related(
-        "seeker_profiles", "corporate_profiles"
-    )
-    user = await user_qs.first()
+    user = await get_user_with_profiles_by_email(email)
 
     if not user:
         raise UserNotFoundException()
@@ -76,7 +73,7 @@ async def reset_password(email: str, new_password: str, new_password_check: str)
     ):
         raise PasswordInvalidException()
 
-    user = await BaseUser.get_or_none(email=email)
+    user = await get_user_by_email(email)
     if not user:
         raise UserNotFoundException()
 

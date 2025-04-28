@@ -4,23 +4,12 @@ from fastapi import APIRouter, Body, Depends, status
 from pydantic import BaseModel, EmailStr
 
 from app.core.token import get_current_user
-from app.domain.user.services.auth_recovery_services import (
-    find_email,
-    find_password,
-    reset_password,
-)
-from app.domain.user.services.auth_services import (
-    login_user,
-    logout_user,
-    refresh_access_token,
-    verify_user_password,
-)
-from app.domain.user.services.business_verify_services import verify_business_number
-from app.domain.user.services.email_services import (
+from app.domain.services.business_verify import verify_business_number
+from app.domain.services.email_detail import (
     resend_verification_email,
     verify_email_code,
 )
-from app.domain.user.services.social_services import (
+from app.domain.services.social_account import (
     generate_kakao_auth_url,
     generate_naver_auth_url,
     get_kakao_access_token,
@@ -30,18 +19,7 @@ from app.domain.user.services.social_services import (
     kakao_social_login,
     naver_social_login,
 )
-from app.domain.user.services.user_profile_services import (
-    get_user_profile,
-    update_user_profile,
-)
-from app.domain.user.services.user_register_services import (
-    check_email_duplicate,
-    delete_user,
-    register_company_user,
-    register_user,
-)
-from app.domain.user.user_models import BaseUser
-from app.domain.user.user_schema import (
+from app.domain.user.schemas.user_schema import (
     BusinessVerifyRequest,
     BusinessVerifyResponse,
     CompanyRegisterRequest,
@@ -67,6 +45,28 @@ from app.domain.user.user_schema import (
     UserRegisterResponse,
     VerifyPasswordRequest,
 )
+from app.domain.user.services.auth_recovery_services import (
+    find_email,
+    find_password,
+    reset_password,
+)
+from app.domain.user.services.auth_services import (
+    login_user,
+    logout_user,
+    refresh_access_token,
+    verify_user_password,
+)
+from app.domain.user.services.user_profile_services import (
+    get_user_profile,
+    update_user_profile,
+)
+from app.domain.user.services.user_register_services import (
+    check_email_duplicate,
+    delete_user,
+    register_company_user,
+    register_user,
+)
+from app.domain.user.user_models import BaseUser
 
 router = APIRouter(prefix="/api/user", tags=["user"])
 

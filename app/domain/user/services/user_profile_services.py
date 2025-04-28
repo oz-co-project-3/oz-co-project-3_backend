@@ -1,8 +1,11 @@
 from typing import Union
 
 from app.domain.job_posting.job_posting_models import Applicants
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
-from app.domain.user.user_schema import (
+from app.domain.user.repositories.user_repository import (
+    get_corporate_profile_by_user,
+    get_seeker_profile_by_user,
+)
+from app.domain.user.schemas.user_schema import (
     CorporateProfileResponse,
     CorporateProfileUpdateRequest,
     CorporateProfileUpdateResponse,
@@ -12,12 +15,13 @@ from app.domain.user.user_schema import (
     UserProfileResponse,
     UserProfileUpdateResponse,
 )
+from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 from app.exceptions.server_exceptions import UnknownUserTypeException
 
 
 async def get_user_profile(current_user: BaseUser) -> UserProfileResponse:
     if current_user.user_type == "seeker":
-        profile = await SeekerUser.get(user=current_user)
+        profile = await get_seeker_profile_by_user(user=current_user)
 
         # 지원한 공고 리스트
         applied_qs = (
@@ -48,7 +52,7 @@ async def get_user_profile(current_user: BaseUser) -> UserProfileResponse:
         )
 
     elif current_user.user_type == "business":
-        profile = await CorporateUser.get(user=current_user)
+        profile = await get_corporate_profile_by_user(user=current_user)
 
         return UserProfileResponse(
             data=CorporateProfileResponse(
@@ -79,7 +83,7 @@ async def update_user_profile(
     update_data: Union[SeekerProfileUpdateRequest, CorporateProfileUpdateRequest],
 ) -> UserProfileUpdateResponse:
     if current_user.user_type == "seeker":
-        profile = await SeekerUser.get(user=current_user)
+        profile = await get_seeker_profile_by_user(user=current_user)
 
         # 수정 가능한 항목만 변경
         if update_data.name is not None:
@@ -118,7 +122,7 @@ async def update_user_profile(
         )
 
     elif current_user.user_type == "business":
-        profile = await CorporateUser.get(user=current_user)
+        profile = await get_corporate_profile_by_user(user=current_user)
 
         if update_data.company_name is not None:
             profile.company_name = update_data.company_name

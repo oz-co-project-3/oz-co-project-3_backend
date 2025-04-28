@@ -8,8 +8,9 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, EmailStr
 
 from app.core.redis import redis
+from app.domain.user.repositories.user_repository import get_user_by_email
+from app.domain.user.schemas.user_schema import ResendEmailRequest
 from app.domain.user.user_models import BaseUser
-from app.domain.user.user_schema import ResendEmailRequest
 from app.exceptions.email_exceptions import (
     EmailAlreadyVerifiedException,
     InvalidVerificationCodeException,
@@ -76,10 +77,11 @@ class EmailVerifyRequest(BaseModel):
 
 async def verify_email_code(request: EmailVerifyRequest):
     saved_code = await redis.get(f"email_verify:{request.email}")
+
     if not saved_code or saved_code != request.verification_code:
         raise InvalidVerificationCodeException()
 
-    user = await BaseUser.get_or_none(email=request.email)
+    user = await get_user_by_email(email=request.email)
     if not user:
         raise UserNotFoundException()
 
