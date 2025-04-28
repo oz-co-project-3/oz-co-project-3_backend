@@ -15,7 +15,6 @@ job_posting_router = APIRouter(
 )
 
 
-# 이 부분도 get_current_user를 바로 쓰면 됩니다.
 async def current_user_dependency(user: BaseUser = Depends(get_current_user)):
     return user
 
@@ -89,12 +88,12 @@ async def get_specific_job_posting(
 """,
 )
 async def patch_job_posting(
-    job_posting_id: int,
+    jobposting_id: int,
     updated_data: JobPostingCreateUpdate,
     current_user: CorporateUser = Depends(current_user_dependency),
 ):
     return await JobPostingService.patch_job_posting(
-        current_user, job_posting_id, updated_data
+        current_user, jobposting_id, updated_data
     )
 
 
