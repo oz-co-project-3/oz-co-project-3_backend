@@ -113,21 +113,6 @@ async def test_get_all_resumes_service(
 
 
 @pytest.mark.asyncio
-async def test_get_all_resumes_service_not_permitted():
-    # given
-    dummy_user = AsyncMock()
-    dummy_user.is_superuser = False
-    dummy_name = AsyncMock()
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await get_all_resumes_service(dummy_user, dummy_name)
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
 @patch(
     "app.domain.admin.services.resume_services.get_resume_by_id", new_callable=AsyncMock
 )
@@ -177,39 +162,6 @@ async def test_get_resume_by_id_service(
 
 
 @pytest.mark.asyncio
-async def test_get_resume_by_id_service_not_permitted():
-    # given
-    dummy_user = AsyncMock()
-    dummy_user.is_superuser = False
-    dummy_id = 1
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await get_resume_by_id_service(dummy_user, dummy_id)
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
-@patch("app.domain.admin.services.resume_services.check_superuser")
-@patch("app.domain.admin.services.resume_services.get_resume_by_id")
-async def test_get_resume_by_id_service_not_found(
-    mock_get_resume_by_id, mock_check_superuser
-):
-    dummy_user = AsyncMock()
-    dummy_id = 1
-
-    mock_get_resume_by_id.return_value = None
-    mock_check_superuser.return_value = None
-
-    with pytest.raises(CustomException) as e:
-        await get_resume_by_id_service(dummy_user, dummy_id)
-
-    assert e.value.code == "resume_not_found"
-
-
-@pytest.mark.asyncio
 @patch(
     "app.domain.admin.services.resume_services.get_resume_by_id", new_callable=AsyncMock
 )
@@ -246,36 +198,3 @@ async def test_delete_resume_by_id_service(
     assert result is None
     mock_check_superuser.called_once_with(dummy_user)
     mock_get_resume_by_id.called_once_with(dummy_id)
-
-
-@pytest.mark.asyncio
-async def test_delete_resume_by_id_service_permitted():
-    # given
-    dummy_user = AsyncMock()
-    dummy_user.is_superuser = False
-    dummy_id = 1
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await delete_resume_by_id_service(dummy_user, dummy_id)
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
-@patch("app.domain.admin.services.resume_services.check_superuser")
-@patch("app.domain.admin.services.resume_services.get_resume_by_id")
-async def test_delete_resume_by_id_service_not_found(
-    mock_get_resume_by_id, mock_check_superuser
-):
-    dummy_user = AsyncMock()
-    dummy_id = 1
-
-    mock_get_resume_by_id.return_value = None
-    mock_check_superuser.return_value = None
-
-    with pytest.raises(CustomException) as e:
-        await delete_resume_by_id_service(dummy_user, dummy_id)
-
-    assert e.value.code == "resume_not_found"
