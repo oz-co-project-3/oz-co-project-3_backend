@@ -4,6 +4,8 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr, model_validator
 
+from app.exceptions.request_exceptions import RequiredFieldException
+
 
 class UserResponseDTO(BaseModel):
     id: int
@@ -73,7 +75,5 @@ class UserUpdateSchema(BaseModel):
     @model_validator(mode="after")
     def check_field(self):
         if self.status is None:
-            raise CustomException(
-                code="required_field", status_code=400, error="필수 필드 누락"
-            )
+            raise RequiredFieldException()
         return self
