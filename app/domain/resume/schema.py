@@ -81,3 +81,10 @@ class ResumeResponseSchema(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PaginatedResumeResponse(BaseModel):
+    total: int
+    offset: int
+    limit: int
+    data: List[ResumeResponseSchema]
