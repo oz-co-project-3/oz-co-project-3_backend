@@ -35,7 +35,7 @@ class ResumeResponseDTO(BaseModel):
     name: str
     phone_number: str
     email: EmailStr
-    image_profile: Optional[str] = None
+    image_url: Optional[str] = None
     interests: str
     desired_area: str
     education: str
