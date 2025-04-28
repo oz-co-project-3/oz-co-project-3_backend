@@ -2,11 +2,7 @@ from typing import Optional
 
 from tortoise.query_utils import Prefetch
 
-from app.domain.job_posting.job_posting_models import (
-    JobPosting,
-    RejectPosting,
-    StatusEnum,
-)
+from app.domain.job_posting.models import JobPosting, RejectPosting, StatusEnum
 
 
 async def get_all_job_postings_query(

@@ -3,11 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
-from app.domain.job_posting.job_posting_models import (
-    EmploymentEnum,
-    MethodEnum,
-    StatusEnum,
-)
+from app.domain.job_posting.models import EmploymentEnum, MethodEnum, StatusEnum
 
 
 class JobPostingCreateUpdate(BaseModel):
