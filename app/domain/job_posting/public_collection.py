@@ -1,6 +1,6 @@
 from enum import Enum
 
-from app.domain.job_posting.job_posting_models import JobPosting
+from app.domain.job_posting.models import JobPosting
 from app.domain.job_posting.public_services import ExternalAPIService
 
 

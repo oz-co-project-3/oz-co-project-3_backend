@@ -3,15 +3,12 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
-from app.domain.job_posting.job_posting_models import (
-    EmploymentEnum,
-    MethodEnum,
-    StatusEnum,
-)
+from app.domain.job_posting.models import EmploymentEnum, MethodEnum, StatusEnum
 
 
 class JobPostingCreateUpdate(BaseModel):
     title: str
+    company: str
     location: str
     employment_type: EmploymentEnum
     employ_method: MethodEnum
@@ -21,6 +18,7 @@ class JobPostingCreateUpdate(BaseModel):
     recruitment_count: int
     education: str
     deadline: str
+    salary: str
     summary: Optional[str] = None
     description: str
     status: StatusEnum
@@ -57,7 +55,7 @@ class JobPostingResponse(BaseModel):
     recruitment_count: int
     education: str
     deadline: str
-    salary: int
+    salary: str
     summary: Optional[str] = None
     description: str
     status: StatusEnum

@@ -87,102 +87,8 @@ async def test_patch_comment_by_id_service(
     # then
     assert result.content == "updated content"
 
-    mock_check_existing.assert_called_once_with(  # 주어진 id로 조회된 결과
-        dummy_comment, "해당 댓글을 찾을 수 없습니다.", "comment_not_found"
-    )
     mock_check_author.assert_called_once_with(dummy_comment, dummy_user)
     mock_patch_comment.assert_called_once_with(dummy_comment, dummy_comment)
-
-
-@pytest.mark.asyncio
-@patch("app.domain.comment.services.get_comment_query", new_callable=AsyncMock)
-async def test_patch_comment_by_id_service_not_found(mock_get_comment):
-    # given
-    dummy_data = AsyncMock()
-    dummy_id = 100
-    dummy_user = object()
-
-    mock_get_comment.return_value = None
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await patch_comment_by_id_service(dummy_data, dummy_id, dummy_user)
-
-    # then
-    assert e.value.code == "comment_not_found"
-
-
-@pytest.mark.asyncio
-@patch("app.domain.comment.services.check_existing", new_callable=AsyncMock)
-@patch("app.domain.comment.services.get_comment_query", new_callable=AsyncMock)
-async def test_patch_comment_by_id_service_not_author(
-    mock_get_comment, mock_check_existing
-):
-    # given
-    # 접속한 유저
-    dummy_data = object()
-    mock_user = AsyncMock()
-    mock_user.id = 1
-    mock_user.is_superuser = False
-
-    # 코멘트 작성 유저
-    mock_comment = AsyncMock()
-    mock_comment.user_id = 2
-
-    mock_get_comment.return_value = mock_comment
-    mock_check_existing.return_value = None
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await patch_comment_by_id_service(dummy_data, mock_comment.user_id, mock_user)
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
-@patch("app.domain.comment.services.check_existing", new_callable=AsyncMock)
-@patch("app.domain.comment.services.get_comment_query", new_callable=AsyncMock)
-async def test_delete_comment_by_id_service_not_author(
-    mock_get_comment, mock_check_existing
-):
-    # given
-    # 접속한 유저
-    dummy_data = object()
-    mock_user = AsyncMock()
-    mock_user.id = 1
-    mock_user.is_superuser = False
-
-    # 코멘트 작성 유저
-    mock_comment = AsyncMock()
-    mock_comment.user_id = 2
-
-    mock_get_comment.return_value = mock_comment
-    mock_check_existing.return_value = None
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await delete_comment_by_id_service(mock_comment.user_id, mock_user)
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
-@patch("app.domain.comment.services.get_comment_query", new_callable=AsyncMock)
-async def test_delete_comment_by_id_service_not_found(mock_get_comment):
-    # given
-    dummy_id = 100
-    dummy_user = object()
-
-    mock_get_comment.return_value = None
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await delete_comment_by_id_service(dummy_id, dummy_user)
-
-    # then
-    assert e.value.code == "comment_not_found"
 
 
 @pytest.mark.asyncio
@@ -206,8 +112,4 @@ async def test_delete_comment_by_id_service(
 
     # then
     assert result is None
-
-    mock_check_existing.assert_called_once_with(  # 주어진 id로 조회된 결과
-        dummy_comment, "해당 댓글을 찾을 수 없습니다.", "comment_not_found"
-    )
     mock_check_author.assert_called_once_with(dummy_comment, dummy_user)

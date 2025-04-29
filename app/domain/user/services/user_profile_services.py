@@ -1,6 +1,6 @@
 from typing import Union
 
-from app.domain.job_posting.job_posting_models import Applicants
+from app.domain.job_posting.models import Applicants
 from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 from app.domain.user.user_schema import (
     CorporateProfileResponse,

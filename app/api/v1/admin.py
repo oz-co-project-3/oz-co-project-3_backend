@@ -1,6 +1,6 @@
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Path, Query, status
 
 from app.core.token import get_current_user
 from app.domain.admin.schemas.job_posting_schemas import (
@@ -43,6 +43,8 @@ admin_router = APIRouter(prefix="/api/admin", tags=["admin"])
     status_code=status.HTTP_200_OK,
     summary="관리자 유저 전체 조회",
     description="""
+`400` `code`: `search_too_long` 검색어는 100자 이하로 입력해야 합니다.\n
+`400` `code`: `invalid_query_params` seeker 또는 corp 중 하나는 true여야 합니다.\n
 `401` 인증이 필요합니다. (`auth_required`, `invalid_token`)\n
 `403` 권한이 없습니다. (`permission_denied`)
     """,
@@ -66,10 +68,11 @@ async def get_list_user(
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다.\n
 `404` `code`:`user_not_found` 유저가 없습니다.\n
+`422` : Unprocessable Entity
         """,
 )
 async def get_user(
-    id: int,
+    id: int = Path(..., gt=0, le=2147483647, description="유저 ID (1 ~ 2147483647)"),
     current_user: BaseUser = Depends(get_current_user),
 ):
     return await get_user_by_id_service(id=id, current_user=current_user)
@@ -85,12 +88,13 @@ async def get_user(
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다.\n
 `404` `code`:`user_not_found` 유저가 없습니다.\n
+`422` : Unprocessable Entity(요청 유저 id값 초과 or status Enum 중 하나가 아닐떄)
 """,
 )
 async def patch_user(
-    id: int,
     patch_user: UserUpdateSchema,
     current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(..., gt=0, le=2147483647, description="유저 ID (1 ~ 2147483647)"),
 ):
     return await patch_user_by_id_service(
         id=id, patch_user=patch_user, current_user=current_user
@@ -106,10 +110,14 @@ async def patch_user(
 `401` `code`:`auth_required` 인증이 필요합니다.\n
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다.\n
+`422` : Unprocessable Entity
 """,
 )
 async def get_list_resumes(
-    current_user: BaseUser = Depends(get_current_user), name=Query(default=None)
+    current_user: BaseUser = Depends(get_current_user),
+    name: Optional[str] = Query(
+        default=None, max_length=100, description="이름 (최대 100자)"
+    ),
 ):
     return await get_all_resumes_service(current_user, name)
 
@@ -124,11 +132,12 @@ async def get_list_resumes(
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다.\n
 `404` `code`:`resume_not_found` 이력서가 없습니다.\n
+`422` : Unprocessable Entity
         """,
 )
 async def get_resume(
-    id: int,
     current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(..., gt=0, le=2147483647, description="resume ID (1 ~ 2147483647)"),
 ):
     return await get_resume_by_id_service(id=id, current_user=current_user)
 
@@ -142,11 +151,12 @@ async def get_resume(
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다.\n
 `404` `code`:`resume_not_found` 이력서가 없습니다.\n
-        """,
+`422` : Unprocessable Entity
+""",
 )
 async def delete_resume(
-    id: int,
     current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(..., gt=0, le=2147483647, description="resume ID (1 ~ 2147483647)"),
 ):
     await delete_resume_by_id_service(id=id, current_user=current_user)
 
@@ -159,16 +169,18 @@ async def delete_resume(
     status_code=status.HTTP_200_OK,
     summary="관리자 공고 전체 조회",
     description="""
+`400` `code`:`invalid_query_params` 허용되지 않는 검색 타입입니다.\n
 `401` `code`:`auth_required` 인증이 필요합니다.\n
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다.\n
+`422` : Unprocessable Entity
         """,
 )
 async def get_list_job_postings(
     current_user: BaseUser = Depends(get_current_user),
-    search_type=Query(default=None),
-    search_keyword=Query(default=None),
-    status=Query(default=None),
+    search_type=Query(default=None, max_length=50, description="검색타입"),
+    search_keyword=Query(default=None, max_length=50, description="검색 키워드 최대 50자"),
+    status=Query(default=None, description="공고 상태"),
 ):
     return await get_all_job_postings_service(
         current_user, search_type, search_keyword, status
@@ -184,12 +196,15 @@ async def get_list_job_postings(
 `401` `code`:`auth_required` 인증이 필요합니다.\n
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다.\n
-`404` `code`:`job_posting_not_found` 공고가 없습니다.
+`404` `code`:`job_posting_not_found` 공고가 없습니다.\n
+`422` : Unprocessable Entity
         """,
 )
 async def get_job_posting(
-    id: int,
     current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
 ):
     return await get_job_posting_by_id_service(id=id, current_user=current_user)
 
@@ -204,12 +219,15 @@ async def get_job_posting(
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다.\n
 `404` `code`:`job_posting_not_found` 공고가 없습니다.\n
-        """,
+`422` : Unprocessable Entity
+""",
 )
 async def patch_job_posting(
-    id: int,
     job_posting: JobPostingUpdateSchema,
     current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
 ):
     return await patch_job_posting_by_id_service(
         id=id, patch_job_posting=job_posting, current_user=current_user
@@ -225,11 +243,14 @@ async def patch_job_posting(
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다.\n
 `404` `code`:`job_posting_not_found` 공고가 없습니다.\n
-        """,
+`422` : Unprocessable Entity
+""",
 )
 async def delete_job_posting(
-    id: int,
     current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
 ):
     await delete_job_posting_by_id_service(id=id, current_user=current_user)
     return {"message": "공고가 삭제되었습니다."}
@@ -244,12 +265,15 @@ async def delete_job_posting(
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다.\n
 `404` `code`:`job_posting_not_found` 공고가 없습니다.\n
-    """,
+`422` : Unprocessable Entity(거절 사유 길이 제한 1~1000자 사이 빈값 안됨)
+""",
 )
 async def create_reject_posting(
-    id: int,
     reject_posting: RejectPostingCreateSchema,
     current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
 ):
     return await create_reject_posting_by_id_service(
         id=id, reject_posting=reject_posting, current_user=current_user

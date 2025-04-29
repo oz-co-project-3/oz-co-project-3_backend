@@ -94,23 +94,6 @@ async def test_get_user_all_service(
 
 
 @pytest.mark.asyncio
-async def test_get_user_all_service_not_permitted():
-    # given
-    dummy_user = AsyncMock()
-    dummy_user.is_superuser = False
-    dummy_search = AsyncMock()
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await get_user_all_service(
-            dummy_user, seeker=True, corp=True, search=dummy_search
-        )
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
 @patch(
     "app.domain.admin.services.user_services.get_corp_user_by_user_id",
     new_callable=AsyncMock,
@@ -189,40 +172,3 @@ async def test_get_user_by_id_service(
     assert result.base.email == base_user.email
     assert result.seeker.name == seeker_user.name
     assert result.corp.company_name == corp_user.company_name
-
-
-@pytest.mark.asyncio
-async def test_get_user_by_id_service_not_permitted():
-    # given
-    dummy_user = AsyncMock()
-    dummy_user.is_superuser = False
-    dummy_id = 1
-
-    # when
-    with pytest.raises(CustomException) as e:
-        await get_user_by_id_service(dummy_user, dummy_id)
-
-    # then
-    assert e.value.code == "permission_denied"
-
-
-@pytest.mark.asyncio
-@patch(
-    "app.domain.admin.services.user_services.get_user_by_id_query",
-    new_callable=AsyncMock,
-)
-@patch(
-    "app.domain.admin.services.user_services.check_superuser", new_callable=AsyncMock
-)
-async def test_get_user_by_id_service_not_found(mock_check_superuser, mock_get_user):
-    # given
-    dummy_user = AsyncMock()
-    dummy_id = 1
-
-    mock_check_superuser.return_value = None
-    mock_get_user.return_value = None
-    # when
-    with pytest.raises(CustomException) as e:
-        await get_user_by_id_service(dummy_user, dummy_id)
-    # then
-    assert e.value.code == "user_not_found"

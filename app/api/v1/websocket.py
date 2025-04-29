@@ -40,6 +40,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "answer": chatbot_response.answer,
                     "options": chatbot_response.options,
                     "is_terminate": chatbot_response.is_terminate,
+                    "url": chatbot_response.url,
                 }
             )
             await websocket.close()
