@@ -2,10 +2,10 @@ import os
 
 from fastapi import APIRouter, Depends
 
-from app.domain.job_posting.job_posting_models import JobPosting
-from app.domain.job_posting.jobposting_schemas import JobPostingResponse
+from app.domain.job_posting.models import JobPosting
 from app.domain.job_posting.public_collection import save_job_postings
 from app.domain.job_posting.public_services import ExternalAPIService
+from app.domain.job_posting.schema import JobPostingResponse
 from app.exceptions.base_exceptions import CustomException
 
 base_url = os.getenv("BASE_URL")

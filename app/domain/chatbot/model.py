@@ -10,6 +10,7 @@ class ChatBot(TimestampMixin):
     selection_path = fields.CharField(max_length=50, default=None)
     options = fields.CharField(max_length=50, default=None, null=True)
     answer = fields.CharField(max_length=150, default=None, null=True)
+    url = fields.CharField(max_length=255, default=None, null=True)
 
     class Meta:
         table = "chatbot"
