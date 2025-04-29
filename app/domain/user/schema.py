@@ -1,9 +1,10 @@
 from datetime import date, datetime
+from enum import Enum
 from typing import List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.domain.user.user_models import Gender, SeekerStatus, UserType
+from app.domain.user.models import Gender, SeekerStatus, UserTypeEnum
 
 
 class UserRegisterRequest(BaseModel):
@@ -20,11 +21,19 @@ class UserRegisterRequest(BaseModel):
     gender: Gender
 
 
+class BusinessUpgradeRequest(BaseModel):
+    business_number: str
+    company_name: str
+    manager_name: str
+    manager_phone_number: str
+    business_start_date: date
+
+
 class UserRegisterResponseData(BaseModel):
     id: int
     email: EmailStr
     name: str
-    user_type: UserType
+    user_type: List[UserTypeEnum]
     email_verified: bool
     created_at: datetime
 
@@ -32,35 +41,6 @@ class UserRegisterResponseData(BaseModel):
 class UserRegisterResponse(BaseModel):
     message: str
     data: UserRegisterResponseData
-
-
-class CompanyRegisterRequest(BaseModel):
-    email: EmailStr
-    password: str
-    password_check: str
-    company_name: str
-    business_number: str
-    business_start_date: datetime
-    company_description: str
-    manager_name: str
-    manager_phone_number: str
-    manager_email: EmailStr
-    gender: Gender
-
-
-class CompanyRegisterResponseData(BaseModel):
-    id: int
-    email: EmailStr
-    company_name: str
-    manager_name: str
-    user_type: UserType
-    email_verified: bool
-    created_at: datetime
-
-
-class CompanyRegisterResponse(BaseModel):
-    message: str
-    data: CompanyRegisterResponseData
 
 
 # 이메일 중복검사 체크스키마
@@ -77,7 +57,8 @@ class EmailCheckResponse(BaseModel):
 class SeekerProfileResponse(BaseModel):
     id: int
     email: EmailStr
-    user_type: UserType
+    user_type: List[UserTypeEnum]
+    signin_method: Optional[List[str]] = None
     name: str
     phone_number: str
     birth: Optional[date]
@@ -98,17 +79,17 @@ class SeekerProfileResponse(BaseModel):
 class CorporateProfileResponse(BaseModel):
     id: int
     email: EmailStr
-    user_type: UserType
+    user_type: List[UserTypeEnum]
+    signin_method: Optional[List[str]] = None
     company_name: str
     business_number: str
     business_start_date: datetime
     company_description: Optional[str]
     manager_name: str
     manager_phone_number: str
-    manager_email: str
+    manager_email: Optional[str] = None
     email_verified: bool
     created_at: datetime
-    updated_at: Optional[datetime] = None
     profile_url: Optional[str] = None
 
 
@@ -142,10 +123,10 @@ class SeekerProfileUpdateResponse(BaseModel):
     name: str
     email: EmailStr
     phone_number: str
+    signin_method: Optional[List[str]] = None
     birth: date
     interests: List[str]
     status: SeekerStatus
-    updated_at: Optional[datetime]
     profile_url: Optional[str] = None
 
 
@@ -156,8 +137,7 @@ class CorporateProfileUpdateResponse(BaseModel):
     company_description: Optional[str]
     manager_name: str
     manager_phone_number: str
-    manager_email: str
-    updated_at: Optional[datetime]
+    manager_email: Optional[str] = None
     profile_url: Optional[str] = None
 
 
@@ -181,7 +161,7 @@ class LoginResponseData(BaseModel):
     access_token: str
     refresh_token: str
     user_id: int
-    user_type: UserType
+    user_type: List[UserTypeEnum]
     email: str
     name: Optional[str] = "소셜유저"
 
@@ -253,8 +233,6 @@ class ResetPasswordRequest(BaseModel):
     email: EmailStr
     new_password: str
     new_password_check: str
-
-    # 카카오 콜백
 
 
 class SocialCallbackRequest(BaseModel):

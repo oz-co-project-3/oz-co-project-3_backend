@@ -1,5 +1,5 @@
 from app.domain.job_posting.models import JobPosting
-from app.domain.user.user_models import CorporateUser
+from app.domain.user.models import CorporateUser
 from app.exceptions.free_board_exceptions import CompanyNotFoundException
 from app.exceptions.job_posting_exceptions import NotificationNotFoundException
 

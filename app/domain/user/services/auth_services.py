@@ -7,14 +7,25 @@ from app.core.redis import redis
 from app.core.token import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     ALGORITHM,
-    REFRESH_TOKEN_EXPIRE_DAYS,
+    REFRESH_TOKEN_EXPIRE_SECONDS,
     SECRET_KEY,
     create_jwt_tokens,
     create_token,
 )
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
-from app.domain.user.user_schema import (
-    LoginRequest,
+from app.domain.services.social_account import (
+    get_kakao_access_token,
+    get_kakao_user_info,
+    get_naver_access_token,
+    get_naver_user_info,
+)
+from app.domain.user.models import BaseUser, Gender, SeekerStatus, UserStatus
+from app.domain.user.repository import (
+    create_base_user,
+    create_seeker_profile,
+    get_user_by_email,
+    get_user_by_id,
+)
+from app.domain.user.schema import (
     LoginResponse,
     LoginResponseData,
     RefreshTokenRequest,
@@ -27,13 +38,16 @@ from app.exceptions.auth_exceptions import (
     InvalidTokenException,
     PasswordMismatchException,
 )
-from app.exceptions.server_exceptions import UnknownUserTypeException
-from app.exceptions.user_exceptions import UnverifiedOrInactiveAccountException
+from app.exceptions.user_exceptions import (
+    PasswordInvalidException,
+    UnverifiedOrInactiveAccountException,
+    UserNotFoundException,
+)
 
 
 # 비밀번호 검증
 async def authenticate_user(email: str, password: str) -> BaseUser:
-    user = await BaseUser.get_or_none(email=email)
+    user = await get_user_by_email(email=email)
     if not user or not bcrypt.verify(password, user.password):
         raise PasswordMismatchException()
     return user
@@ -46,89 +60,174 @@ async def verify_user_password(user: BaseUser, password: str):
 
 
 # 로그인
-async def login_user(request: LoginRequest) -> LoginResponse:
-    user = await authenticate_user(request.email, request.password)
+async def login_user(email: str, password: str):
+    user = await BaseUser.get_or_none(email=email)
+
+    if not user:
+        raise UserNotFoundException()
 
     if not user.email_verified or user.status != "active":
         raise UnverifiedOrInactiveAccountException()
 
-    # 토큰 발급 함수로 변경
-    access_token, refresh_token = create_jwt_tokens(str(user.id))
+    if not bcrypt.verify(password, user.password):
+        raise PasswordInvalidException()
 
-    # redis에 토큰 저장
-    await redis.set(
-        f"refresh_token:{user.id}",
-        refresh_token,
-        ex=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-    )
+    # user_id + user_type 둘 다 넣어서 토큰 발급 = 프론트 요청사항
+    user_type = user.user_type[0] if user.user_type else "normal"
+
+    access_token, refresh_token = create_jwt_tokens(str(user.id), user_type)
 
     await redis.set(
-        f"access_token:{user.id}",
-        access_token,
-        ex=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        f"refresh_token:{user.id}", refresh_token, ex=REFRESH_TOKEN_EXPIRE_SECONDS * 60
     )
 
-    # 이름 정보 가져오기
-    if user.user_type == "seeker":
-        profile = await SeekerUser.get(user=user)
-        name = profile.name
-    elif user.user_type == "business":
-        profile = await CorporateUser.get(user=user)
-        name = profile.company_name
-    else:
-        raise UnknownUserTypeException()
-
-    return LoginResponse(
-        message="로그인 성공",
-        data=LoginResponseData(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            user_id=user.id,
-            user_type=user.user_type,
-            email=user.email,
-            name=name,
-        ),
-    )
+    return {
+        "message": "로그인 성공",
+        "data": {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user_id": str(user.id),
+            "user_type": user.user_type
+            if isinstance(user.user_type, list)
+            else [user.user_type],
+            "email": user.email,
+        },
+    }
 
 
 # 로그아웃
 async def logout_user(user: BaseUser):
-    access_deleted = await redis.delete(f"access_token:{user.id}")
-    if access_deleted == 0:
-        raise InvalidTokenException()
-
     refresh_deleted = await redis.delete(f"refresh_token:{user.id}")
     if refresh_deleted == 0:
         raise InvalidTokenException()
 
+    return {"message": "로그아웃이 완료되었습니다."}
 
-# 리프레시 토큰 재발급
+
+# 리프레쉬 토큰 발급
 async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResponse:
     try:
         payload = jwt.decode(request.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
-
         if user_id is None:
             raise InvalidRefreshTokenException()
 
     except jwt.ExpiredSignatureError:
         raise ExpiredRefreshTokenException()
-
     except jwt.PyJWTError:
         raise InvalidRefreshTokenException()
 
-    # Redis에 저장된 refresh_token과 비교
-    stored_token = await redis.get(f"refresh_token:{user_id}")
+    stored_token = await redis.get(f"refresh_token:{str(user_id)}")
     if stored_token != request.refresh_token:
         raise InvalidRefreshTokenException()
 
-    # access_token 재생성
+    # BaseUser 조회 추가
+    user = await get_user_by_id(user_id=user_id)
+    if not user:
+        raise InvalidRefreshTokenException()
+
+    # access_token 새로 생성 (user_id + user_type 넣기)
     new_access_token = create_token(
-        {"sub": user_id},
+        {"sub": user_id, "user_type": user.user_type[0]},  # 리스트니까 첫 번째 꺼냄
         timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
 
     return RefreshTokenResponse(
         message="토큰이 갱신되었습니다.",
         data=RefreshTokenResponseData(access_token=new_access_token),
+    )
+
+
+# 카카오/네이버 로그인
+async def kakao_login(code: str) -> LoginResponse:
+    access_token = await get_kakao_access_token(code)
+    kakao_info = await get_kakao_user_info(access_token)
+
+    email = kakao_info["kakao_account"].get("email")
+    nickname = kakao_info["kakao_account"]["profile"].get("nickname") or "카카오유저"
+
+    user = await get_user_by_email(email=email)
+
+    if not user:
+        user = await create_base_user(
+            email=email,
+            password="kakao_social_login",
+            user_type=["normal"],  # 수정
+            signinMethod=["kakao"],  # 추가
+            status="active",
+            email_verified=True,
+            gender=Gender.MALE,
+        )
+        await create_seeker_profile(
+            user=user,
+            name=nickname,
+            phone_number="",
+            birth=None,
+            interests="",
+            purposes="",
+            sources="",
+            status=SeekerStatus.SEEKING,
+            is_social=True,
+        )
+
+    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type[0])
+    await redis.set(f"refresh_token:{user.id}", refresh_token)
+
+    return LoginResponse(
+        message="소셜 로그인 성공",
+        data=LoginResponseData(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user_id=user.id,
+            user_type=user.user_type[0],  # 리스트니까 [0] 꺼내서
+            email=user.email,
+            name=nickname,
+        ),
+    )
+
+
+async def naver_login(code: str, state: str) -> LoginResponse:
+    access_token = await get_naver_access_token(code, state)
+    naver_info = await get_naver_user_info(access_token)
+
+    email = naver_info.get("email")
+    nickname = naver_info.get("nickname") or naver_info.get("name") or "네이버유저"
+
+    user = await get_user_by_email(email=email)
+
+    if not user:
+        user = await create_base_user(
+            email=email,
+            password="naver_social_login",
+            user_type=["normal"],  # 수정
+            signinMethod=["naver"],  # 추가
+            status="active",
+            email_verified=True,
+            gender=Gender.MALE,
+        )
+        await create_seeker_profile(
+            user=user,
+            name=nickname,
+            phone_number="",
+            birth=None,
+            interests="",
+            purposes="",
+            sources="",
+            status=SeekerStatus.SEEKING,
+            is_social=True,
+        )
+
+    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type[0])
+    await redis.set(f"refresh_token:{user.id}", refresh_token)
+
+    return LoginResponse(
+        message="소셜 로그인 성공",
+        data=LoginResponseData(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user_id=user.id,
+            user_type=user.user_type[0],  # 리스트니까 [0] 꺼내서
+            email=user.email,
+            name=nickname,
+        ),
     )

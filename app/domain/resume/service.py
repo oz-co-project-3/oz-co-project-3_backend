@@ -3,7 +3,7 @@ from typing import Any
 from app.domain.resume.models import Resume, WorkExp
 from app.domain.resume.schema import ResumeResponseSchema, WorkExpResponseSchema
 from app.domain.services.verification import check_existing, check_superuser
-from app.domain.user.user_models import SeekerUser
+from app.domain.user.models import SeekerUser
 from app.exceptions.auth_exceptions import PermissionDeniedException
 from app.exceptions.resume_exceptions import (
     ResumeDeleteFailedException,

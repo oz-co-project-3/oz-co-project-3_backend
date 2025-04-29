@@ -1,16 +1,12 @@
 from enum import Enum
 
 from tortoise import fields, models
+from tortoise.contrib.postgres import fields as postgres_fields
 
 
 class Gender(str, Enum):
     MALE = "male"
     FEMALE = "female"
-
-
-class UserType(str, Enum):
-    SEEKER = "seeker"
-    BUSINESS = "business"
 
 
 class UserStatus(str, Enum):
@@ -20,20 +16,32 @@ class UserStatus(str, Enum):
     PENDING = "pending"  # 메일 인증 미 완료시 상태 추가
 
 
+class UserTypeEnum(str, Enum):
+    NORMAL = "normal"
+    BUSINESS = "business"
+    ADMIN = "admin"
+
+
 class SeekerStatus(str, Enum):
     SEEKING = "seeking"
     EMPLOYED = "employed"
     NOT_SEEKING = "not_seeking"
 
 
+class SignInEnum(str, Enum):
+    EMAIL = "email"
+    Kakao = "kakao"
+    Naver = "naver"
+
+
 class BaseUser(models.Model):
     id = fields.IntField(pk=True)
     password = fields.CharField(max_length=80, null=False)
     email = fields.CharField(max_length=50, unique=True)
-    user_type = fields.CharEnumField(UserType, max_length=20, default=UserType.SEEKER)
+    user_type = fields.CharField(max_length=50, null=False)
+    signinMethod = fields.CharField(max_length=50, null=False)
     status = fields.CharEnumField(UserStatus, max_length=20, default=UserStatus.PENDING)
     email_verified = fields.BooleanField(default=False)
-    is_superuser = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     deleted_at = fields.DatetimeField(null=True)
     gender = fields.CharEnumField(Gender, max_length=10)
@@ -60,13 +68,13 @@ class CorporateUser(models.Model):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField("models.BaseUser", related_name="corporate_profiles")
     company_name = fields.CharField(max_length=255, null=False)
-    business_start_date = fields.DatetimeField(null=False)
+    business_start_date = fields.DateField(null=False)
     business_number = fields.CharField(max_length=20, null=False, unique=True)
     company_description = fields.TextField(null=True)
     manager_name = fields.CharField(max_length=100, null=False)
     manager_phone_number = fields.CharField(max_length=20, null=False)
     manager_email = fields.CharField(max_length=255, null=True, unique=True)
-    gender = fields.CharEnumField(Gender, max_length=10)
+    gender = fields.CharEnumField(Gender, max_length=10, null=True)
     profile_url = fields.CharField(max_length=255, null=True)
 
     class Meta:

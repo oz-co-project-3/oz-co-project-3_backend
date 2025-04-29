@@ -9,7 +9,7 @@ from app.domain.resume.schema import (
     ResumeResponseSchema,
 )
 from app.domain.resume.service import ResumeService
-from app.domain.user.user_models import BaseUser, SeekerUser
+from app.domain.user.models import BaseUser, SeekerUser
 from app.exceptions.auth_exceptions import (
     InvalidTokenException,
     PermissionDeniedException,
