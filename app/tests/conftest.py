@@ -28,7 +28,7 @@ async def setup_test_db(event_loop):
                 "app.domain.resume.resume_models",
                 "app.domain.comment.models",
                 "app.domain.job_posting.job_posting_models",
-                "app.domain.user.user_models",
+                "app.domain.user.models",
             ]
         },
     )

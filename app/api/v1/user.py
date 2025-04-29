@@ -5,10 +5,6 @@ from pydantic import BaseModel, EmailStr
 
 from app.core.token import get_current_user
 from app.domain.services.business_verify import verify_business_number
-from app.domain.services.email_detail import (
-    resend_verification_email,
-    verify_email_code,
-)
 from app.domain.services.social_account import (
     generate_kakao_auth_url,
     generate_naver_auth_url,
@@ -16,15 +12,12 @@ from app.domain.services.social_account import (
     get_kakao_user_info,
     get_naver_access_token,
     get_naver_user_info,
-    kakao_social_login,
-    naver_social_login,
 )
 from app.domain.user.models import BaseUser
 from app.domain.user.schema import (
+    BusinessUpgradeRequest,
     BusinessVerifyRequest,
     BusinessVerifyResponse,
-    CompanyRegisterRequest,
-    CompanyRegisterResponse,
     CorporateProfileUpdateRequest,
     EmailCheckRequest,
     EmailCheckResponse,
@@ -47,13 +40,17 @@ from app.domain.user.schema import (
     VerifyPasswordRequest,
 )
 from app.domain.user.services.auth_recovery_services import (
+    complete_email_verification,
     find_email,
     find_password,
+    resend_verification_email_service,
     reset_password,
 )
 from app.domain.user.services.auth_services import (
+    kakao_login,
     login_user,
     logout_user,
+    naver_login,
     refresh_access_token,
     verify_user_password,
 )
@@ -64,8 +61,8 @@ from app.domain.user.services.user_profile_services import (
 from app.domain.user.services.user_register_services import (
     check_email_duplicate,
     delete_user,
-    register_company_user,
     register_user,
+    upgrade_to_business,
 )
 
 router = APIRouter(prefix="/api/user", tags=["user"])
@@ -81,28 +78,33 @@ class EmailVerifyRequest(BaseModel):
     "/register/",
     response_model=UserRegisterResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="일반 회원가입",
+    summary="회원가입(공통)",
     description="""
-`400` `code`:`invalid_password` : 비밀번호는 8자 이상, 특수문자를 포함해야 합니다\n
-`400` `code`:`password_mismatch` : 비밀번호와 확인이 일치하지 않습니다\n
+`400` `code`:`duplicate_email` : 이미 사용 중인 이메일입니다\n
+`400` `code`:`invalid_password` : 비밀번호 형식이 올바르지 않습니다\n
+`400` `code`:`password_mismatch` : 비밀번호와 비밀번호 확인이 일치하지 않습니다\n
 """,
 )
 async def register(request: UserRegisterRequest):
-    return await register_user(request)
+    result = await register_user(request)
+    return result
 
 
 @router.post(
-    "/register-company/",
-    response_model=CompanyRegisterResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="기업 회원가입",
+    "/upgrade-to-business/",
+    response_model=MessageResponse,
+    status_code=status.HTTP_200_OK,
+    summary="기업회원 업그레이드",
     description="""
-`400` `code`:`invalid_password` : 비밀번호는 8자 이상, 특수문자를 포함해야 합니다\n
-`400` `code`:`password_mismatch` : 비밀번호와 확인이 일치하지 않습니다\n
+`400` `code`:`already_business_user` : 이미 기업회원으로 등록된 사용자입니다\n
+`400` `code`:`invalid_business_number` : 국세청에 등록되지 않은 사업자등록번호입니다\n
 """,
 )
-async def register_company(request: CompanyRegisterRequest):
-    return await register_company_user(request)
+async def upgrade_to_business_route(
+    request: BusinessUpgradeRequest, current_user: BaseUser = Depends(get_current_user)
+):
+    result = await upgrade_to_business(current_user, request)
+    return result
 
 
 @router.post(
@@ -212,10 +214,10 @@ async def profile(current_user: BaseUser = Depends(get_current_user)):
 
 
 @router.patch(
-    "/profile/",
+    "/profile/update/",
     response_model=UserProfileUpdateResponse,
     status_code=status.HTTP_200_OK,
-    summary="회원 정보 수정",
+    summary="회원 프로필 수정",
     description="""
 `401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다\n
 `400` `code`:`invalid_phone` : 올바른 형식의 전화번호를 입력해주세요\n
@@ -238,11 +240,13 @@ async def update_profile(
     summary="로그인",
     description="""
 `400` `code`:`invalid_credentials` : 이메일 또는 비밀번호가 일치하지 않습니다\n
-`500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다\n
+`403` `code`:`unverified_or_inactive_account` : 이메일 인증이 완료되지 않았거나 계정이 활성화되지 않았습니다\n
+`404` `code`:`user_not_found` : 유저를 찾을 수 없습니다\n
 """,
 )
 async def login(request: LoginRequest):
-    return await login_user(request)
+    result = await login_user(email=request.email, password=request.password)
+    return result
 
 
 @router.post(
@@ -284,7 +288,10 @@ async def refresh_token(request: RefreshTokenRequest):
 """,
 )
 async def verify_email(request: EmailVerifyRequest):
-    return await verify_email_code(request)
+    return await complete_email_verification(
+        email=request.email,
+        verification_code=request.verification_code,
+    )
 
 
 @router.post(
@@ -297,7 +304,7 @@ async def verify_email(request: EmailVerifyRequest):
 """,
 )
 async def resend_email_code(request: ResendEmailRequest):
-    return await resend_verification_email(request)
+    return await resend_verification_email_service(request)
 
 
 @router.post(
@@ -340,7 +347,7 @@ async def get_kakao_auth_url():
 async def kakao_callback(request: SocialCallbackRequest):
     access_token = await get_kakao_access_token(request.code)
     kakao_info = await get_kakao_user_info(access_token)
-    return await kakao_social_login(kakao_info)
+    return await kakao_login(kakao_info)
 
 
 @router.get(
@@ -367,4 +374,4 @@ access_token으로 유저정보 조회 후 로그인 처리\n
 async def naver_callback(request: SocialCallbackRequest):  # 🔁 schema 재사용!
     access_token = await get_naver_access_token(request.code, request.state)
     naver_info = await get_naver_user_info(access_token)
-    return await naver_social_login(naver_info)
+    return await naver_login(naver_info)

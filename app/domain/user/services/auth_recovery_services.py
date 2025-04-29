@@ -4,9 +4,10 @@ from app.core.redis import redis
 from app.domain.services.email_detail import send_email_code
 from app.domain.user.repository import (
     get_corporate_by_manager_name_and_phone,
+    get_corporate_profile_by_info,
     get_seeker_by_name_and_phone,
+    get_seeker_profile_by_info,
     get_user_by_email,
-    get_user_with_profiles_by_email,
 )
 from app.domain.user.schema import ResendEmailRequest
 from app.exceptions.auth_exceptions import PasswordMismatchException
@@ -40,33 +41,31 @@ async def find_email(name: str, phone_number: str):
     return {"message": "아이디 찾기 성공", "data": {"email": email}}
 
 
+# 비밀번호 찾기
 async def find_password(name: str, phone_number: str, email: str):
-    user = await get_user_with_profiles_by_email(email)
-
+    # 해당 이메일로 BaseUser 조회
+    user = await get_user_by_email(email=email)
     if not user:
         raise UserNotFoundException()
 
-    if user.user_type == "seeker":
-        seeker = await user.seeker_profiles.all().first()  # 리스트 중 첫 번째
-        if not seeker or seeker.name != name or seeker.phone_number != phone_number:
-            raise UserNotFoundException()
-
-    elif user.user_type == "business":
-        corp = await user.corporate_profiles.all().first()  # 리스트 중 첫 번째
-        if (
-            not corp
-            or corp.manager_name != name
-            or corp.manager_phone_number != phone_number
-        ):
-            raise UserNotFoundException()
-
+    # user_type을 리스트 기준으로 확인
+    if "normal" in user.user_type:
+        profile = await get_seeker_profile_by_info(name=name, phone_number=phone_number)
+    elif "business" in user.user_type:
+        profile = await get_corporate_profile_by_info(
+            name=name, phone_number=phone_number
+        )
     else:
-        raise UnknownUserTypeException()
+        raise UserNotFoundException()
 
-    # 이메일로 재설정 링크 전송
-    await send_email_code(email=email, purpose="비밀번호 찾기")
+    # 프로필의 user_id와 이메일이 같은지 최종 체크
+    if profile.user_id != user.id:
+        raise UserNotFoundException()
 
-    return {"message": "비밀번호 재설정 링크가 이메일로 발송되었습니다", "data": {"email": email}}
+    # (여기까지 통과하면) 비밀번호 재설정 이메일 발송
+    await send_email_code(email, "비밀번호 찾기")
+
+    return {"message": "비밀번호 재설정 메일이 발송되었습니다."}
 
 
 # 새로운 비밀번호 생성 함수
@@ -90,9 +89,6 @@ async def reset_password(email: str, new_password: str, new_password_check: str)
     await user.save()
 
     return {"message": "비밀번호가 성공적으로 변경되었습니다."}
-
-
-# 이메일 인증완료 / 재인증 요청
 
 
 # 이메일 인증 완료 처리

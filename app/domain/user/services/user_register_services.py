@@ -4,18 +4,17 @@ from typing import Optional
 
 from passlib.hash import bcrypt
 
+from app.core.token import create_jwt_tokens
+from app.domain.services.business_verify import verify_business_number
 from app.domain.services.email_detail import send_email_code
-from app.domain.user.models import BaseUser
+from app.domain.user.models import BaseUser, CorporateUser
 from app.domain.user.repository import (
     create_base_user,
-    create_corporate_profile,
     create_seeker_profile,
     get_user_by_email,
 )
 from app.domain.user.schema import (
-    CompanyRegisterRequest,
-    CompanyRegisterResponse,
-    CompanyRegisterResponseData,
+    BusinessUpgradeRequest,
     EmailCheckResponse,
     UserRegisterRequest,
     UserRegisterResponse,
@@ -26,6 +25,10 @@ from app.exceptions.auth_exceptions import (
     PasswordMismatchException,
 )
 from app.exceptions.email_exceptions import DuplicateEmailException
+from app.exceptions.user_exceptions import (
+    AlreadyBusinessUserException,
+    InvalidBusinessNumberException,
+)
 
 
 async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
@@ -46,7 +49,7 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
     base_user = await create_base_user(
         email=request.email,
         password=hashed_password,
-        user_type="seeker",
+        user_type=["normal"],  # 고정 / 리스트로 모델 참조
         gender=request.gender,
         is_superuser=False,
         status="pending",
@@ -58,13 +61,20 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
         phone_number=request.phone_number,
         birth=request.birth,
         gender=request.gender,
-        interests=request.interests,
-        purposes=request.purposes,
-        sources=request.sources,
+        interests=request.interests
+        if isinstance(request.interests, list)
+        else [request.interests],
+        purposes=request.purposes
+        if isinstance(request.purposes, list)
+        else [request.purposes],
+        sources=request.sources
+        if isinstance(request.sources, list)
+        else [request.sources],
         status=request.status,
         is_social=False,
     )
-    # 회원가입 성공 시 인증메일 전송
+
+    # 여기서 인증메일 발송
     await send_email_code(email=base_user.email, purpose="회원가입")
 
     return UserRegisterResponse(
@@ -80,53 +90,44 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
     )
 
 
-async def register_company_user(
-    request: CompanyRegisterRequest,
-) -> CompanyRegisterResponse:
-    if len(request.password) < 8 or not re.search(
-        r"[!@#$%^&*(),.?\":{}|<>]", request.password
-    ):
-        raise InvalidPasswordException()
+# 기업회원 업그레이드
+async def upgrade_to_business(user: BaseUser, request: BusinessUpgradeRequest):
+    # 이미 business 등록된 경우 막기
+    if "business" in user.user_type:
+        raise AlreadyBusinessUserException()
 
-    if request.password != request.password_check:
-        raise PasswordMismatchException()
-    hashed_password = bcrypt.hash(request.password)
+    # 사업자번호 인증
+    result = await verify_business_number(request.business_number)
+    if not result.get("is_valid"):
+        raise InvalidBusinessNumberException()
 
-    base_user = await create_base_user(
-        email=request.email,
-        password=hashed_password,
-        user_type="business",
-        gender=request.gender,
-        status="pending",
-    )
-
-    corp_user = await create_corporate_profile(
-        user=base_user,
-        company_name=request.company_name,
+    # CorporateUser 생성
+    await CorporateUser.create(
+        user=user,
         business_number=request.business_number,
-        business_start_date=request.business_start_date,
-        company_description=request.company_description,
+        company_name=request.company_name,
         manager_name=request.manager_name,
         manager_phone_number=request.manager_phone_number,
-        manager_email=request.manager_email,
-        gender=request.gender,
+        business_start_date=request.business_start_date,
     )
 
-    # 회원가입 성공 시 인증메일 발송
-    await send_email_code(email=base_user.email, purpose="기업 회원가입")
+    # BaseUser user_type 업데이트 = array필드 모델 참조 (리스트였음)
+    user.user_type.append("business")
+    await user.save()
 
-    return CompanyRegisterResponse(
-        message="기업 회원가입이 완료되었습니다.",
-        data=CompanyRegisterResponseData(
-            id=base_user.id,
-            email=base_user.email,
-            company_name=corp_user.company_name,
-            manager_name=corp_user.manager_name,
-            user_type=base_user.user_type,
-            email_verified=base_user.email_verified,
-            created_at=base_user.created_at,
-        ),
-    )
+    # 새 access_token, refresh_token 발급
+    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type[0])
+
+    return {
+        "message": "기업회원으로 전환이 완료되었습니다.",
+        "data": {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user_id": user.id,
+            "user_type": user.user_type,
+            "email": user.email,
+        },
+    }
 
 
 async def delete_user(
