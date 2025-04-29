@@ -50,7 +50,7 @@ class TooManyPositionsException(CustomException):
             error=f"포지션은 최대 {max_count}개까지 지정할 수 있습니다.",
         )
 
-        
+
 class SameTitleExistException(CustomException):
     def __init__(self):
         super().__init__(
