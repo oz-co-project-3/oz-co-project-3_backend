@@ -10,10 +10,7 @@ from app.domain.resume.schema import (
 )
 from app.domain.resume.service import ResumeService
 from app.domain.user.user_models import BaseUser, SeekerUser
-from app.exceptions.auth_exceptions import (
-    InvalidTokenException,
-    PermissionDeniedException,
-)
+from app.exceptions.auth_exceptions import PermissionDeniedException
 
 resume_router = APIRouter(prefix="/api/resume", tags=["resumes"])
 
