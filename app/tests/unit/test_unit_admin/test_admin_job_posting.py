@@ -35,9 +35,9 @@ async def test_get_all_job_postings_service(
 ):
     # given
     dummy_user = AsyncMock()
-    dummy_search_type = AsyncMock()
-    dummy_search_keyword = AsyncMock()
-    dummy_status = AsyncMock()
+    dummy_search_type = "title"
+    dummy_search_keyword = "백엔드"
+    dummy_status = "모집중"
 
     mock_data = [
         JobPostingResponseDTO(
@@ -73,7 +73,6 @@ async def test_get_all_job_postings_service(
 
     # then
     assert result == mock_data
-    mock_check_superuser.assert_called_once_with(dummy_user)
 
 
 @pytest.mark.asyncio

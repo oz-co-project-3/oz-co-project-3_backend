@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Path, status
 
 from app.core.token import get_current_user
 from app.domain.free_board.schemas import FreeBoardCreateUpdate, FreeBoardResponseDTO
@@ -26,6 +26,7 @@ free_board_router = APIRouter(prefix="/api/free-board", tags=["FreeBoard"])
 `400` `code`:`required_field` 필수 필드 누락\n
 `401` `code`:`auth_required` 인증이 필요합니다.\n
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`422` : Unprocessable Entity
 """
     ),
 )
@@ -59,10 +60,14 @@ async def get_list_free_board(current_user: BaseUser = Depends(get_current_user)
 `401` `code`:`auth_required` 인증이 필요합니다.\n
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `404` `code`:`free_board_not_found` 존재하지 않는 자유게시판 입니다..\n
+`422` : Unprocessable Entity
     """,
 )
 async def get_detail_free_board(
-    id: int, current_user: BaseUser = Depends(get_current_user)
+    current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(
+        ..., gt=0, le=2147483647, description="free_board ID (1 ~ 2147483647)"
+    ),
 ):
     return await get_free_board_by_id_service(id)
 
@@ -77,12 +82,15 @@ async def get_detail_free_board(
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
 `404` `code`:`free_board_not_found` 존재하지 않는 자유게시판 입니다..\n
+`422` : Unprocessable Entity
 """,
 )
 async def patch_free_board(
-    id: int,
     free_board: FreeBoardCreateUpdate,
     current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(
+        ..., gt=0, le=2147483647, description="free_board ID (1 ~ 2147483647)"
+    ),
 ):
     return await patch_free_board_by_id_service(id, free_board, current_user)
 
@@ -96,11 +104,14 @@ async def patch_free_board(
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다, 작성자가 아닙니다.\n
 `404` `code`:`free_board_not_found` 존재하지 않는 자유게시판 입니다..\n
+`422` : Unprocessable Entity
 """,
 )
 async def delete_free_board(
-    id: int,
     current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(
+        ..., gt=0, le=2147483647, description="free_board ID (1 ~ 2147483647)"
+    ),
 ):
     await delete_free_board_by_id_service(id, current_user)
     return {"message": "삭제가 완료되었습니다."}

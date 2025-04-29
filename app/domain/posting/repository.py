@@ -14,10 +14,11 @@ async def get_postings_query(
     career: Optional[str] = "",
     education: Optional[str] = "",
     view_count: Optional[int] = 0,
+    employ_method: Optional[str] = "",
 ):
     query = JobPosting.all().select_related("user")
 
-    # 🔍 검색 키워드 (제목, 회사, 요약, 포지션, 위치)
+    # 검색 키워드 (제목, 회사, 요약, 포지션, 위치, 고용 형태)
     if search_keyword:
         query = query.filter(
             Q(title__icontains=search_keyword)
@@ -28,7 +29,11 @@ async def get_postings_query(
         )
 
     if location:
-        query = query.filter(location__icontains=location)
+        locations = [l.strip() for l in location.split(",") if l.strip()]
+        q = Q()
+        for loc in locations:
+            q |= Q(location__icontains=loc)
+        query = query.filter(q)
 
     if employment_type:
         types = [t.strip() for t in employment_type.split(",")]
@@ -65,6 +70,13 @@ async def get_postings_query(
 
     if view_count and view_count > 0:
         query = query.filter(view_count__gte=view_count)
+
+    if employ_method:
+        methods = [m.strip() for m in employ_method.split(",")]
+        allowed_methods = ["정규직", "계약직", "일용직", "프리랜서", "파견직"]
+        query = query.filter(
+            employ_method__in=[m for m in methods if m in allowed_methods]
+        )
 
     return query
 

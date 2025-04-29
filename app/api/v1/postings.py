@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Path, Query, status
 
 from app.core.token import get_current_user
 from app.domain.posting.schemas import (
@@ -27,6 +27,14 @@ posting_router = APIRouter(
     status_code=status.HTTP_200_OK,
     summary="공고 전체 조회",
     description="""
+`400` `code`:``search_too_long` 너무 긴 검색어 입력.\n
+`400` `code`:``invalid_employment_type` employment_type은 ['공공', '일반'] 중 하나여야 합니다.\n
+`400` `code`:``invalid_career_type` career는 ['신입', '경력직', '경력무관'] 중 하나여야 합니다.\n
+`400` `code`:``invalid_employ_method` employ_method는 ['정규직', '계약직', '일용직', '프리랜서', '파견직'] 중 하나여야 합니다.\n
+`400` `code`:``too_many_positions` 포지션은 최대 100개까지 지정할 수 있습니다.\n
+`400` `code`:``invalid_view_count` view_count는 0 이상이어야 합니다.\n
+`400` `code`:``invalid_offset` offset은 0 이상이어야 합니다.\n
+`400` `code`:``invalid_limit` limit는 1 이상 100 이하로 입력해주세요.\n
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     """,
 )
@@ -40,6 +48,7 @@ async def get_list_postings(
     view_count: int = Query(0, description="최소 조회수"),
     offset: int = Query(0, description="페이지 번호 (0부터 시작)"),
     limit: int = Query(10, description="페이지당 항목 수"),
+    employ_method: str = Query("", description="근로 형태: 정규직, 계약직, 일용직, 프리랜서, 파견직"),
 ):
     return await get_all_postings_service(
         search_keyword=search_keyword,
@@ -49,6 +58,7 @@ async def get_list_postings(
         career=career,
         education=education,
         view_count=view_count,
+        employ_method=employ_method,
         offset=offset,
         limit=limit,
     )
@@ -62,9 +72,14 @@ async def get_list_postings(
     description="""
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `404` `code`:`posting_not_found` 공고를 찾지 못했습니다..\n
+`422` : Unprocessable Entity
     """,
 )
-async def get_posting(id: int):
+async def get_posting(
+    id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
+):
     return await get_posting_by_id_service(id)
 
 
@@ -76,12 +91,15 @@ async def get_posting(id: int):
     description="""
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `404` `code`:`posting_not_found` 공고를 찾지 못했습니다.\n
+`422` : Unprocessable Entity
     """,
 )
 async def create_applicant(
-    id: int,
     applicant: ApplicantCreateUpdateSchema,
     current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
 ):
     return await create_applicant_service(id, current_user, applicant)
 
@@ -97,13 +115,18 @@ async def create_applicant(
 `404` `code`:`posting_not_found` 공고를 찾지 못했습니다.\n
 `404` `code`:`applicant_not_found` 공고를 찾지 못했습니다.\n
 `404` `code`:`resume_not_found` 이력서를 찾지 못했습니다.\n
+`422` : Unprocessable Entity
 """,
 )
 async def patch_posting_applicant(
-    id: int,
-    applicant_id: int,
     patch_applicant: ApplicantCreateUpdateSchema,
     current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
+    applicant_id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
 ):
     return await patch_posting_applicant_by_id_service(
         id, current_user, patch_applicant, applicant_id
