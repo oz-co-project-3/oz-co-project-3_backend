@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class UserSchema(BaseModel):
@@ -66,7 +66,9 @@ class JobPostingUpdateSchema(BaseModel):
 
 
 class RejectPostingCreateSchema(BaseModel):
-    content: str
+    content: str = Field(
+        ..., min_length=1, max_length=1000, description="거절 사유 내용 (1~1000자)"
+    )
 
     class Config:
         from_attributes = True

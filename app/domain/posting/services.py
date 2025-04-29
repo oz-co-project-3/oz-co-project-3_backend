@@ -18,8 +18,29 @@ from app.domain.posting.schemas import (
 from app.domain.services.permission import check_author
 from app.domain.services.verification import check_existing
 from app.exceptions.applicant_exceptions import ApplicantNotFoundException
-from app.exceptions.job_posting_exceptions import JobPostingNotFoundException
+from app.exceptions.job_posting_exceptions import (
+    InvalidCareerTypeException,
+    InvalidEmploymentTypeException,
+    InvalidEmployMethodException,
+    JobPostingNotFoundException,
+    TooManyPositionsException,
+)
 from app.exceptions.resume_exceptions import ResumeNotFoundException
+from app.exceptions.search_exceptions import (
+    InvalidLimitException,
+    InvalidOffsetException,
+    InvalidViewCountException,
+    SearchKeywordTooLongException,
+)
+
+VALID_EMPLOYMENT_TYPES = {"공공", "일반"}
+VALID_CAREER_TYPES = {"신입", "경력직", "경력무관"}
+VALID_EMPLOY_METHODS = {"정규직", "계약직", "일용직", "프리랜서", "파견직"}
+
+MAX_POSITION_COUNT = 10
+MAX_SEARCH_KEYWORD_LENGTH = 100
+MAX_LOCATION_LENGTH = 50
+MAX_EDUCATION_LENGTH = 50
 
 
 async def get_all_postings_service(
@@ -32,7 +53,37 @@ async def get_all_postings_service(
     view_count: Optional[int] = 0,
     offset: int = 0,
     limit: int = 10,
+    employ_method: Optional[str] = "",
 ) -> PaginatedJobPostingsResponseDTO:
+    # 문자열 길이 검증
+    if len(search_keyword) > MAX_SEARCH_KEYWORD_LENGTH:
+        raise SearchKeywordTooLongException(100)
+    if len(location) > MAX_LOCATION_LENGTH:
+        raise SearchKeywordTooLongException(50)
+    if len(education) > MAX_EDUCATION_LENGTH:
+        raise SearchKeywordTooLongException(50)
+
+    # employment_type, career, employ_method 값 검증
+    if employment_type and employment_type not in VALID_EMPLOYMENT_TYPES:
+        raise InvalidEmploymentTypeException()
+    if career and career not in VALID_CAREER_TYPES:
+        raise InvalidCareerTypeException()
+    if employ_method and employ_method not in VALID_EMPLOY_METHODS:
+        raise InvalidEmployMethodException()
+
+    # view_count, offset, limit 범위 검증
+    if view_count is not None and view_count < 0:
+        raise InvalidViewCountException()
+    if offset < 0:
+        raise InvalidOffsetException()
+    if not (1 <= limit <= 100):
+        raise InvalidLimitException()
+
+    # position 다중 값 파싱 및 개수 제한
+    position_list = [p.strip() for p in position.split(",") if p.strip()]
+    if len(position_list) > MAX_POSITION_COUNT:
+        raise TooManyPositionsException(MAX_POSITION_COUNT)
+
     query = await get_postings_query(
         search_keyword,
         location,
@@ -41,6 +92,7 @@ async def get_all_postings_service(
         career,
         education,
         view_count,
+        employ_method,
     )
     return await paginate_query(query, offset, limit)
 
