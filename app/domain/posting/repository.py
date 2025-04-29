@@ -2,7 +2,7 @@ from typing import Optional
 
 from tortoise.expressions import Q
 
-from app.domain.job_posting.job_posting_models import Applicants, JobPosting
+from app.domain.job_posting.models import Applicants, JobPosting
 from app.domain.resume.models import Resume
 
 
