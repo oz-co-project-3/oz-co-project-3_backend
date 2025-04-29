@@ -49,9 +49,9 @@ async def find_password(name: str, phone_number: str, email: str):
         raise UserNotFoundException()
 
     # user_type을 리스트 기준으로 확인
-    if "normal" in user.user_type:
+    if user.user_type == "normal":
         profile = await get_seeker_profile_by_info(name=name, phone_number=phone_number)
-    elif "business" in user.user_type:
+    elif user.user_type == "business":
         profile = await get_corporate_profile_by_info(
             name=name, phone_number=phone_number
         )

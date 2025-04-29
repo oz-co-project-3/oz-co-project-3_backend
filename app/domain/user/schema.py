@@ -1,10 +1,9 @@
 from datetime import date, datetime
-from enum import Enum
 from typing import List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.domain.user.models import Gender, SeekerStatus, UserTypeEnum
+from app.domain.user.models import Gender, SeekerStatus, SignInEnum, UserTypeEnum
 
 
 class UserRegisterRequest(BaseModel):
@@ -19,6 +18,7 @@ class UserRegisterRequest(BaseModel):
     sources: List[str]
     status: SeekerStatus
     gender: Gender
+    signinMethod: SignInEnum
 
 
 class BusinessUpgradeRequest(BaseModel):
@@ -33,7 +33,7 @@ class UserRegisterResponseData(BaseModel):
     id: int
     email: EmailStr
     name: str
-    user_type: List[UserTypeEnum]
+    user_type: UserTypeEnum
     email_verified: bool
     created_at: datetime
 
@@ -57,8 +57,8 @@ class EmailCheckResponse(BaseModel):
 class SeekerProfileResponse(BaseModel):
     id: int
     email: EmailStr
-    user_type: List[UserTypeEnum]
-    signin_method: Optional[List[str]] = None
+    user_type: UserTypeEnum
+    signin_method: Optional[str] = None
     name: str
     phone_number: str
     birth: Optional[date]
@@ -79,8 +79,8 @@ class SeekerProfileResponse(BaseModel):
 class CorporateProfileResponse(BaseModel):
     id: int
     email: EmailStr
-    user_type: List[UserTypeEnum]
-    signin_method: Optional[List[str]] = None
+    user_type: UserTypeEnum
+    signin_method: Optional[str] = None
     company_name: str
     business_number: str
     business_start_date: datetime
@@ -123,7 +123,7 @@ class SeekerProfileUpdateResponse(BaseModel):
     name: str
     email: EmailStr
     phone_number: str
-    signin_method: Optional[List[str]] = None
+    signin_method: Optional[str] = None
     birth: date
     interests: List[str]
     status: SeekerStatus
@@ -161,7 +161,7 @@ class LoginResponseData(BaseModel):
     access_token: str
     refresh_token: str
     user_id: int
-    user_type: List[UserTypeEnum]
+    user_type: UserTypeEnum
     email: str
     name: Optional[str] = "소셜유저"
 

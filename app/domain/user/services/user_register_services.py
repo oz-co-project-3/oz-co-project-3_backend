@@ -49,10 +49,11 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
     base_user = await create_base_user(
         email=request.email,
         password=hashed_password,
-        user_type=["normal"],  # 고정 / 리스트로 모델 참조
+        user_type=request.user_type.value,
         gender=request.gender,
         is_superuser=False,
         status="pending",
+        signinMethod=request.signinMethod.value,
     )
 
     seeker_user = await create_seeker_profile(
@@ -83,7 +84,7 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
             id=base_user.id,
             email=base_user.email,
             name=seeker_user.name,
-            user_type=base_user.user_type,
+            user_type=request.user_type.value,
             email_verified=base_user.email_verified,
             created_at=base_user.created_at,
         ),
@@ -93,7 +94,7 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
 # 기업회원 업그레이드
 async def upgrade_to_business(user: BaseUser, request: BusinessUpgradeRequest):
     # 이미 business 등록된 경우 막기
-    if "business" in user.user_type:
+    if user.user_type == "business":
         raise AlreadyBusinessUserException()
 
     # 사업자번호 인증
@@ -112,11 +113,11 @@ async def upgrade_to_business(user: BaseUser, request: BusinessUpgradeRequest):
     )
 
     # BaseUser user_type 업데이트 = array필드 모델 참조 (리스트였음)
-    user.user_type.append("business")
+    user.user_type = "business"
     await user.save()
 
     # 새 access_token, refresh_token 발급
-    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type[0])
+    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
 
     return {
         "message": "기업회원으로 전환이 완료되었습니다.",

@@ -18,7 +18,7 @@ from app.domain.services.social_account import (
     get_naver_access_token,
     get_naver_user_info,
 )
-from app.domain.user.models import BaseUser, Gender, SeekerStatus, UserStatus
+from app.domain.user.models import BaseUser, Gender, SeekerStatus, UserTypeEnum
 from app.domain.user.repository import (
     create_base_user,
     create_seeker_profile,
@@ -128,7 +128,7 @@ async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResp
 
     # access_token 새로 생성 (user_id + user_type 넣기)
     new_access_token = create_token(
-        {"sub": user_id, "user_type": user.user_type[0]},  # 리스트니까 첫 번째 꺼냄
+        {"sub": user_id, "user_type": user.user_type},  # 리스트니까 첫 번째 꺼냄
         timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
 
@@ -152,8 +152,8 @@ async def kakao_login(code: str) -> LoginResponse:
         user = await create_base_user(
             email=email,
             password="kakao_social_login",
-            user_type=["normal"],  # 수정
-            signinMethod=["kakao"],  # 추가
+            user_type=UserTypeEnum.NORMAL.value,  # 수정
+            signinMethod="kakao",  # 추가
             status="active",
             email_verified=True,
             gender=Gender.MALE,
@@ -170,7 +170,7 @@ async def kakao_login(code: str) -> LoginResponse:
             is_social=True,
         )
 
-    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type[0])
+    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
 
     return LoginResponse(
@@ -179,7 +179,7 @@ async def kakao_login(code: str) -> LoginResponse:
             access_token=access_token,
             refresh_token=refresh_token,
             user_id=user.id,
-            user_type=user.user_type[0],  # 리스트니까 [0] 꺼내서
+            user_type=user.user_type,
             email=user.email,
             name=nickname,
         ),
@@ -199,8 +199,8 @@ async def naver_login(code: str, state: str) -> LoginResponse:
         user = await create_base_user(
             email=email,
             password="naver_social_login",
-            user_type=["normal"],  # 수정
-            signinMethod=["naver"],  # 추가
+            user_type=UserTypeEnum.NORMAL.value,  # 수정
+            signinMethod="naver",  # 추가
             status="active",
             email_verified=True,
             gender=Gender.MALE,
@@ -217,7 +217,7 @@ async def naver_login(code: str, state: str) -> LoginResponse:
             is_social=True,
         )
 
-    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type[0])
+    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
 
     return LoginResponse(
@@ -226,7 +226,7 @@ async def naver_login(code: str, state: str) -> LoginResponse:
             access_token=access_token,
             refresh_token=refresh_token,
             user_id=user.id,
-            user_type=user.user_type[0],  # 리스트니까 [0] 꺼내서
+            user_type=user.user_type,
             email=user.email,
             name=nickname,
         ),

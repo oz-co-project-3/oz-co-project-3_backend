@@ -20,7 +20,7 @@ from app.exceptions.server_exceptions import UnknownUserTypeException
 
 
 async def get_user_profile(current_user: BaseUser) -> UserProfileResponse:
-    if "business" in current_user.user_type:
+    if current_user.user_type == "business":
         # 기업회원 프로필 조회
         profile = await get_corporate_profile_by_user(user=current_user)
 
@@ -43,7 +43,7 @@ async def get_user_profile(current_user: BaseUser) -> UserProfileResponse:
             )
         )
 
-    elif "normal" in current_user.user_type:
+    elif current_user.user_type == "normal":
         # 구직자 프로필 조회
         profile = await get_seeker_profile_by_user(user=current_user)
 
