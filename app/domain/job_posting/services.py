@@ -49,7 +49,6 @@ class JobPostingService:
     async def create_job_posting(
         current_user: BaseUser, data: JobPostingCreateUpdate
     ) -> dict:
-        # CorporateUser 확인
         corporate_user = await JobPostingService.get_corporate_user_by_base_user(
             current_user
         )
