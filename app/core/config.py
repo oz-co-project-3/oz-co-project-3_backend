@@ -29,7 +29,7 @@ TORTOISE_ORM = {
                 "app.domain.resume.models",
                 "app.domain.comment.models",
                 "app.domain.job_posting.models",
-                "app.domain.user.user_models",
+                "app.domain.user.models",
                 "aerich.models",
             ],
             "default_connection": "default",

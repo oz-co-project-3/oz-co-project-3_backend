@@ -1,4 +1,4 @@
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
+from app.domain.user.models import BaseUser, CorporateUser, SeekerUser
 
 
 async def get_seeker_users(search: str = ""):

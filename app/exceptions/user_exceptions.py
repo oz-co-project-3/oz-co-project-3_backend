@@ -1,3 +1,4 @@
+from app.domain.user.repository import create_base_user
 from app.exceptions.base_exceptions import CustomException
 
 
@@ -46,4 +47,13 @@ class InvalidBusinessNumberException(CustomException):
             status_code=400,
             code="invalid_business_number",
             error="국세청에 등록되지 않은 사업자등록번호입니다.",
+        )
+
+
+class AlreadyBusinessUserException(CustomException):
+    def __init__(self):
+        super().__init__(
+            status_code=400,
+            code="already_business_user",
+            error="이미 기업회원으로 등록된 사용자입니다.",
         )

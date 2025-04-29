@@ -15,7 +15,7 @@ from app.domain.admin.schemas.job_posting_schemas import (
     StatusEnum,
 )
 from app.domain.services.verification import check_existing, check_superuser
-from app.domain.user.user_models import BaseUser
+from app.domain.user.models import BaseUser
 from app.exceptions.job_posting_exceptions import JobPostingNotFoundException
 from app.exceptions.search_exceptions import (
     InvalidQueryParamsException,

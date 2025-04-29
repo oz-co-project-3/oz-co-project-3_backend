@@ -7,7 +7,7 @@ from app.domain.job_posting.schema import (
     JobPostingSummaryResponse,
 )
 from app.domain.job_posting.services import JobPostingService
-from app.domain.user.user_models import BaseUser, CorporateUser
+from app.domain.user.models import BaseUser, CorporateUser
 from app.exceptions.auth_exceptions import PermissionDeniedException
 
 job_posting_router = APIRouter(
