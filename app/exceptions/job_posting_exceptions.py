@@ -15,13 +15,6 @@ class NotificationNotFoundException(CustomException):
         )
 
 
-class SameTitleExistException(CustomException):
-    def __init__(self):
-        super().__init__(
-            status_code=400, code="same_title_exist", error="같은 제목의 공고가 존재합니다."
-        )
-
-
 class InvalidEmploymentTypeException(CustomException):
     def __init__(self):
         super().__init__(
@@ -55,4 +48,11 @@ class TooManyPositionsException(CustomException):
             status_code=400,
             code="too_many_positions",
             error=f"포지션은 최대 {max_count}개까지 지정할 수 있습니다.",
+        )
+
+
+class SameTitleExistException(CustomException):
+    def __init__(self):
+        super().__init__(
+            status_code=400, code="same_title_exist", error="같은 제목의 공고가 존재합니다."
         )

@@ -21,7 +21,7 @@ async def get_corporate_user(
 ) -> CorporateUser:
     corporate_user = await CorporateUser.get_or_none(user=current_user)
     if not corporate_user:
-        raise PermissionDeniedException
+        raise PermissionDeniedException()
     return corporate_user
 
 

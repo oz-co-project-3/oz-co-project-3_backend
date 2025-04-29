@@ -71,7 +71,7 @@ class ResumeService:
             .first()
         )
         if resume.user.id != current_user.id:
-            raise PermissionDeniedException
+            raise PermissionDeniedException()
         return serialize_resume(resume)
 
     @staticmethod
@@ -100,11 +100,11 @@ class ResumeService:
         # 이력서 조회
         resume = await Resume.filter(id=resume_id).select_related("user").first()
         if not resume:
-            raise ResumeNotFoundException
+            raise ResumeNotFoundException()
 
         # 권한 확인
         if resume.user.id != current_user.id:
-            raise PermissionDeniedException
+            raise PermissionDeniedException()
 
         # 관계 필드 처리
         for key, value in data.items():

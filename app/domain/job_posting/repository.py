@@ -9,7 +9,7 @@ class JobPostingRepository:
     async def get_job_posting_by_id(job_posting_id: int) -> JobPosting:
         job_posting = await JobPosting.get_or_none(id=job_posting_id)
         if not job_posting:
-            raise NotificationNotFoundException
+            raise NotificationNotFoundException()
         return job_posting
 
     @staticmethod
@@ -24,7 +24,7 @@ class JobPostingRepository:
     ) -> JobPosting:
         job_posting = await JobPosting.get_or_none(user_id=user_id, id=job_posting_id)
         if not job_posting:
-            raise NotificationNotFoundException
+            raise NotificationNotFoundException()
         return job_posting
 
     @staticmethod

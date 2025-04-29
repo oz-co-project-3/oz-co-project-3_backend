@@ -98,7 +98,7 @@ class JobPostingService:
 
         existing_posting = await query.first()
         if existing_posting:
-            raise SameTitleExistException
+            raise SameTitleExistException()
 
     @staticmethod
     async def get_job_postings_by_company_user(
@@ -116,7 +116,7 @@ class JobPostingService:
         )
 
         if not job_posting:
-            raise NotificationNotFoundException
+            raise NotificationNotFoundException()
 
         return job_posting
 
