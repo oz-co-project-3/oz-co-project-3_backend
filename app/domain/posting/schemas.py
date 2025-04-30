@@ -10,6 +10,20 @@ class UserSchema(BaseModel):
         from_attributes = True
 
 
+class JobPostingSchema(BaseModel):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ResumeSchema(BaseModel):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
 class JobPostingResponseDTO(BaseModel):
     id: int
     user: UserSchema
@@ -46,9 +60,9 @@ class ApplicantCreateUpdateSchema(BaseModel):
 
 class ApplicantResponseDTO(BaseModel):
     id: int
-    job_posting: int
-    resume: int
-    user: int
+    job_posting: JobPostingSchema
+    resume: ResumeSchema
+    user: UserSchema
     status: str
     memo: Optional[str]
 
