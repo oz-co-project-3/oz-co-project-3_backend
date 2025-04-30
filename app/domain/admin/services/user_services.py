@@ -1,3 +1,4 @@
+import logging
 from typing import Any, List
 
 from app.domain.admin.repositories.user_repository import (
@@ -16,20 +17,21 @@ from app.domain.admin.schemas.user_schemas import (
     UserUpdateSchema,
 )
 from app.domain.services.verification import check_existing, check_superuser
-from app.exceptions.search_exceptions import (
-    InvalidQueryParamsException,
-    SearchKeywordTooLongException,
-)
+from app.exceptions.search_exceptions import SearchKeywordTooLongException
 from app.exceptions.user_exceptions import UserNotFoundException
+
+logger = logging.getLogger(__name__)
 
 
 async def get_user_all_service(
     current_user: Any, seeker: bool, corp: bool, search: str
 ) -> List[UserUnionResponseDTO]:
     check_superuser(current_user)
+
     result: List[UserUnionResponseDTO] = []
 
     if search and len(search) > 100:
+        logger.warning(f"[USER-LIST] 검색어 길이 초과: {len(search)}")
         raise SearchKeywordTooLongException(100)
 
     if seeker or (not seeker and not corp):

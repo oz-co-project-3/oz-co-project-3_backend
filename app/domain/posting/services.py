@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Optional
 
 from app.domain.posting.repository import (
@@ -42,6 +43,8 @@ MAX_SEARCH_KEYWORD_LENGTH = 100
 MAX_LOCATION_LENGTH = 50
 MAX_EDUCATION_LENGTH = 50
 
+logger = logging.getLogger(__name__)
+
 
 async def get_all_postings_service(
     search_keyword: Optional[str] = "",
@@ -57,31 +60,51 @@ async def get_all_postings_service(
 ) -> PaginatedJobPostingsResponseDTO:
     # 문자열 길이 검증
     if len(search_keyword) > MAX_SEARCH_KEYWORD_LENGTH:
+        logger.warning(
+            f"[LIST] 검색 키워드 길이 초과, 길이제한 : 100, len(search_keyword) = {len(search_keyword)}"
+        )
         raise SearchKeywordTooLongException(100)
     if len(location) > MAX_LOCATION_LENGTH:
+        logger.warning(
+            f"[LIST] 검색 키워드 길이 초과, 길이제한 : 50, len(location) = {len(location)}"
+        )
         raise SearchKeywordTooLongException(50)
     if len(education) > MAX_EDUCATION_LENGTH:
+        logger.warning(
+            f"[LIST] 검색 키워드 길이 초과, 길이제한 : 50, len(education) = {len(education)}"
+        )
         raise SearchKeywordTooLongException(50)
 
     # employment_type, career, employ_method 값 검증
     if employment_type and employment_type not in VALID_EMPLOYMENT_TYPES:
+        logger.warning(f"[SEARCH-TYPE] 허용되지 않는 employment_type : {employment_type}")
         raise InvalidEmploymentTypeException()
     if career and career not in VALID_CAREER_TYPES:
+        logger.warning(
+            f"[SEARCH-TYPE] 허용되지 않는 VALID_CAREER_TYPES : {VALID_CAREER_TYPES}"
+        )
         raise InvalidCareerTypeException()
     if employ_method and employ_method not in VALID_EMPLOY_METHODS:
+        logger.warning(
+            f"[SEARCH-TYPE] 허용되지 않는 VALID_EMPLOY_METHODS : {VALID_EMPLOY_METHODS}"
+        )
         raise InvalidEmployMethodException()
 
     # view_count, offset, limit 범위 검증
     if view_count is not None and view_count < 0:
+        logger.warning(f"[SEARCH-TYPE] view_count는 0이상 이어야 합니다 : {employment_type}")
         raise InvalidViewCountException()
     if offset < 0:
+        logger.warning(f"[SEARCH-TYPE] offset는 0이상 이어야 합니다 : {offset}")
         raise InvalidOffsetException()
     if not (1 <= limit <= 100):
+        logger.warning(f"[SEARCH-TYPE] limit 1이상 100 이하 이어야 합니다 : {limit}")
         raise InvalidLimitException()
 
     # position 다중 값 파싱 및 개수 제한
     position_list = [p.strip() for p in position.split(",") if p.strip()]
     if len(position_list) > MAX_POSITION_COUNT:
+        logger.warning(f"[SEARCH-TYPE] position 10개 이하 여야 합니다 : {len(position_list)}")
         raise TooManyPositionsException(MAX_POSITION_COUNT)
 
     query = await get_postings_query(
