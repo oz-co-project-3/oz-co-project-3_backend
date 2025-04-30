@@ -14,34 +14,34 @@ from app.domain.services.social_account import (
 from app.domain.user.models import BaseUser
 from app.domain.user.schema import (
     BusinessUpgradeRequest,
-    BusinessUpgradeResponse,
+    BusinessUpgradeResponseDTO,
     BusinessVerifyRequest,
     BusinessVerifyResponse,
     CorporateProfileUpdateRequest,
     EmailCheckRequest,
-    EmailCheckResponse,
-    EmailVerificationResponse,
+    EmailCheckResponseDTO,
+    EmailVerificationResponseDTO,
     FindEmailRequest,
     FindEmailResponseDTO,
     FindPasswordRequest,
-    FindPasswordResponse,
+    FindPasswordResponseDTO,
     LoginRequest,
-    LoginResponse,
-    LogoutResponse,
+    LoginResponseDTO,
+    LogoutResponseDTO,
     MessageResponse,
     RefreshTokenRequest,
-    RefreshTokenResponse,
+    RefreshTokenResponseDTO,
     ResendEmailRequest,
-    ResendEmailResponse,
+    ResendEmailResponseDTO,
     ResetPasswordRequest,
-    ResetPasswordResponse,
+    ResetPasswordResponseDTO,
     SeekerProfileUpdateRequest,
     SocialCallbackRequest,
     UserDeleteRequest,
-    UserDeleteResponse,
-    UserProfileUpdateResponse,
+    UserDeleteResponseDTO,
+    UserProfileUpdateResponseDTO,
     UserRegisterRequest,
-    UserRegisterResponse,
+    UserRegisterResponseDTO,
     VerifyPasswordRequest,
 )
 from app.domain.user.services.auth_recovery_services import (
@@ -81,7 +81,7 @@ class EmailVerifyRequest(BaseModel):
 
 @router.post(
     "/register/",
-    response_model=UserRegisterResponse,
+    response_model=UserRegisterResponseDTO,
     status_code=status.HTTP_201_CREATED,
     summary="회원가입(공통)",
     description="""
@@ -97,7 +97,7 @@ async def register(request: UserRegisterRequest):
 
 @router.post(
     "/upgrade-to-business/",
-    response_model=BusinessUpgradeResponse,
+    response_model=BusinessUpgradeResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="기업회원 업그레이드",
     description="""
@@ -114,7 +114,7 @@ async def upgrade_to_business_route(
 
 @router.post(
     "/check-email/",
-    response_model=EmailCheckResponse,
+    response_model=EmailCheckResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="이메일 중복 확인",
     description="""
@@ -127,7 +127,7 @@ async def check_email(request: EmailCheckRequest):
 
 @router.delete(
     "/profile/",
-    response_model=UserDeleteResponse,
+    response_model=UserDeleteResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="회원 탈퇴",
     description="""
@@ -158,7 +158,7 @@ async def find_email_route(request: FindEmailRequest):
 
 @router.post(
     "/find-password/",
-    response_model=FindPasswordResponse,
+    response_model=FindPasswordResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="비밀번호 찾기",
     description="""
@@ -189,7 +189,7 @@ async def verify_password(
 
 @router.post(
     "/reset-password/",
-    response_model=ResetPasswordResponse,
+    response_model=ResetPasswordResponseDTO,
     status_code=200,
     summary="비밀번호 재설정",
     description="""
@@ -209,7 +209,7 @@ async def reset_password_route(request: ResetPasswordRequest):
 
 @router.patch(
     "/profile/seeker/update/",
-    response_model=UserProfileUpdateResponse,
+    response_model=UserProfileUpdateResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="구직자 프로필 수정",
     description="""
@@ -227,7 +227,7 @@ async def update_seeker_profile_route(
 
 @router.patch(
     "/profile/corporate/update/",
-    response_model=UserProfileUpdateResponse,
+    response_model=UserProfileUpdateResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="기업회원 프로필 수정",
     description="""
@@ -245,7 +245,7 @@ async def update_corporate_profile_route(
 
 @router.post(
     "/login/",
-    response_model=LoginResponse,
+    response_model=LoginResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="로그인",
     description="""
@@ -277,7 +277,7 @@ async def logout(current_user: BaseUser = Depends(get_current_user)):
 
 @router.post(
     "/refresh-token/",
-    response_model=RefreshTokenResponse,
+    response_model=RefreshTokenResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="토큰 재요청",
     description="""
@@ -291,7 +291,7 @@ async def refresh_token(request: RefreshTokenRequest):
 
 @router.post(
     "/verify-email/",
-    response_model=EmailVerificationResponse,
+    response_model=EmailVerificationResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="이메일 인증",
     description="""
@@ -308,7 +308,7 @@ async def verify_email(request: EmailVerifyRequest):
 
 @router.post(
     "/resend-email-code/",
-    response_model=ResendEmailResponse,
+    response_model=ResendEmailResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="재인증 코드 발송",
     description="""
@@ -355,7 +355,7 @@ async def get_kakao_auth_url():
 `400` `code`:`invalid_code` : 잘못된 code 또는 만료된 code입니다.\n
 `500` `code`:`kakao_api_error` : 카카오 서버 응답 실패\n
 """,
-    response_model=LoginResponse,
+    response_model=LoginResponseDTO,
 )
 async def kakao_callback(request: SocialCallbackRequest):
     access_token = await get_kakao_access_token(request.code)
@@ -383,7 +383,7 @@ async def get_naver_auth_url():
 access_token으로 유저정보 조회 후 로그인 처리\n
 `400` `code`:`naver_email_required` : 이메일 없는 네이버 계정\n
 """,
-    response_model=LoginResponse,
+    response_model=LoginResponseDTO,
 )
 async def naver_callback(request: SocialCallbackRequest):  # 🔁 schema 재사용!
     access_token = await get_naver_access_token(request.code, request.state)
