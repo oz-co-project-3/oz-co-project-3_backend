@@ -1,4 +1,5 @@
 from app.domain.job_posting.models import Applicants
+from app.domain.services.user_type_helper import split_user_types
 from app.domain.user.models import BaseUser
 from app.domain.user.repository import (
     get_corporate_profile_by_user,
@@ -18,10 +19,15 @@ from app.exceptions.server_exceptions import UnknownUserTypeException
 
 
 # 프로필 조회
-async def get_user_profile(current_user: BaseUser) -> UserProfileResponseDTO:
-    if current_user.user_type == "business":
+async def get_user_profile(
+    current_user: BaseUser, target_type: str
+) -> UserProfileResponseDTO:
+    user_types = split_user_types(current_user.user_type)
+
+    if target_type == "business" and "business" in user_types:
         profile = await get_corporate_profile_by_user(user=current_user)
         return UserProfileResponseDTO(
+            success=True,
             data=CorporateProfileResponse(
                 id=current_user.id,
                 email=current_user.email,
@@ -37,10 +43,10 @@ async def get_user_profile(current_user: BaseUser) -> UserProfileResponseDTO:
                 created_at=current_user.created_at,
                 updated_at=None,
                 profile_url=profile.profile_url,
-            )
+            ),
         )
 
-    elif current_user.user_type == "normal":
+    elif target_type == "normal" and "normal" in user_types:
         profile = await get_seeker_profile_by_user(user=current_user)
         applied_qs = await Applicants.filter(user=current_user).order_by("-id").all()
         applied_posting_ids = [a.job_posting_id for a in applied_qs]
@@ -86,11 +92,23 @@ async def update_seeker_profile(
     if update_data.birth is not None:
         profile.birth = update_data.birth
     if update_data.interests is not None:
-        profile.interests = update_data.interests
+        profile.interests = (
+            ",".join(update_data.interests)
+            if isinstance(update_data.interests, list)
+            else update_data.interests
+        )
     if update_data.purposes is not None:
-        profile.purposes = update_data.purposes
+        profile.purposes = (
+            ",".join(update_data.purposes)
+            if isinstance(update_data.purposes, list)
+            else update_data.purposes
+        )
     if update_data.sources is not None:
-        profile.sources = update_data.sources
+        profile.sources = (
+            ",".join(update_data.sources)
+            if isinstance(update_data.sources, list)
+            else update_data.sources
+        )
     if update_data.status is not None:
         profile.status = update_data.status
     if update_data.profile_url is not None:
@@ -104,7 +122,7 @@ async def update_seeker_profile(
         email=current_user.email,
         phone_number=profile.phone_number,
         birth=profile.birth,
-        interests=eval(profile.interests)
+        interests=profile.interests.split(",")
         if isinstance(profile.interests, str)
         else profile.interests,
         status=profile.status,
@@ -147,3 +165,16 @@ async def update_corporate_profile(
     )
 
     return UserProfileUpdateResponseDTO(success=True, data=corp_data)
+
+
+async def update_user_profile(
+    current_user: BaseUser, update_data, target_type: str
+) -> UserProfileUpdateResponseDTO:
+    user_types = split_user_types(current_user.user_type)
+
+    if target_type == "normal" and "normal" in user_types:
+        return await update_seeker_profile(current_user, update_data)
+    elif target_type == "business" and "business" in user_types:
+        return await update_corporate_profile(current_user, update_data)
+    else:
+        raise UnknownUserTypeException()

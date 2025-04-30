@@ -2,6 +2,8 @@ import os
 
 import httpx
 
+from app.exceptions.base_exceptions import CustomException
+
 
 # 카카오 url 이동
 async def generate_kakao_auth_url() -> dict:

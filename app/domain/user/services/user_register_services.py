@@ -52,11 +52,27 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponseDTO
     base_user = await create_base_user(
         email=request.email,
         password=hashed_password,
-        user_type=request.user_type.value,
+        user_type="normal",
         gender=request.gender,
         is_superuser=False,
         status="pending",
         signinMethod=request.signinMethod.value,
+    )
+
+    interests = (
+        ",".join(request.interests)
+        if isinstance(request.interests, list)
+        else request.interests
+    )
+    purposes = (
+        ",".join(request.purposes)
+        if isinstance(request.purposes, list)
+        else request.purposes
+    )
+    sources = (
+        ",".join(request.sources)
+        if isinstance(request.sources, list)
+        else request.sources
     )
 
     seeker_user = await create_seeker_profile(
@@ -65,15 +81,9 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponseDTO
         phone_number=request.phone_number,
         birth=request.birth,
         gender=request.gender,
-        interests=request.interests
-        if isinstance(request.interests, list)
-        else [request.interests],
-        purposes=request.purposes
-        if isinstance(request.purposes, list)
-        else [request.purposes],
-        sources=request.sources
-        if isinstance(request.sources, list)
-        else [request.sources],
+        interests=interests,
+        purposes=purposes,
+        sources=sources,
         status=request.status,
         is_social=False,
     )
@@ -87,7 +97,7 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponseDTO
             id=base_user.id,
             email=base_user.email,
             name=seeker_user.name,
-            user_type=request.user_type.value,
+            user_type="normal",
             email_verified=base_user.email_verified,
             created_at=base_user.created_at,
         ),

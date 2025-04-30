@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends, status
+from fastapi import APIRouter, Body, Depends, Query, Request, status
 from pydantic import BaseModel, EmailStr
 
 from app.core.token import get_current_user
@@ -14,34 +14,34 @@ from app.domain.services.social_account import (
 from app.domain.user.models import BaseUser
 from app.domain.user.schema import (
     BusinessUpgradeRequest,
-    BusinessUpgradeResponse,
+    BusinessUpgradeResponseDTO,
     BusinessVerifyRequest,
     BusinessVerifyResponse,
     CorporateProfileUpdateRequest,
     EmailCheckRequest,
-    EmailCheckResponse,
-    EmailVerificationResponse,
+    EmailCheckResponseDTO,
+    EmailVerificationResponseDTO,
     FindEmailRequest,
     FindEmailResponseDTO,
     FindPasswordRequest,
-    FindPasswordResponse,
+    FindPasswordResponseDTO,
     LoginRequest,
-    LoginResponse,
-    LogoutResponse,
+    LoginResponseDTO,
     MessageResponse,
     RefreshTokenRequest,
-    RefreshTokenResponse,
+    RefreshTokenResponseDTO,
     ResendEmailRequest,
-    ResendEmailResponse,
+    ResendEmailResponseDTO,
     ResetPasswordRequest,
-    ResetPasswordResponse,
+    ResetPasswordResponseDTO,
     SeekerProfileUpdateRequest,
     SocialCallbackRequest,
     UserDeleteRequest,
-    UserDeleteResponse,
-    UserProfileUpdateResponse,
+    UserDeleteResponseDTO,
+    UserProfileResponseDTO,
+    UserProfileUpdateResponseDTO,
     UserRegisterRequest,
-    UserRegisterResponse,
+    UserRegisterResponseDTO,
     VerifyPasswordRequest,
 )
 from app.domain.user.services.auth_recovery_services import (
@@ -61,14 +61,15 @@ from app.domain.user.services.auth_services import (
     verify_user_password,
 )
 from app.domain.user.services.user_profile_services import (
-    update_corporate_profile,
-    update_seeker_profile,
+    get_user_profile,
+    update_user_profile,
 )
 from app.domain.user.services.user_register_services import (
     delete_user,
     register_user,
     upgrade_to_business,
 )
+from app.exceptions.server_exceptions import UnknownUserTypeException
 
 router = APIRouter(prefix="/api/user", tags=["user"])
 
@@ -81,7 +82,7 @@ class EmailVerifyRequest(BaseModel):
 
 @router.post(
     "/register/",
-    response_model=UserRegisterResponse,
+    response_model=UserRegisterResponseDTO,
     status_code=status.HTTP_201_CREATED,
     summary="회원가입(공통)",
     description="""
@@ -97,7 +98,7 @@ async def register(request: UserRegisterRequest):
 
 @router.post(
     "/upgrade-to-business/",
-    response_model=BusinessUpgradeResponse,
+    response_model=BusinessUpgradeResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="기업회원 업그레이드",
     description="""
@@ -114,7 +115,7 @@ async def upgrade_to_business_route(
 
 @router.post(
     "/check-email/",
-    response_model=EmailCheckResponse,
+    response_model=EmailCheckResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="이메일 중복 확인",
     description="""
@@ -126,8 +127,8 @@ async def check_email(request: EmailCheckRequest):
 
 
 @router.delete(
-    "/profile/",
-    response_model=UserDeleteResponse,
+    "/withdrawal-user/",
+    response_model=UserDeleteResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="회원 탈퇴",
     description="""
@@ -135,12 +136,12 @@ async def check_email(request: EmailCheckRequest):
 """,
 )
 async def delete_profile(
-    request: UserDeleteRequest,
+    request: UserDeleteRequest = Body(...),
     current_user: BaseUser = Depends(get_current_user),
 ):
     if not request.is_active:
         return await delete_user(current_user=current_user, password=request.password)
-    return {"message": "탈퇴 요청이 취소되었습니다."}
+    return UserDeleteResponseDTO(message="탈퇴 요청이 취소되었습니다.")
 
 
 @router.post(
@@ -158,7 +159,7 @@ async def find_email_route(request: FindEmailRequest):
 
 @router.post(
     "/find-password/",
-    response_model=FindPasswordResponse,
+    response_model=FindPasswordResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="비밀번호 찾기",
     description="""
@@ -189,7 +190,7 @@ async def verify_password(
 
 @router.post(
     "/reset-password/",
-    response_model=ResetPasswordResponse,
+    response_model=ResetPasswordResponseDTO,
     status_code=200,
     summary="비밀번호 재설정",
     description="""
@@ -207,45 +208,54 @@ async def reset_password_route(request: ResetPasswordRequest):
     )
 
 
-@router.patch(
-    "/profile/seeker/update/",
-    response_model=UserProfileUpdateResponse,
+@router.get(
+    "/profile/",
+    response_model=UserProfileResponseDTO,
     status_code=status.HTTP_200_OK,
-    summary="구직자 프로필 수정",
+    summary="로그인한 사용자 프로필 조회",
     description="""
 `401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다\n
 `404` `code`:`user_not_found` : 사용자 정보를 찾을 수 없습니다\n
-`500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다
+`500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다\n
 """,
 )
-async def update_seeker_profile_route(
+async def profile(
+    target_type: str = Query("normal"),
     current_user: BaseUser = Depends(get_current_user),
-    update_data: SeekerProfileUpdateRequest = Body(...),
 ):
-    return await update_seeker_profile(current_user, update_data)
+    return await get_user_profile(current_user, target_type)
 
 
 @router.patch(
-    "/profile/corporate/update/",
-    response_model=UserProfileUpdateResponse,
+    "/profile/update/",
+    response_model=UserProfileUpdateResponseDTO,
     status_code=status.HTTP_200_OK,
-    summary="기업회원 프로필 수정",
+    summary="유저 프로필 수정 (일반/기업 통합)",
     description="""
-`401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다\n
-`404` `code`:`user_not_found` : 사용자 정보를 찾을 수 없습니다\n
-`500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다
+`target_type=normal` : 일반회원 프로필 수정\n
+`target_type=business` : 기업회원 프로필 수정\n
 """,
 )
-async def update_corporate_profile_route(
+async def update_profile(
+    request: Request,
+    target_type: str = Query("normal"),
     current_user: BaseUser = Depends(get_current_user),
-    update_data: CorporateProfileUpdateRequest = Body(...),
 ):
-    return await update_corporate_profile(current_user, update_data)
+    body = await request.json()
+
+    if target_type == "normal":
+        update_data = SeekerProfileUpdateRequest(**body)
+    elif target_type == "business":
+        update_data = CorporateProfileUpdateRequest(**body)
+    else:
+        raise UnknownUserTypeException()
+
+    return await update_user_profile(current_user, update_data, target_type)
 
 
 @router.post(
     "/login/",
-    response_model=LoginResponse,
+    response_model=LoginResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="로그인",
     description="""
@@ -277,7 +287,7 @@ async def logout(current_user: BaseUser = Depends(get_current_user)):
 
 @router.post(
     "/refresh-token/",
-    response_model=RefreshTokenResponse,
+    response_model=RefreshTokenResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="토큰 재요청",
     description="""
@@ -291,7 +301,7 @@ async def refresh_token(request: RefreshTokenRequest):
 
 @router.post(
     "/verify-email/",
-    response_model=EmailVerificationResponse,
+    response_model=EmailVerificationResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="이메일 인증",
     description="""
@@ -308,7 +318,7 @@ async def verify_email(request: EmailVerifyRequest):
 
 @router.post(
     "/resend-email-code/",
-    response_model=ResendEmailResponse,
+    response_model=ResendEmailResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="재인증 코드 발송",
     description="""
@@ -355,7 +365,7 @@ async def get_kakao_auth_url():
 `400` `code`:`invalid_code` : 잘못된 code 또는 만료된 code입니다.\n
 `500` `code`:`kakao_api_error` : 카카오 서버 응답 실패\n
 """,
-    response_model=LoginResponse,
+    response_model=LoginResponseDTO,
 )
 async def kakao_callback(request: SocialCallbackRequest):
     access_token = await get_kakao_access_token(request.code)
@@ -383,9 +393,9 @@ async def get_naver_auth_url():
 access_token으로 유저정보 조회 후 로그인 처리\n
 `400` `code`:`naver_email_required` : 이메일 없는 네이버 계정\n
 """,
-    response_model=LoginResponse,
+    response_model=LoginResponseDTO,
 )
 async def naver_callback(request: SocialCallbackRequest):  # 🔁 schema 재사용!
     access_token = await get_naver_access_token(request.code, request.state)
     naver_info = await get_naver_user_info(access_token)
-    return await naver_login(naver_info)
+    return await naver_login(naver_info, request.state)
