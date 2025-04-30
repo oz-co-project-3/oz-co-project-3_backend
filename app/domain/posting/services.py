@@ -94,7 +94,7 @@ async def get_all_postings_service(
         view_count,
         employ_method,
     )
-    return await paginate_query(query, offset, limit)
+    return await paginate_query(query, offset, limit, JobPostingResponseDTO)
 
 
 async def get_posting_by_id_service(id: int) -> JobPostingResponseDTO:
