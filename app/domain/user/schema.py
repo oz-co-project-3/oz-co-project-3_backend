@@ -21,14 +21,6 @@ class UserRegisterRequest(BaseModel):
     signinMethod: SignInEnum
 
 
-class BusinessUpgradeRequest(BaseModel):
-    business_number: str
-    company_name: str
-    manager_name: str
-    manager_phone_number: str
-    business_start_date: date
-
-
 class UserRegisterResponseData(BaseModel):
     id: int
     email: EmailStr
@@ -38,19 +30,30 @@ class UserRegisterResponseData(BaseModel):
     created_at: datetime
 
 
-class UserRegisterResponse(BaseModel):
-    message: str
+class UserRegisterResponseDTO(BaseModel):
+    success: bool
     data: UserRegisterResponseData
 
 
-# 이메일 중복검사 체크스키마
-class EmailCheckRequest(BaseModel):
-    email: EmailStr
+class BusinessUpgradeRequest(BaseModel):
+    business_number: str
+    company_name: str
+    manager_name: str
+    manager_phone_number: str
+    business_start_date: date
 
 
-class EmailCheckResponse(BaseModel):
-    message: str
-    is_available: bool
+class BusinessUpgradeData(BaseModel):
+    access_token: str
+    refresh_token: str
+    user_id: int
+    user_type: str
+    email: str
+
+
+class BusinessUpgradeResponseDTO(BaseModel):
+    success: bool
+    data: BusinessUpgradeData
 
 
 # 구직자 프로필 조회 응답용
@@ -94,8 +97,9 @@ class CorporateProfileResponse(BaseModel):
 
 
 # 공통 Wrapper
-class UserProfileResponse(BaseModel):
-    data: Union[SeekerProfileResponse, CorporateProfileResponse]
+class UserProfileResponseDTO(BaseModel):
+    success: bool
+    data: Union["SeekerProfileResponse", "CorporateProfileResponse"]
 
 
 class SeekerProfileUpdateRequest(BaseModel):
@@ -141,15 +145,27 @@ class CorporateProfileUpdateResponse(BaseModel):
     profile_url: Optional[str] = None
 
 
-class UserProfileUpdateResponse(BaseModel):
-    message: str
-    data: Union[SeekerProfileUpdateResponse, CorporateProfileUpdateResponse]
+class UserProfileUpdateResponseDTO(BaseModel):
+    success: bool
+    data: Union["SeekerProfileUpdateResponse", "CorporateProfileUpdateResponse"]
 
 
 class UserDeleteRequest(BaseModel):
     password: str
     is_active: bool
     reason: Optional[str] = None
+
+
+class UserDeleteData(BaseModel):
+    user_id: int
+    email: str
+    reason: Optional[str] = None
+    deleted_at: datetime
+
+
+class UserDeleteResponseDTO(BaseModel):
+    success: bool
+    data: UserDeleteData
 
 
 class LoginRequest(BaseModel):
@@ -160,15 +176,19 @@ class LoginRequest(BaseModel):
 class LoginResponseData(BaseModel):
     access_token: str
     refresh_token: str
-    user_id: int
-    user_type: UserTypeEnum
+    user_id: str
+    user_type: List[UserTypeEnum]
     email: str
-    name: Optional[str] = "소셜유저"
+    name: Optional[str] = "소셜 유저"
 
 
-class LoginResponse(BaseModel):
-    message: str
+class LoginResponseDTO(BaseModel):
+    success: bool
     data: LoginResponseData
+
+
+class LogoutResponseDTO(BaseModel):
+    success: bool
 
 
 class VerifyPasswordRequest(BaseModel):
@@ -183,13 +203,9 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
-class RefreshTokenResponseData(BaseModel):
+class RefreshTokenResponseDTO(BaseModel):
+    success: bool
     access_token: str
-
-
-class RefreshTokenResponse(BaseModel):
-    message: str
-    data: RefreshTokenResponseData
 
 
 class ResendEmailRequest(BaseModel):
@@ -207,20 +223,18 @@ class BusinessVerifyResponse(BaseModel):
     is_valid: bool
 
 
+"""
+DTO 적용 스키마 🔽
+"""
+
+
 class FindEmailRequest(BaseModel):
     name: str
     phone_number: str
 
 
-class FindEmailResponseData(BaseModel):
+class FindEmailResponseDTO(BaseModel):
     email: str
-
-
-# 메일 찾을 시 DICT로 간단하게 가능하지만
-# DICT구조 사용시 SWAGGER에서 안보이거나 깨진다고함
-class FindEmailResponse(BaseModel):
-    message: str
-    data: FindEmailResponseData
 
 
 class FindPasswordRequest(BaseModel):
@@ -229,12 +243,40 @@ class FindPasswordRequest(BaseModel):
     email: str
 
 
+class FindPasswordResponseDTO(BaseModel):
+    success: bool
+
+
 class ResetPasswordRequest(BaseModel):
     email: EmailStr
     new_password: str
     new_password_check: str
 
 
+class ResetPasswordResponseDTO(BaseModel):
+    success: bool
+
+
 class SocialCallbackRequest(BaseModel):
     code: str
     state: Optional[str] = None
+
+
+class EmailVerificationResponseDTO(BaseModel):
+    email: str
+    email_verified: bool
+
+
+class ResendEmailResponseDTO(BaseModel):
+    success: bool
+    email: str
+
+
+# 이메일 중복검사 체크스키마
+class EmailCheckRequest(BaseModel):
+    email: EmailStr
+
+
+class EmailCheckResponseDTO(BaseModel):
+    success: bool
+    is_available: bool

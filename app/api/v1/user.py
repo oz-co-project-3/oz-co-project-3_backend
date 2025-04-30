@@ -1,5 +1,3 @@
-from typing import Union
-
 from fastapi import APIRouter, Body, Depends, status
 from pydantic import BaseModel, EmailStr
 
@@ -16,30 +14,38 @@ from app.domain.services.social_account import (
 from app.domain.user.models import BaseUser
 from app.domain.user.schema import (
     BusinessUpgradeRequest,
+    BusinessUpgradeResponse,
     BusinessVerifyRequest,
     BusinessVerifyResponse,
     CorporateProfileUpdateRequest,
     EmailCheckRequest,
     EmailCheckResponse,
+    EmailVerificationResponse,
     FindEmailRequest,
+    FindEmailResponseDTO,
     FindPasswordRequest,
+    FindPasswordResponse,
     LoginRequest,
     LoginResponse,
+    LogoutResponse,
     MessageResponse,
     RefreshTokenRequest,
     RefreshTokenResponse,
     ResendEmailRequest,
+    ResendEmailResponse,
     ResetPasswordRequest,
+    ResetPasswordResponse,
     SeekerProfileUpdateRequest,
     SocialCallbackRequest,
     UserDeleteRequest,
-    UserProfileResponse,
+    UserDeleteResponse,
     UserProfileUpdateResponse,
     UserRegisterRequest,
     UserRegisterResponse,
     VerifyPasswordRequest,
 )
 from app.domain.user.services.auth_recovery_services import (
+    check_email_duplicate,
     complete_email_verification,
     find_email,
     find_password,
@@ -55,11 +61,10 @@ from app.domain.user.services.auth_services import (
     verify_user_password,
 )
 from app.domain.user.services.user_profile_services import (
-    get_user_profile,
-    update_user_profile,
+    update_corporate_profile,
+    update_seeker_profile,
 )
 from app.domain.user.services.user_register_services import (
-    check_email_duplicate,
     delete_user,
     register_user,
     upgrade_to_business,
@@ -92,7 +97,7 @@ async def register(request: UserRegisterRequest):
 
 @router.post(
     "/upgrade-to-business/",
-    response_model=MessageResponse,
+    response_model=BusinessUpgradeResponse,
     status_code=status.HTTP_200_OK,
     summary="기업회원 업그레이드",
     description="""
@@ -122,6 +127,7 @@ async def check_email(request: EmailCheckRequest):
 
 @router.delete(
     "/profile/",
+    response_model=UserDeleteResponse,
     status_code=status.HTTP_200_OK,
     summary="회원 탈퇴",
     description="""
@@ -139,6 +145,7 @@ async def delete_profile(
 
 @router.post(
     "/find-email/",
+    response_model=FindEmailResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="아이디(이메일) 찾기",
     description="""
@@ -151,6 +158,7 @@ async def find_email_route(request: FindEmailRequest):
 
 @router.post(
     "/find-password/",
+    response_model=FindPasswordResponse,
     status_code=status.HTTP_200_OK,
     summary="비밀번호 찾기",
     description="""
@@ -181,6 +189,7 @@ async def verify_password(
 
 @router.post(
     "/reset-password/",
+    response_model=ResetPasswordResponse,
     status_code=200,
     summary="비밀번호 재설정",
     description="""
@@ -198,39 +207,40 @@ async def reset_password_route(request: ResetPasswordRequest):
     )
 
 
-@router.get(
-    "/profile/",
-    response_model=UserProfileResponse,
+@router.patch(
+    "/profile/seeker/update/",
+    response_model=UserProfileUpdateResponse,
     status_code=status.HTTP_200_OK,
-    summary="로그인한 사용자 프로필 조회",
+    summary="구직자 프로필 수정",
     description="""
 `401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다\n
 `404` `code`:`user_not_found` : 사용자 정보를 찾을 수 없습니다\n
-`500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다\n
+`500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다
 """,
 )
-async def profile(current_user: BaseUser = Depends(get_current_user)):
-    return await get_user_profile(current_user)
+async def update_seeker_profile_route(
+    current_user: BaseUser = Depends(get_current_user),
+    update_data: SeekerProfileUpdateRequest = Body(...),
+):
+    return await update_seeker_profile(current_user, update_data)
 
 
 @router.patch(
-    "/profile/update/",
+    "/profile/corporate/update/",
     response_model=UserProfileUpdateResponse,
     status_code=status.HTTP_200_OK,
-    summary="회원 프로필 수정",
+    summary="기업회원 프로필 수정",
     description="""
 `401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다\n
-`400` `code`:`invalid_phone` : 올바른 형식의 전화번호를 입력해주세요\n
-`500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다\n
+`404` `code`:`user_not_found` : 사용자 정보를 찾을 수 없습니다\n
+`500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다
 """,
 )
-async def update_profile(
+async def update_corporate_profile_route(
     current_user: BaseUser = Depends(get_current_user),
-    update_data: Union[
-        SeekerProfileUpdateRequest, CorporateProfileUpdateRequest
-    ] = Body(...),
+    update_data: CorporateProfileUpdateRequest = Body(...),
 ):
-    return await update_user_profile(current_user, update_data)
+    return await update_corporate_profile(current_user, update_data)
 
 
 @router.post(
@@ -251,6 +261,7 @@ async def login(request: LoginRequest):
 
 @router.post(
     "/logout/",
+    response_model=MessageResponse,
     status_code=status.HTTP_200_OK,
     summary="로그아웃",
     description="""
@@ -280,6 +291,7 @@ async def refresh_token(request: RefreshTokenRequest):
 
 @router.post(
     "/verify-email/",
+    response_model=EmailVerificationResponse,
     status_code=status.HTTP_200_OK,
     summary="이메일 인증",
     description="""
@@ -296,6 +308,7 @@ async def verify_email(request: EmailVerifyRequest):
 
 @router.post(
     "/resend-email-code/",
+    response_model=ResendEmailResponse,
     status_code=status.HTTP_200_OK,
     summary="재인증 코드 발송",
     description="""
@@ -347,7 +360,8 @@ async def get_kakao_auth_url():
 async def kakao_callback(request: SocialCallbackRequest):
     access_token = await get_kakao_access_token(request.code)
     kakao_info = await get_kakao_user_info(access_token)
-    return await kakao_login(kakao_info)
+    result = await kakao_login(kakao_info)
+    return result
 
 
 @router.get(

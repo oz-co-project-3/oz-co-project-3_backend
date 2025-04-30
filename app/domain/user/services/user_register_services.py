@@ -14,11 +14,14 @@ from app.domain.user.repository import (
     get_user_by_email,
 )
 from app.domain.user.schema import (
+    BusinessUpgradeData,
     BusinessUpgradeRequest,
-    EmailCheckResponse,
+    BusinessUpgradeResponseDTO,
+    UserDeleteData,
+    UserDeleteResponseDTO,
     UserRegisterRequest,
-    UserRegisterResponse,
     UserRegisterResponseData,
+    UserRegisterResponseDTO,
 )
 from app.exceptions.auth_exceptions import (
     InvalidPasswordException,
@@ -31,7 +34,7 @@ from app.exceptions.user_exceptions import (
 )
 
 
-async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
+async def register_user(request: UserRegisterRequest) -> UserRegisterResponseDTO:
     existing_user = await get_user_by_email(email=request.email)
     if existing_user:
         raise DuplicateEmailException()
@@ -78,8 +81,8 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
     # 여기서 인증메일 발송
     await send_email_code(email=base_user.email, purpose="회원가입")
 
-    return UserRegisterResponse(
-        message="회원가입이 완료되었습니다.",
+    return UserRegisterResponseDTO(
+        success=True,
         data=UserRegisterResponseData(
             id=base_user.id,
             email=base_user.email,
@@ -92,7 +95,9 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
 
 
 # 기업회원 업그레이드
-async def upgrade_to_business(user: BaseUser, request: BusinessUpgradeRequest):
+async def upgrade_to_business(
+    user: BaseUser, request: BusinessUpgradeRequest
+) -> BusinessUpgradeResponseDTO:
     # 이미 business 등록된 경우 막기
     if user.user_type == "business":
         raise AlreadyBusinessUserException()
@@ -113,27 +118,27 @@ async def upgrade_to_business(user: BaseUser, request: BusinessUpgradeRequest):
     )
 
     # BaseUser user_type 업데이트 = array필드 모델 참조 (리스트였음)
-    user.user_type = "business"
+    user.user_type = "business,normal"
     await user.save()
 
     # 새 access_token, refresh_token 발급
     access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
 
-    return {
-        "message": "기업회원으로 전환이 완료되었습니다.",
-        "data": {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "user_id": user.id,
-            "user_type": user.user_type,
-            "email": user.email,
-        },
-    }
+    return BusinessUpgradeResponseDTO(
+        success=True,
+        data=BusinessUpgradeData(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user_id=user.id,
+            user_type=user.user_type,
+            email=user.email,
+        ),
+    )
 
 
 async def delete_user(
     current_user: BaseUser, password: str, reason: Optional[str] = None
-):
+) -> UserDeleteResponseDTO:
     if not bcrypt.verify(password, current_user.password):
         raise PasswordMismatchException()
 
@@ -142,16 +147,16 @@ async def delete_user(
     current_user.status = "delete"
 
     if reason:
-        current_user.reason = reason  # 탈퇴 사유 추가
+        current_user.reason = reason
 
     await current_user.save()
 
-    return {"message": "회원 탈퇴가 완료되었습니다."}
-
-
-# 이메일 중복 검사 함수
-async def check_email_duplicate(email: str) -> EmailCheckResponse:
-    existing_user = await get_user_by_email(email=email)
-    if existing_user:
-        return EmailCheckResponse(message="이미 사용 중인 이메일입니다.", is_available=False)
-    return EmailCheckResponse(message="사용 가능한 이메일입니다.", is_available=True)
+    return UserDeleteResponseDTO(
+        success=True,
+        data=UserDeleteData(
+            user_id=current_user.id,
+            email=current_user.email,
+            reason=current_user.reason,
+            deleted_at=current_user.deleted_at,
+        ),
+    )

@@ -9,13 +9,20 @@ from app.domain.user.repository import (
     get_seeker_profile_by_info,
     get_user_by_email,
 )
-from app.domain.user.schema import ResendEmailRequest
+from app.domain.user.schema import (
+    EmailCheckResponseDTO,
+    EmailVerificationResponseDTO,
+    FindEmailResponseDTO,
+    FindPasswordResponseDTO,
+    ResendEmailRequest,
+    ResendEmailResponseDTO,
+    ResetPasswordResponseDTO,
+)
 from app.exceptions.auth_exceptions import PasswordMismatchException
 from app.exceptions.email_exceptions import (
     EmailAlreadyVerifiedException,
     InvalidVerificationCodeException,
 )
-from app.exceptions.server_exceptions import UnknownUserTypeException
 from app.exceptions.user_exceptions import (
     PasswordInvalidException,
     PasswordPreviouslyUsedException,
@@ -23,26 +30,42 @@ from app.exceptions.user_exceptions import (
 )
 
 
+# 이메일 마스킹 = 유틸로 안 넣고 리커버리 서비스 안에서 처리 (구조 변경 가능)
+def mask_email(email: str) -> str:
+    """
+    이메일 마스킹 예시: abcde@naver.com → ab***@naver.com
+    """
+    username, domain = email.split("@")
+    if len(username) <= 2:
+        masked = username[0] + "*"
+    else:
+        masked = username[:2] + "*" * (len(username) - 2)
+    return f"{masked}@{domain}"
+
+
 # 아이디 찾기
-async def find_email(name: str, phone_number: str):
+async def find_email(name: str, phone_number: str) -> FindEmailResponseDTO:
     # 구직자에서 먼저 검색
     seeker = await get_seeker_by_name_and_phone(name, phone_number)
     if seeker:
         email = seeker.user.email
     else:
-        # 2. 없으면 기업회원에서 검색
+        # 없으면 기업회원에서 검색
         corp = await get_corporate_by_manager_name_and_phone(name, phone_number)
         if corp:
             email = corp.user.email
         else:
             raise UserNotFoundException()
+    # 이메일 마스킹 추가 = 04/29 중간점검 이후
+    masked_email = mask_email(email)
 
-    # 이메일 마스킹 처리 x = 프론트에서 진행한다고 함
-    return {"message": "아이디 찾기 성공", "data": {"email": email}}
+    return FindEmailResponseDTO(email=masked_email)
 
 
 # 비밀번호 찾기
-async def find_password(name: str, phone_number: str, email: str):
+async def find_password(
+    name: str, phone_number: str, email: str
+) -> FindPasswordResponseDTO:
     # 해당 이메일로 BaseUser 조회
     user = await get_user_by_email(email=email)
     if not user:
@@ -65,11 +88,13 @@ async def find_password(name: str, phone_number: str, email: str):
     # (여기까지 통과하면) 비밀번호 재설정 이메일 발송
     await send_email_code(email, "비밀번호 찾기")
 
-    return {"message": "비밀번호 재설정 메일이 발송되었습니다."}
+    return FindPasswordResponseDTO(success=True)
 
 
 # 새로운 비밀번호 생성 함수
-async def reset_password(email: str, new_password: str, new_password_check: str):
+async def reset_password(
+    email: str, new_password: str, new_password_check: str
+) -> ResetPasswordResponseDTO:
     if new_password != new_password_check:
         raise PasswordMismatchException()
 
@@ -88,14 +113,16 @@ async def reset_password(email: str, new_password: str, new_password_check: str)
     user.password = bcrypt.hash(new_password)
     await user.save()
 
-    return {"message": "비밀번호가 성공적으로 변경되었습니다."}
+    return ResetPasswordResponseDTO(success=True)
 
 
 # 이메일 인증 완료 처리
-async def complete_email_verification(email: str, verification_code: str):
+async def complete_email_verification(
+    email: str, verification_code: str
+) -> EmailVerificationResponseDTO:
     saved_code = await redis.get(f"email_verify:{email}")
 
-    if not saved_code or saved_code != verification_code:
+    if not saved_code or str(saved_code) != str(verification_code):
         raise InvalidVerificationCodeException()
 
     user = await get_user_by_email(email=email)
@@ -106,17 +133,13 @@ async def complete_email_verification(email: str, verification_code: str):
     user.status = "active"
     await user.save()
 
-    return {
-        "message": "이메일 인증이 완료되었습니다.",
-        "data": {
-            "email": user.email,
-            "email_verified": user.email_verified,
-        },
-    }
+    return EmailVerificationResponseDTO(email=user.email, email_verified=True)
 
 
 # 이메일 재인증 요청
-async def resend_verification_email_service(request: ResendEmailRequest):
+async def resend_verification_email_service(
+    request: ResendEmailRequest,
+) -> ResendEmailResponseDTO:
     user = await get_user_by_email(email=request.email)
     if not user:
         raise UserNotFoundException()
@@ -126,4 +149,12 @@ async def resend_verification_email_service(request: ResendEmailRequest):
 
     await send_email_code(email=user.email, purpose="이메일 재인증")
 
-    return {"message": "인증코드가 재전송되었습니다.", "data": {"email": user.email}}
+    return ResendEmailResponseDTO(success=True, email=user.email)
+
+
+# 이메일 중복 검사 함수
+async def check_email_duplicate(email: str) -> EmailCheckResponseDTO:
+    existing_user = await get_user_by_email(email=email)
+    if existing_user:
+        return EmailCheckResponseDTO(success=True, is_available=False)
+    return EmailCheckResponseDTO(success=True, is_available=True)

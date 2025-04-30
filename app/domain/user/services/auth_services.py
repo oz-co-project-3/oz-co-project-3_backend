@@ -18,7 +18,14 @@ from app.domain.services.social_account import (
     get_naver_access_token,
     get_naver_user_info,
 )
-from app.domain.user.models import BaseUser, Gender, SeekerStatus, UserTypeEnum
+from app.domain.user.models import (
+    BaseUser,
+    Gender,
+    SeekerStatus,
+    SignInEnum,
+    UserStatus,
+    UserTypeEnum,
+)
 from app.domain.user.repository import (
     create_base_user,
     create_seeker_profile,
@@ -26,11 +33,11 @@ from app.domain.user.repository import (
     get_user_by_id,
 )
 from app.domain.user.schema import (
-    LoginResponse,
     LoginResponseData,
+    LoginResponseDTO,
+    LogoutResponseDTO,
     RefreshTokenRequest,
-    RefreshTokenResponse,
-    RefreshTokenResponseData,
+    RefreshTokenResponseDTO,
 )
 from app.exceptions.auth_exceptions import (
     ExpiredRefreshTokenException,
@@ -60,7 +67,7 @@ async def verify_user_password(user: BaseUser, password: str):
 
 
 # 로그인
-async def login_user(email: str, password: str):
+async def login_user(email: str, password: str) -> LoginResponseDTO:
     user = await BaseUser.get_or_none(email=email)
 
     if not user:
@@ -81,31 +88,32 @@ async def login_user(email: str, password: str):
         f"refresh_token:{user.id}", refresh_token, ex=REFRESH_TOKEN_EXPIRE_SECONDS * 60
     )
 
-    return {
-        "message": "로그인 성공",
-        "data": {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "user_id": str(user.id),
-            "user_type": user.user_type
-            if isinstance(user.user_type, list)
-            else [user.user_type],
-            "email": user.email,
-        },
-    }
+    return LoginResponseDTO(
+        success=True,
+        data=LoginResponseData(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user_id=str(user.id),
+            user_type=[user.user_type],
+            email=user.email,
+            name=None,
+        ),
+    )
 
 
 # 로그아웃
-async def logout_user(user: BaseUser):
+async def logout_user(user: BaseUser) -> LogoutResponseDTO:
     refresh_deleted = await redis.delete(f"refresh_token:{user.id}")
     if refresh_deleted == 0:
         raise InvalidTokenException()
 
-    return {"message": "로그아웃이 완료되었습니다."}
+    return LogoutResponseDTO(
+        success=True,
+    )
 
 
 # 리프레쉬 토큰 발급
-async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResponse:
+async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResponseDTO:
     try:
         payload = jwt.decode(request.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
@@ -132,19 +140,16 @@ async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResp
         timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
 
-    return RefreshTokenResponse(
-        message="토큰이 갱신되었습니다.",
-        data=RefreshTokenResponseData(access_token=new_access_token),
-    )
+    return RefreshTokenResponseDTO(success=True, access_token=new_access_token)
 
 
 # 카카오/네이버 로그인
-async def kakao_login(code: str) -> LoginResponse:
-    access_token = await get_kakao_access_token(code)
-    kakao_info = await get_kakao_user_info(access_token)
+async def kakao_login(kakao_info: dict) -> LoginResponseDTO:
+    kakao_account = kakao_info.get("kakao_account", {})
+    profile = kakao_account.get("profile", {})
 
-    email = kakao_info["kakao_account"].get("email")
-    nickname = kakao_info["kakao_account"]["profile"].get("nickname") or "카카오유저"
+    email = kakao_account.get("email")
+    nickname = profile.get("nickname") or "카카오유저"
 
     user = await get_user_by_email(email=email)
 
@@ -152,9 +157,9 @@ async def kakao_login(code: str) -> LoginResponse:
         user = await create_base_user(
             email=email,
             password="kakao_social_login",
-            user_type=UserTypeEnum.NORMAL.value,  # 수정
-            signinMethod="kakao",  # 추가
-            status="active",
+            user_type=UserTypeEnum.NORMAL.value,
+            signinMethod=SignInEnum.Kakao.value,
+            status=UserStatus.ACTIVE.value,
             email_verified=True,
             gender=Gender.MALE,
         )
@@ -173,20 +178,20 @@ async def kakao_login(code: str) -> LoginResponse:
     access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
 
-    return LoginResponse(
-        message="소셜 로그인 성공",
+    return LoginResponseDTO(
+        success=True,
         data=LoginResponseData(
             access_token=access_token,
             refresh_token=refresh_token,
-            user_id=user.id,
-            user_type=user.user_type,
+            user_id=str(user.id),
+            user_type=[user.user_type],
             email=user.email,
             name=nickname,
         ),
     )
 
 
-async def naver_login(code: str, state: str) -> LoginResponse:
+async def naver_login(code: str, state: str) -> LoginResponseDTO:
     access_token = await get_naver_access_token(code, state)
     naver_info = await get_naver_user_info(access_token)
 
@@ -220,13 +225,13 @@ async def naver_login(code: str, state: str) -> LoginResponse:
     access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
 
-    return LoginResponse(
-        message="소셜 로그인 성공",
+    return LoginResponseDTO(
+        success=True,
         data=LoginResponseData(
             access_token=access_token,
             refresh_token=refresh_token,
-            user_id=user.id,
-            user_type=user.user_type,
+            user_id=str(user.id),
+            user_type=[user.user_type],
             email=user.email,
             name=nickname,
         ),
