@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
@@ -51,12 +53,6 @@ app.add_middleware(
     allow_headers=["*"],  # 모든 HTTP 헤더 허용
 )
 
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
 register_tortoise(
     app,
     config=TORTOISE_ORM,
@@ -106,3 +102,10 @@ def custom_openapi():
 
 
 app.openapi = custom_openapi
+
+
+logging.basicConfig(
+    level=logging.INFO,  # 출력할 최소 레벨: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)

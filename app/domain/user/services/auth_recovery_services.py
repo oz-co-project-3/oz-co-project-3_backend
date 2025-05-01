@@ -1,3 +1,5 @@
+import logging
+
 from passlib.hash import bcrypt
 
 from app.core.redis import redis
@@ -29,6 +31,8 @@ from app.exceptions.user_exceptions import (
     UserNotFoundException,
 )
 
+logger = logging.getLogger(__name__)
+
 
 # 이메일 마스킹 = 유틸로 안 넣고 리커버리 서비스 안에서 처리 (구조 변경 가능)
 def mask_email(email: str) -> str:
@@ -55,6 +59,7 @@ async def find_email(name: str, phone_number: str) -> FindEmailResponseDTO:
         if corp:
             email = corp.user.email
         else:
+            logger.warning(f"[CHECK] 유저를 찾을 수 없음 {name},{phone_number}")
             raise UserNotFoundException()
     # 이메일 마스킹 추가 = 04/29 중간점검 이후
     masked_email = mask_email(email)
@@ -69,6 +74,7 @@ async def find_password(
     # 해당 이메일로 BaseUser 조회
     user = await get_user_by_email(email=email)
     if not user:
+        logger.warning(f"[CHECK] 일반 유저를 찾을 수 없음 {name},{phone_number},{email}")
         raise UserNotFoundException()
 
     # user_type을 리스트 기준으로 확인
@@ -79,10 +85,12 @@ async def find_password(
             name=name, phone_number=phone_number
         )
     else:
+        logger.warning(f"[CHECK] 기업 유저를 찾을 수 없음 {name},{phone_number}")
         raise UserNotFoundException()
 
     # 프로필의 user_id와 이메일이 같은지 최종 체크
     if profile.user_id != user.id:
+        logger.warning(f"[CHECK] 유저를 찾을 수 없음 {name},{phone_number}")
         raise UserNotFoundException()
 
     # (여기까지 통과하면) 비밀번호 재설정 이메일 발송
@@ -96,18 +104,22 @@ async def reset_password(
     email: str, new_password: str, new_password_check: str
 ) -> ResetPasswordResponseDTO:
     if new_password != new_password_check:
+        logger.warning(f"[CHECK] 패스워드가 일치하지 않음:{new_password},{new_password_check}")
         raise PasswordMismatchException()
 
     if len(new_password) < 8 or not any(
         char in "!@#$%^&*()_+{}:<>?" for char in new_password
     ):
+        logger.warning(f"[CHECK] 패스워드 부적합 :{new_password}")
         raise PasswordInvalidException()
 
     user = await get_user_by_email(email)
     if not user:
+        logger.warning(f"[CHECK] 유저를 찾을 수 없음:{email}")
         raise UserNotFoundException()
 
     if bcrypt.verify(new_password, user.password):
+        logger.warning(f"[CHECK] 이전과 동일한 비밀번호 사용:{new_password}")
         raise PasswordPreviouslyUsedException()
 
     user.password = bcrypt.hash(new_password)

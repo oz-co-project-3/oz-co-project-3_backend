@@ -94,7 +94,7 @@ async def login_user(email: str, password: str) -> LoginResponseDTO:
             access_token=access_token,
             refresh_token=refresh_token,
             user_id=str(user.id),
-            user_type=[user.user_type],
+            user_type=user.user_type,
             email=user.email,
             name=None,
         ),

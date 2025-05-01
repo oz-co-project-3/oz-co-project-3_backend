@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Body, Depends, Query, Request, status
 from pydantic import BaseModel, EmailStr
 
@@ -13,8 +15,8 @@ from app.domain.services.social_account import (
 )
 from app.domain.user.models import BaseUser
 from app.domain.user.schema import (
+    BusinessUpgradeDTO,
     BusinessUpgradeRequest,
-    BusinessUpgradeResponseDTO,
     BusinessVerifyRequest,
     BusinessVerifyResponse,
     CorporateProfileUpdateRequest,
@@ -36,12 +38,12 @@ from app.domain.user.schema import (
     ResetPasswordResponseDTO,
     SeekerProfileUpdateRequest,
     SocialCallbackRequest,
+    UserDeleteDTO,
     UserDeleteRequest,
-    UserDeleteResponseDTO,
-    UserProfileResponseDTO,
     UserProfileUpdateResponseDTO,
     UserRegisterRequest,
     UserRegisterResponseDTO,
+    UserUnionResponseDTO,
     VerifyPasswordRequest,
 )
 from app.domain.user.services.auth_recovery_services import (
@@ -73,6 +75,8 @@ from app.exceptions.server_exceptions import UnknownUserTypeException
 
 router = APIRouter(prefix="/api/user", tags=["user"])
 
+logger = logging.getLogger(__name__)
+
 
 # 이메일 인증 요청 부분
 class EmailVerifyRequest(BaseModel):
@@ -92,13 +96,14 @@ class EmailVerifyRequest(BaseModel):
 """,
 )
 async def register(request: UserRegisterRequest):
+    logger.info(f"[API] 회원가입 요청(공통)")
     result = await register_user(request)
     return result
 
 
 @router.post(
     "/upgrade-to-business/",
-    response_model=BusinessUpgradeResponseDTO,
+    response_model=BusinessUpgradeDTO,
     status_code=status.HTTP_200_OK,
     summary="기업회원 업그레이드",
     description="""
@@ -109,6 +114,7 @@ async def register(request: UserRegisterRequest):
 async def upgrade_to_business_route(
     request: BusinessUpgradeRequest, current_user: BaseUser = Depends(get_current_user)
 ):
+    logger.info(f"[API] 기업회원 업그레이드 요청")
     result = await upgrade_to_business(current_user, request)
     return result
 
@@ -123,12 +129,13 @@ async def upgrade_to_business_route(
 """,
 )
 async def check_email(request: EmailCheckRequest):
+    logger.info(f"[API] 이메일 중복확인 요청")
     return await check_email_duplicate(request.email)
 
 
 @router.delete(
     "/withdrawal-user/",
-    response_model=UserDeleteResponseDTO,
+    response_model=UserDeleteDTO,
     status_code=status.HTTP_200_OK,
     summary="회원 탈퇴",
     description="""
@@ -139,9 +146,10 @@ async def delete_profile(
     request: UserDeleteRequest = Body(...),
     current_user: BaseUser = Depends(get_current_user),
 ):
+    logger.info(f"[API] 회원 탈퇴 요청")
     if not request.is_active:
         return await delete_user(current_user=current_user, password=request.password)
-    return UserDeleteResponseDTO(message="탈퇴 요청이 취소되었습니다.")
+    return "탈퇴 요청이 취소되었습니다."
 
 
 @router.post(
@@ -154,6 +162,7 @@ async def delete_profile(
 """,
 )
 async def find_email_route(request: FindEmailRequest):
+    logger.info(f"[API] 아이디(이메일)찾기 요청")
     return await find_email(name=request.name, phone_number=request.phone_number)
 
 
@@ -167,6 +176,7 @@ async def find_email_route(request: FindEmailRequest):
 """,
 )
 async def find_password_route(request: FindPasswordRequest):
+    logger.info(f"[API] 비밀번호 찾기 요청")
     return await find_password(
         name=request.name,
         phone_number=request.phone_number,
@@ -184,6 +194,7 @@ async def verify_password(
     request: VerifyPasswordRequest,
     current_user: BaseUser = Depends(get_current_user),
 ):
+    logger.info(f"[API] 현재 비밀번호 확인 요청")
     await verify_user_password(current_user, request.password)
     return {"message": "비밀번호가 확인되었습니다."}
 
@@ -201,6 +212,7 @@ async def verify_password(
 """,
 )
 async def reset_password_route(request: ResetPasswordRequest):
+    logger.info(f"[API] 비밀번호 재설정 요청")
     return await reset_password(
         email=request.email,
         new_password=request.new_password,
@@ -210,7 +222,7 @@ async def reset_password_route(request: ResetPasswordRequest):
 
 @router.get(
     "/profile/",
-    response_model=UserProfileResponseDTO,
+    response_model=UserUnionResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="로그인한 사용자 프로필 조회",
     description="""
@@ -220,10 +232,10 @@ async def reset_password_route(request: ResetPasswordRequest):
 """,
 )
 async def profile(
-    target_type: str = Query("normal"),
     current_user: BaseUser = Depends(get_current_user),
 ):
-    return await get_user_profile(current_user, target_type)
+    logger.info(f"[API] 사용자 프로필 조회 요청")
+    return await get_user_profile(current_user)
 
 
 @router.patch(
@@ -241,6 +253,7 @@ async def update_profile(
     target_type: str = Query("normal"),
     current_user: BaseUser = Depends(get_current_user),
 ):
+    logger.info(f"[API] 사용자 프로필 업데이트 요청(일반/기업)")
     body = await request.json()
 
     if target_type == "normal":
@@ -265,6 +278,7 @@ async def update_profile(
 """,
 )
 async def login(request: LoginRequest):
+    logger.info(f"[API] 사용자 로그인 요청")
     result = await login_user(email=request.email, password=request.password)
     return result
 
@@ -281,6 +295,7 @@ async def login(request: LoginRequest):
 """,
 )
 async def logout(current_user: BaseUser = Depends(get_current_user)):
+    logger.info(f"[API] 사용자 로그아웃 요청")
     await logout_user(current_user)
     return {"message": "로그아웃이 완료되었습니다."}
 
@@ -296,6 +311,7 @@ async def logout(current_user: BaseUser = Depends(get_current_user)):
 """,
 )
 async def refresh_token(request: RefreshTokenRequest):
+    logger.info(f"[API] 사용자 토큰 재요청")
     return await refresh_access_token(request)
 
 
@@ -310,6 +326,7 @@ async def refresh_token(request: RefreshTokenRequest):
 """,
 )
 async def verify_email(request: EmailVerifyRequest):
+    logger.info(f"[API] 사용자 이메일 인증 요청")
     return await complete_email_verification(
         email=request.email,
         verification_code=request.verification_code,
@@ -327,6 +344,7 @@ async def verify_email(request: EmailVerifyRequest):
 """,
 )
 async def resend_email_code(request: ResendEmailRequest):
+    logger.info(f"[API] 사용자 재인증 코드발송 요청")
     return await resend_verification_email_service(request)
 
 
@@ -343,6 +361,7 @@ async def resend_email_code(request: ResendEmailRequest):
 """,
 )
 async def business_verify(request: BusinessVerifyRequest):
+    logger.info(f"[API] 사업자 등록번호 검증 요청")
     return await verify_business_number(request.business_number)
 
 
@@ -353,6 +372,7 @@ async def business_verify(request: BusinessVerifyRequest):
     status_code=status.HTTP_200_OK,
 )
 async def get_kakao_auth_url():
+    logger.info(f"[API] 사용자 소셜 로그인(카카오) 요청")
     return await generate_kakao_auth_url()
 
 
@@ -368,6 +388,7 @@ async def get_kakao_auth_url():
     response_model=LoginResponseDTO,
 )
 async def kakao_callback(request: SocialCallbackRequest):
+    logger.info(f"[API] 사용자 소셜 로그인(카카오) 콜백 요청")
     access_token = await get_kakao_access_token(request.code)
     kakao_info = await get_kakao_user_info(access_token)
     result = await kakao_login(kakao_info)
@@ -381,6 +402,7 @@ async def kakao_callback(request: SocialCallbackRequest):
     status_code=status.HTTP_200_OK,
 )
 async def get_naver_auth_url():
+    logger.info(f"[API] 사용자 소셜 로그인(네이버) 요청")
     return await generate_naver_auth_url()
 
 
@@ -395,7 +417,8 @@ access_token으로 유저정보 조회 후 로그인 처리\n
 """,
     response_model=LoginResponseDTO,
 )
-async def naver_callback(request: SocialCallbackRequest):  # 🔁 schema 재사용!
+async def naver_callback(request: SocialCallbackRequest):
+    logger.info(f"[API] 사용자 소셜 로그인(네이버) 콜백 요청")
     access_token = await get_naver_access_token(request.code, request.state)
     naver_info = await get_naver_user_info(access_token)
     return await naver_login(naver_info, request.state)

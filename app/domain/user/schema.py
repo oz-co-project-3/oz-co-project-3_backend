@@ -3,7 +3,13 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.domain.user.models import Gender, SeekerStatus, SignInEnum, UserTypeEnum
+from app.domain.user.models import (
+    Gender,
+    SeekerStatus,
+    SignInEnum,
+    UserStatus,
+    UserTypeEnum,
+)
 
 
 class UserRegisterRequest(BaseModel):
@@ -13,15 +19,18 @@ class UserRegisterRequest(BaseModel):
     password_check: str
     phone_number: str
     birth: date
-    interests: List[str]
-    purposes: List[str]
-    sources: List[str]
-    status: SeekerStatus
-    gender: Gender
+    interests: str
+    purposes: str
+    sources: str
+    status: UserStatus
+    gender: Optional[str] = None
     signinMethod: SignInEnum
 
+    class Config:
+        from_attributes = True
 
-class UserRegisterResponseData(BaseModel):
+
+class UserRegisterResponseDTO(BaseModel):
     id: int
     email: EmailStr
     name: str
@@ -29,10 +38,19 @@ class UserRegisterResponseData(BaseModel):
     email_verified: bool
     created_at: datetime
 
+    class Config:
+        from_attributes = True
 
-class UserRegisterResponseDTO(BaseModel):
-    success: bool
-    data: UserRegisterResponseData
+
+class UserResponseDTO(BaseModel):
+    id: int
+    email: EmailStr
+    user_type: str
+    email_verified: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class BusinessUpgradeRequest(BaseModel):
@@ -42,48 +60,43 @@ class BusinessUpgradeRequest(BaseModel):
     manager_phone_number: str
     business_start_date: date
 
+    class Config:
+        from_attributes = True
 
-class BusinessUpgradeData(BaseModel):
+
+class BusinessUpgradeDTO(BaseModel):
     access_token: str
     refresh_token: str
     user_id: int
     user_type: str
     email: str
 
-
-class BusinessUpgradeResponseDTO(BaseModel):
-    success: bool
-    data: BusinessUpgradeData
+    class Config:
+        from_attributes = True
 
 
 # 구직자 프로필 조회 응답용
 class SeekerProfileResponse(BaseModel):
     id: int
-    email: EmailStr
-    user_type: UserTypeEnum
-    signin_method: Optional[str] = None
     name: str
     phone_number: str
     birth: Optional[date]
-    interests: List[str]
-    purposes: List[str]
-    sources: List[str]
+    interests: str
+    purposes: str
+    sources: str
     status: SeekerStatus
     is_social: bool
-    email_verified: bool
     applied_posting: List[int] = []
     applied_posting_count: int
-    created_at: datetime
-    updated_at: Optional[datetime] = None
     profile_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
 # 기업 회원용
 class CorporateProfileResponse(BaseModel):
     id: int
-    email: EmailStr
-    user_type: UserTypeEnum
-    signin_method: Optional[str] = None
     company_name: str
     business_number: str
     business_start_date: datetime
@@ -91,15 +104,26 @@ class CorporateProfileResponse(BaseModel):
     manager_name: str
     manager_phone_number: str
     manager_email: Optional[str] = None
-    email_verified: bool
-    created_at: datetime
+    gender: Optional[str] = None
     profile_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
 # 공통 Wrapper
-class UserProfileResponseDTO(BaseModel):
-    success: bool
-    data: Union["SeekerProfileResponse", "CorporateProfileResponse"]
+# class UserProfileResponseDTO(BaseModel):
+#     success: bool
+#     data: Union["SeekerProfileResponse", "CorporateProfileResponse"]
+
+
+class UserUnionResponseDTO(BaseModel):
+    base: UserResponseDTO
+    seeker: Optional[SeekerProfileResponse] = None
+    corp: Optional[CorporateProfileResponse] = None
+
+    class Config:
+        from_attributes = True
 
 
 class SeekerProfileUpdateRequest(BaseModel):
@@ -112,6 +136,9 @@ class SeekerProfileUpdateRequest(BaseModel):
     status: Optional[SeekerStatus] = None
     profile_url: Optional[str] = None
 
+    class Config:
+        from_attributes = True
+
 
 class CorporateProfileUpdateRequest(BaseModel):
     company_name: Optional[str] = None
@@ -120,6 +147,9 @@ class CorporateProfileUpdateRequest(BaseModel):
     manager_phone_number: Optional[str] = None
     manager_email: Optional[EmailStr] = None
     profile_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
 class SeekerProfileUpdateResponse(BaseModel):
@@ -132,6 +162,9 @@ class SeekerProfileUpdateResponse(BaseModel):
     interests: List[str]
     status: SeekerStatus
     profile_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
 class CorporateProfileUpdateResponse(BaseModel):
@@ -156,16 +189,11 @@ class UserDeleteRequest(BaseModel):
     reason: Optional[str] = None
 
 
-class UserDeleteData(BaseModel):
+class UserDeleteDTO(BaseModel):
     user_id: int
     email: str
     reason: Optional[str] = None
     deleted_at: datetime
-
-
-class UserDeleteResponseDTO(BaseModel):
-    success: bool
-    data: UserDeleteData
 
 
 class LoginRequest(BaseModel):
@@ -177,7 +205,7 @@ class LoginResponseData(BaseModel):
     access_token: str
     refresh_token: str
     user_id: str
-    user_type: List[UserTypeEnum]
+    user_type: str
     email: str
     name: Optional[str] = "소셜 유저"
 

@@ -1,16 +1,37 @@
 import os
 from datetime import datetime, timedelta
+from typing import Optional
 
 import jwt
 from dotenv import load_dotenv
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.security.utils import get_authorization_scheme_param
+from starlette.requests import Request
 
 from app.domain.user.models import BaseUser
-from app.exceptions.auth_exceptions import ExpiredTokenException, InvalidTokenException
+from app.exceptions.auth_exceptions import (
+    AuthRequiredException,
+    ExpiredTokenException,
+    InvalidTokenException,
+)
 
 load_dotenv()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login/")
+
+
+class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
+    async def __call__(self, request: Request) -> Optional[str]:
+        authorization = request.headers.get("Authorization")
+        scheme, param = get_authorization_scheme_param(authorization)
+        if not authorization or scheme.lower() != "bearer":
+            if self.auto_error:
+                raise AuthRequiredException()
+            else:
+                return None
+        return param
+
+
+oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl="/api/user/login/")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 1

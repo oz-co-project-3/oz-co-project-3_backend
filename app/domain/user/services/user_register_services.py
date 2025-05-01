@@ -1,3 +1,4 @@
+import logging
 import re
 from datetime import datetime
 from typing import Optional
@@ -14,13 +15,10 @@ from app.domain.user.repository import (
     get_user_by_email,
 )
 from app.domain.user.schema import (
-    BusinessUpgradeData,
+    BusinessUpgradeDTO,
     BusinessUpgradeRequest,
-    BusinessUpgradeResponseDTO,
-    UserDeleteData,
-    UserDeleteResponseDTO,
+    UserDeleteDTO,
     UserRegisterRequest,
-    UserRegisterResponseData,
     UserRegisterResponseDTO,
 )
 from app.exceptions.auth_exceptions import (
@@ -33,18 +31,23 @@ from app.exceptions.user_exceptions import (
     InvalidBusinessNumberException,
 )
 
+logger = logging.getLogger(__name__)
+
 
 async def register_user(request: UserRegisterRequest) -> UserRegisterResponseDTO:
     existing_user = await get_user_by_email(email=request.email)
     if existing_user:
+        logger.warning(f"[CHECK] 동일한 이메일 발견: {request.email}")
         raise DuplicateEmailException()
 
     if len(request.password) < 8 or not re.search(
         r"[!@#$%^&*(),.?\":{}|<>]", request.password
     ):
+        logger.warning(f"[CHECK] 부적절한 패스워드: {request.password}")
         raise InvalidPasswordException()
 
     if request.password != request.password_check:
+        logger.warning(f"[CHECK] 패스워드 같지 않음: {request.password}")
         raise PasswordMismatchException()
 
     hashed_password = bcrypt.hash(request.password)
@@ -92,29 +95,28 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponseDTO
     await send_email_code(email=base_user.email, purpose="회원가입")
 
     return UserRegisterResponseDTO(
-        success=True,
-        data=UserRegisterResponseData(
-            id=base_user.id,
-            email=base_user.email,
-            name=seeker_user.name,
-            user_type="normal",
-            email_verified=base_user.email_verified,
-            created_at=base_user.created_at,
-        ),
+        id=base_user.id,
+        email=base_user.email,
+        name=seeker_user.name,
+        user_type="normal",
+        email_verified=base_user.email_verified,
+        created_at=base_user.created_at,
     )
 
 
 # 기업회원 업그레이드
 async def upgrade_to_business(
     user: BaseUser, request: BusinessUpgradeRequest
-) -> BusinessUpgradeResponseDTO:
+) -> BusinessUpgradeDTO:
     # 이미 business 등록된 경우 막기
     if user.user_type == "business":
+        logger.warning(f"[CHECK] 이미 존재하는 비지니스 유저: {user.user_type}")
         raise AlreadyBusinessUserException()
 
     # 사업자번호 인증
     result = await verify_business_number(request.business_number)
     if not result.get("is_valid"):
+        logger.warning(f"[CHECK] 국세청에 등록되어 있지 않은 사업자 등록번호: {request.business_number}")
         raise InvalidBusinessNumberException()
 
     # CorporateUser 생성
@@ -134,22 +136,20 @@ async def upgrade_to_business(
     # 새 access_token, refresh_token 발급
     access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
 
-    return BusinessUpgradeResponseDTO(
-        success=True,
-        data=BusinessUpgradeData(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            user_id=user.id,
-            user_type=user.user_type,
-            email=user.email,
-        ),
+    return BusinessUpgradeDTO(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user_id=user.id,
+        user_type=user.user_type,
+        email=user.email,
     )
 
 
 async def delete_user(
     current_user: BaseUser, password: str, reason: Optional[str] = None
-) -> UserDeleteResponseDTO:
+) -> UserDeleteDTO:
     if not bcrypt.verify(password, current_user.password):
+        logger.warning(f"[CHECK] 패스워드 같지 않음: {password}")
         raise PasswordMismatchException()
 
     current_user.deleted_at = datetime.utcnow()
@@ -161,12 +161,9 @@ async def delete_user(
 
     await current_user.save()
 
-    return UserDeleteResponseDTO(
-        success=True,
-        data=UserDeleteData(
-            user_id=current_user.id,
-            email=current_user.email,
-            reason=current_user.reason,
-            deleted_at=current_user.deleted_at,
-        ),
+    return UserDeleteDTO(
+        user_id=current_user.id,
+        email=current_user.email,
+        reason=current_user.reason,
+        deleted_at=current_user.deleted_at,
     )

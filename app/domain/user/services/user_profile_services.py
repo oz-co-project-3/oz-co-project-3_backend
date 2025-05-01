@@ -1,3 +1,5 @@
+import logging
+
 from app.domain.job_posting.models import Applicants
 from app.domain.services.user_type_helper import split_user_types
 from app.domain.user.models import BaseUser
@@ -12,70 +14,33 @@ from app.domain.user.schema import (
     SeekerProfileResponse,
     SeekerProfileUpdateRequest,
     SeekerProfileUpdateResponse,
-    UserProfileResponseDTO,
     UserProfileUpdateResponseDTO,
+    UserRegisterRequest,
+    UserRegisterResponseDTO,
+    UserResponseDTO,
+    UserUnionResponseDTO,
 )
 from app.exceptions.server_exceptions import UnknownUserTypeException
 
+logger = logging.getLogger(__name__)
+
 
 # 프로필 조회
-async def get_user_profile(
-    current_user: BaseUser, target_type: str
-) -> UserProfileResponseDTO:
-    user_types = split_user_types(current_user.user_type)
+async def get_user_profile(current_user: BaseUser) -> UserUnionResponseDTO:
+    corp_profile = await get_corporate_profile_by_user(user=current_user)
+    seeker_profile = await get_seeker_profile_by_user(user=current_user)
 
-    if target_type == "business" and "business" in user_types:
-        profile = await get_corporate_profile_by_user(user=current_user)
-        return UserProfileResponseDTO(
-            success=True,
-            data=CorporateProfileResponse(
-                id=current_user.id,
-                email=current_user.email,
-                user_type=current_user.user_type,
-                company_name=profile.company_name,
-                business_number=profile.business_number,
-                business_start_date=profile.business_start_date,
-                company_description=profile.company_description,
-                manager_name=profile.manager_name,
-                manager_phone_number=profile.manager_phone_number,
-                manager_email=profile.manager_email,
-                email_verified=current_user.email_verified,
-                created_at=current_user.created_at,
-                updated_at=None,
-                profile_url=profile.profile_url,
-            ),
-        )
+    applied_qs = await Applicants.filter(user=current_user).order_by("-id").all()
+    applied_posting_ids = [a.job_posting_id for a in applied_qs]
 
-    elif target_type == "normal" and "normal" in user_types:
-        profile = await get_seeker_profile_by_user(user=current_user)
-        applied_qs = await Applicants.filter(user=current_user).order_by("-id").all()
-        applied_posting_ids = [a.job_posting_id for a in applied_qs]
+    seeker_profile.applied_posting = applied_posting_ids
+    seeker_profile.applied_posting_count = len(applied_posting_ids)
 
-        return UserProfileResponseDTO(
-            success=True,
-            data=SeekerProfileResponse(
-                id=current_user.id,
-                email=current_user.email,
-                user_type=current_user.user_type,
-                name=profile.name,
-                phone_number=profile.phone_number,
-                birth=profile.birth,
-                interests=profile.interests.split(",") if profile.interests else [],
-                purposes=profile.purposes.split(",") if profile.purposes else [],
-                sources=profile.sources.split(",") if profile.sources else [],
-                status=profile.status,
-                is_social=profile.is_social,
-                email_verified=current_user.email_verified,
-                applied_posting=applied_posting_ids,
-                applied_posting_count=len(applied_posting_ids),
-                created_at=current_user.created_at,
-                updated_at=None,
-                profile_url=profile.profile_url,
-            ),
-        )
-
-    else:
-        raise UnknownUserTypeException()
+    return UserUnionResponseDTO(
+        base=UserResponseDTO.from_orm(current_user),
+        seeker=SeekerProfileResponse.from_orm(seeker_profile),
+        corp=CorporateProfileResponse.from_orm(corp_profile),
+    )
 
 
 # 프로필 수정 일반 / 기업 유저 나누어서 작성

@@ -58,4 +58,3 @@ async def send_email_code(email: str, purpose: str) -> str:
         content += f"\n👇 아래 링크를 눌러 인증코드를 입력해주세요:\n{verify_link}"
 
     await asyncio.to_thread(send_email, email, subject, content)
-    return code
