@@ -6,7 +6,6 @@ from app.exceptions.auth_exceptions import PermissionDeniedException
 from app.exceptions.job_posting_exceptions import NotCorpUserException
 
 
-
 class JobPostingRepository:
     @staticmethod
     async def get_corporate_user_by_base_user(user: BaseUser) -> CorporateUser:
