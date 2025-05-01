@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, status
 from app.core.token import get_current_user
 from app.domain.applicant.schema import ApplicantResponse, ApplicantUpdate
 from app.domain.applicant.services import ApplicantService
-from app.domain.user.user_models import BaseUser, SeekerUser
+from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
 
-applicant_router = APIRouter(prefix="/applicants", tags=["applicants"])
+applicant_router = APIRouter(prefix="/api/applicants", tags=["applicants"])
 
 
 # 기업 특정 공고의 모든 지원자 조회
@@ -34,7 +34,7 @@ async def get_applicants_by_job_posting(
 
 # 기업 모든 공고의 전체 지원자 조회
 @applicant_router.get(
-    "/corporate/all/",
+    "/corporate/",
     response_model=List[ApplicantResponse],
     status_code=status.HTTP_200_OK,
     summary="모든 공고의 지원자 조회",
@@ -46,9 +46,9 @@ async def get_applicants_by_job_posting(
     """,
 )
 async def get_all_applicants_by_corporate_user(
-    current_user: BaseUser = Depends(get_current_user),
+    current_user: CorporateUser = Depends(get_current_user),
 ):
-    return await ApplicantService.get_all_applicants_by_corporate_user(current_user)
+    return await ApplicantService.get_all_applicants_by_corporate_user(current_user.id)
 
 
 # 구직자 지원한 모든 공고 조회
@@ -76,25 +76,3 @@ async def get_applicant_detail(
     applicant_id: int, current_user: BaseUser = Depends(get_current_user)
 ):
     return await ApplicantService.get_applicant_detail(current_user, applicant_id)
-
-
-# 구직자 지원 내역 수정
-@applicant_router.patch(
-    "/seeker/{applicant_id}/",
-    response_model=ApplicantResponse,
-    status_code=status.HTTP_200_OK,
-    summary="지원 내역 수정",
-    description="""
-구직자가 자신의 지원 내역을 수정합니다.
-- `200 OK`: 정상 응답
-- `401 Unauthorized`: 인증이 필요합니다 (`invalid_token`)
-- `403 Forbidden`: 작성자가 아닙니다 (`permission_denied`)
-- `404 Not Found`: 지원 내역을 찾을 수 없습니다 (`application_not_found`)
-    """,
-)
-async def update_application(
-    applicant_id: int,
-    data: ApplicantUpdate,
-    current_user: BaseUser = Depends(get_current_user),
-):
-    return await ApplicantService.update_application(current_user, applicant_id, data)

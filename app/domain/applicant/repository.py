@@ -1,7 +1,9 @@
 from typing import List
 
+from app.domain.applicant.schema import ApplicantResponse
+from app.domain.applicant.utils import format_applicant_response
 from app.domain.job_posting.models import Applicants, JobPosting
-from app.domain.user.user_models import BaseUser
+from app.domain.user.user_models import BaseUser, CorporateUser
 from app.exceptions.job_posting_exceptions import NotificationNotFoundException
 
 
@@ -30,9 +32,13 @@ class ApplicantRepository:
         corporate_user_id: int,
     ) -> List[Applicants]:
         """기업 사용자가 올린 모든 공고에 대한 지원자 조회"""
+        if not await JobPosting.filter(user_id=corporate_user_id).exists():
+            raise NotificationNotFoundException
+
         job_posting_ids = await JobPosting.filter(
             user_id=corporate_user_id
         ).values_list("id", flat=True)
+
         return (
             await Applicants.filter(job_posting_id__in=job_posting_ids)
             .prefetch_related("resume", "user", "job_posting")
@@ -49,34 +55,23 @@ class ApplicantRepository:
         if not applicants:
             raise NotificationNotFoundException()
 
-        return applicants
+        return await applicants
 
     @staticmethod
     async def get_applicant_by_id(applicant_id: int, user_id: int) -> Applicants:
         """특정 지원 내역 조회"""
-        return await ApplicantRepository._get_or_raise(
-            Applicants, id=applicant_id, user_id=user_id
-        )
+        return await Applicants.get_or_none(
+            id=applicant_id, user_id=user_id
+        ).prefetch_related("job_posting")
 
     @staticmethod
-    async def create_applicant(user_id: int, data: dict) -> Applicants:
-        """지원 내역 생성"""
-        existing_application = await Applicants.get_or_none(
-            user_id=user_id,
-            job_posting_id=data["job_posting_id"],
-            resume_id=data["resume_id"],
-        )
-        if existing_application:
-            raise ValueError("이미 해당 공고에 지원하셨습니다.")
+    async def get_applicant_detail(
+        user: BaseUser, applicant_id: int
+    ) -> ApplicantResponse:
+        """구직자용: 특정 지원 내역 상세 조회"""
+        applicant = await ApplicantRepository.get_applicant_by_id(applicant_id, user.id)
 
-        applicant = Applicants(user_id=user_id, **data)
-        await applicant.save()
-        return applicant
+        if not applicant:
+            raise NotificationNotFoundException
 
-    @staticmethod
-    async def update_applicant(applicant: Applicants, updated_data: dict) -> Applicants:
-        """지원 내역 수정"""
-        for field, value in updated_data.items():
-            setattr(applicant, field, value)
-        await applicant.save()
-        return applicant
+        return format_applicant_response(applicant)
