@@ -34,7 +34,6 @@ from app.domain.user.repository import (
     get_user_by_id,
 )
 from app.domain.user.schema import (
-    LoginResponseData,
     LoginResponseDTO,
     LogoutResponseDTO,
     RefreshTokenRequest,
