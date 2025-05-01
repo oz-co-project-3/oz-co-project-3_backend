@@ -3,26 +3,20 @@ import logging
 from fastapi import APIRouter, Depends, status
 
 from app.core.token import get_current_user
+from app.domain.resume.repository import ResumeRepository
 from app.domain.resume.schema import (
     PaginatedResumeResponse,
     ResumeRequestSchema,
     ResumeResponseSchema,
 )
 from app.domain.resume.service import ResumeService
+from app.domain.services.verification import check_existing
 from app.domain.user.user_models import BaseUser, SeekerUser
-from app.exceptions.auth_exceptions import PermissionDeniedException
+from app.exceptions.resume_exceptions import ResumeNotFoundException
 
 resume_router = APIRouter(prefix="/api/resume", tags=["resumes"])
 
 logger = logging.getLogger(__name__)
-
-
-async def get_seeker_user(current_user: BaseUser) -> SeekerUser:
-    seeker_user = await SeekerUser.get_or_none(user=current_user)
-    if not seeker_user:
-        logger.info(f"[API] 구직자 정보 없음 : BaseUser id={current_user.id}")
-        raise PermissionDeniedException
-    return seeker_user
 
 
 @resume_router.post(
@@ -38,10 +32,11 @@ async def get_seeker_user(current_user: BaseUser) -> SeekerUser:
 )
 async def create_resume(
     resume_data: ResumeRequestSchema,
-    current_user: SeekerUser = Depends(get_current_user),
+    current_user: BaseUser = Depends(get_current_user),
 ):
-    seeker_user = await get_seeker_user(current_user)
-    logger.info(f"[API] 이력서 생성 요청 : seeker_user_id={seeker_user.id}")
+    logger.info(f"[API] 이력서 생성 요청 : current_user_id={current_user.id}")
+    seeker_user = await ResumeRepository.get_seeker_user(current_user)
+    check_existing(seeker_user, ResumeNotFoundException)
     resume_data.user = seeker_user
     result = await ResumeService.create_resume_service(resume_data.model_dump())
     logger.info(f"[API] 이력서 생성 완료 : seeker_user_id={seeker_user.id}")
@@ -49,7 +44,7 @@ async def create_resume(
 
 
 @resume_router.get(
-    "/{user_id}/",
+    "/",
     response_model=PaginatedResumeResponse,
     status_code=status.HTTP_200_OK,
     summary="이력서 전체 조회",
@@ -61,12 +56,13 @@ async def create_resume(
 async def get_all_resumes(
     offset: int = 0,
     limit: int = 10,
-    current_user: SeekerUser = Depends(get_current_user),
+    current_user: BaseUser = Depends(get_current_user),
 ):
-    seeker_user = await get_seeker_user(current_user)
     logger.info(
-        f"[API] 이력서 전체 조회 요청 : seeker_user_id={seeker_user.id}, offset={offset}, limit={limit}"
+        f"[API] 이력서 전체 조회 요청 : current_user_id={current_user.id}, offset={offset}, limit={limit}"
     )
+    seeker_user = await ResumeRepository.get_seeker_user(current_user)
+    check_existing(seeker_user, ResumeNotFoundException)
     result = await ResumeService.get_all_resume_service(
         current_user=seeker_user, offset=offset, limit=limit
     )
@@ -87,12 +83,13 @@ async def get_all_resumes(
 )
 async def get_resume(
     resume_id: int,
-    current_user: SeekerUser = Depends(get_current_user),
+    current_user: BaseUser = Depends(get_current_user),
 ):
-    seeker_user = await get_seeker_user(current_user)
     logger.info(
-        f"[API] 이력서 상세 조회 요청 : resume_id={resume_id}, seeker_user_id={seeker_user.id}"
+        f"[API] 이력서 상세 조회 요청 : resume_id={resume_id}, current_user_id={current_user.id}"
     )
+    seeker_user = await ResumeRepository.get_seeker_user(current_user)
+    check_existing(seeker_user, ResumeNotFoundException)
     result = await ResumeService.get_resume_by_id_service(resume_id, seeker_user)
     logger.info(
         f"[API] 이력서 상세 조회 완료 : resume_id={resume_id}, seeker_user_id={seeker_user.id}"
@@ -115,12 +112,13 @@ async def get_resume(
 async def update_resume(
     resume_id: int,
     resume_data: ResumeRequestSchema,
-    current_user: SeekerUser = Depends(get_current_user),
+    current_user: BaseUser = Depends(get_current_user),
 ):
-    seeker_user = await get_seeker_user(current_user)
     logger.info(
-        f"[API] 이력서 수정 요청 : resume_id={resume_id}, seeker_user_id={seeker_user.id}"
+        f"[API] 이력서 수정 요청 : resume_id={resume_id}, current_user_id={current_user.id}"
     )
+    seeker_user = await ResumeRepository.get_seeker_user(current_user)
+    check_existing(seeker_user, ResumeNotFoundException)
     result = await ResumeService.update_resume_service(
         resume_id=resume_id, data=resume_data.model_dump(), current_user=seeker_user
     )
@@ -149,7 +147,8 @@ async def delete_resume(
     resume_id: int,
     current_user: SeekerUser = Depends(get_current_user),
 ):
-    seeker_user = await get_seeker_user(current_user)
+    seeker_user = await ResumeRepository.get_seeker_user(current_user)
+    check_existing(seeker_user, ResumeNotFoundException)
     logger.info(
         f"[API] 이력서 삭제 요청 : resume_id={resume_id}, seeker_user_id={seeker_user.id}"
     )

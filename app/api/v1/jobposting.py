@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Path
 
 from app.core.token import get_current_user
 from app.domain.job_posting.schema import (
@@ -33,14 +33,13 @@ async def create_job_posting(
     current_user: BaseUser = Depends(get_current_user),
 ):
     logger.info(f"[API] 구인 공고 작성 요청 : BaseUser id={current_user.id}")
-    corporate_user = await JobPostingService.get_corporate_user(current_user)
-    result = await JobPostingService.create_job_posting(corporate_user, data)
-    logger.info(f"[API] 구인 공고 작성 완료 : CorporateUser id={corporate_user.id}")
+    result = await JobPostingService.create_job_posting(current_user, data)
+    logger.info(f"[API] 구인 공고 작성 완료 : CorporateUser id={current_user.id}")
     return result
 
 
 @job_posting_router.get(
-    "/my_company/job_postings/",
+    "/",
     response_model=list[JobPostingSummaryResponse],
     summary="내 회사의 전체 공고 조회",
 )
@@ -55,7 +54,7 @@ async def get_my_company_job_postings(
 
 
 @job_posting_router.get(
-    "/post/{job_posting_id}/",
+    "/{job_posting_id}/",
     response_model=JobPostingResponse,
     status_code=200,
     summary="특정 공고 조회",
@@ -66,7 +65,9 @@ async def get_my_company_job_postings(
 """,
 )
 async def get_specific_job_posting(
-    job_posting_id: int,
+    job_posting_id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
     current_user: BaseUser = Depends(get_current_user),
 ):
     logger.info(
@@ -94,8 +95,10 @@ async def get_specific_job_posting(
 """,
 )
 async def patch_job_posting(
-    job_posting_id: int,
     updated_data: JobPostingCreateUpdate,
+    job_posting_id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
     current_user: BaseUser = Depends(get_current_user),
 ):
     logger.info(
@@ -122,7 +125,9 @@ async def patch_job_posting(
 """,
 )
 async def delete_job_posting_endpoint(
-    job_posting_id: int,
+    job_posting_id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
     current_user: BaseUser = Depends(get_current_user),
 ):
     logger.info(

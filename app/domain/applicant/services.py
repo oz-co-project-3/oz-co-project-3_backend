@@ -25,9 +25,6 @@ class ApplicantService:
         applicants = await ApplicantRepository.get_applicants_by_job_posting(
             job_posting_id
         )
-        if not applicants:
-            logger.warning(f"[APPLICANT-SERVICE] 공고ID {job_posting_id}에 대한 지원자가 없습니다.")
-            raise NotificationNotFoundException()
         return [format_applicant_response(app) for app in applicants]
 
     @staticmethod

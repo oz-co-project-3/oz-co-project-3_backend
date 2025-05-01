@@ -1,10 +1,16 @@
 from typing import List, Optional
 
 from app.domain.job_posting.models import JobPosting
-from app.domain.user.user_models import CorporateUser
+from app.domain.user.user_models import BaseUser, CorporateUser
+from app.exceptions.auth_exceptions import PermissionDeniedException
 
 
 class JobPostingRepository:
+    @staticmethod
+    async def get_corporate_user_by_base_user(user: BaseUser) -> CorporateUser:
+        corporate_user = await CorporateUser.get_or_none(user=user)
+        return corporate_user
+
     @staticmethod
     async def get_job_posting_by_id(job_posting_id: int) -> Optional[JobPosting]:
         return await JobPosting.get_or_none(id=job_posting_id)

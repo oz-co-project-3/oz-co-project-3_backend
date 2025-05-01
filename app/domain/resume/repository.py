@@ -1,9 +1,15 @@
 from typing import List, Optional
 
 from app.domain.resume.models import Resume, WorkExp
+from app.domain.user.user_models import BaseUser, SeekerUser
 
 
 class ResumeRepository:
+    @staticmethod
+    async def get_seeker_user(current_user: BaseUser) -> SeekerUser:
+        seeker_user = await SeekerUser.get_or_none(user=current_user)
+        return seeker_user
+
     @staticmethod
     async def create_resume(data: dict) -> Resume:
         return await Resume.create(**data)

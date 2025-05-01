@@ -3,8 +3,8 @@ from typing import Any, List, Optional
 
 from app.domain.resume.models import Resume, WorkExp
 from app.domain.resume.repository import ResumeRepository, WorkExpRepository
-from app.domain.resume.schema import ResumeResponseSchema, WorkExpResponseSchema
-from app.domain.services.verification import check_existing, check_superuser
+from app.domain.resume.schema import ResumeResponseSchema
+from app.domain.services.permission import check_author
 from app.domain.user.user_models import SeekerUser
 from app.exceptions.auth_exceptions import PermissionDeniedException
 from app.exceptions.resume_exceptions import (
@@ -13,15 +13,6 @@ from app.exceptions.resume_exceptions import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def serialize_resume(resume: Resume) -> ResumeResponseSchema:
-    return ResumeResponseSchema.from_orm(resume)
-
-
-def check_permission(resume: Resume, current_user: SeekerUser):
-    if not resume.user or resume.user.id != current_user.id:
-        check_superuser(current_user)
 
 
 class ResumeService:
@@ -42,7 +33,7 @@ class ResumeService:
 
         await resume.fetch_related("work_experiences")
 
-        return serialize_resume(resume)
+        return ResumeResponseSchema.from_orm(resume)
 
     @staticmethod
     async def get_resume_by_id_service(
@@ -52,14 +43,13 @@ class ResumeService:
         if not resume:
             logger.warning(f"[RESUME] 이력서 id {resume_id}를 찾을 수 없습니다.")
             raise ResumeNotFoundException()
-        await resume.fetch_related("user")
-        await resume.fetch_related("work_experiences")
+        await resume.fetch_related("user", "work_experiences")
         if resume.user.id != current_user.id:
             logger.warning(
                 f"[RESUME] 이력서 id {resume_id}에 대해 사용자 id {current_user.id}의 접근 권한이 없습니다."
             )
             raise PermissionDeniedException()
-        return serialize_resume(resume)
+        return ResumeResponseSchema.from_orm(resume)
 
     @staticmethod
     async def get_all_resume_service(
@@ -72,7 +62,10 @@ class ResumeService:
         total_count = await ResumeRepository.get_total_resume_count_by_user_id(
             current_user.id
         )
-        serialized = [serialize_resume(resume) for resume in resumes]
+        serialized = []
+        for resume in resumes:
+            await resume.fetch_related("user", "work_experiences")
+            serialized.append(ResumeResponseSchema.from_orm(resume))
         if total_count == 0:
             logger.warning()
         return {
@@ -90,6 +83,7 @@ class ResumeService:
         if not resume:
             logger.warning(f"[RESUME] 이력서 id {resume_id}를 찾을 수 없습니다.")
             raise ResumeNotFoundException()
+        await resume.fetch_related("user", "work_experiences")
         if resume.user.id != current_user.id:
             logger.warning(
                 f"[RESUME] 이력서 id {resume_id}의 수정 권한이 사용자 id {current_user.id}에게 없습니다."
@@ -103,8 +97,8 @@ class ResumeService:
             resume_id, updatable_fields
         )
         if updated_resume:
-            await updated_resume.fetch_related("work_experiences")
-            return serialize_resume(updated_resume)
+            await updated_resume.fetch_related("user", "work_experiences")
+            return ResumeResponseSchema.from_orm(updated_resume)
         else:
             logger.warning(f"[RESUME] 이력서 id {resume_id}의 업데이트에 실패했습니다.")
             raise ResumeNotFoundException()
@@ -115,7 +109,7 @@ class ResumeService:
         if not resume:
             logger.warning(f"[RESUME] 이력서 id {resume_id}를 찾을 수 없습니다.")
             raise ResumeNotFoundException()
-        check_permission(resume, current_user)
+        check_author(resume, current_user)
         deleted_work_exps = (
             await WorkExpRepository.delete_work_experiences_by_resume_id(resume_id)
         )

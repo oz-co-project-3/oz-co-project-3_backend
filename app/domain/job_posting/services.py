@@ -8,9 +8,11 @@ from app.domain.job_posting.schema import (
     JobPostingResponse,
     JobPostingSummaryResponse,
 )
+from app.domain.services.verification import check_existing
 from app.domain.user.user_models import BaseUser, CorporateUser
 from app.exceptions.auth_exceptions import PermissionDeniedException
 from app.exceptions.job_posting_exceptions import (
+    JobPostingNotFoundException,
     NotificationNotFoundException,
     SameTitleExistException,
 )
@@ -39,16 +41,6 @@ class JobPostingService:
         logger.info("[JOBPOSTING-SERVICE] validate_user_permissions 통과됨.")
 
     @staticmethod
-    async def get_corporate_user_by_base_user(user: BaseUser) -> CorporateUser:
-        corporate_user = await CorporateUser.get_or_none(user_id=user.id)
-        if not corporate_user:
-            logger.warning(
-                f"[JOBPOSTING-SERVICE] CorporateUser 조회 실패: user id={user.id}"
-            )
-            raise PermissionDeniedException()
-        return corporate_user
-
-    @staticmethod
     def format_job_posting_response(job_posting: JobPosting) -> JobPostingResponse:
         return JobPostingResponse.from_orm(job_posting)
 
@@ -56,11 +48,12 @@ class JobPostingService:
     async def create_job_posting(
         current_user: BaseUser, data: JobPostingCreateUpdate
     ) -> JobPostingResponse:
-        corporate_user = await JobPostingService.get_corporate_user_by_base_user(
+        corporate_user = await JobPostingRepository.get_corporate_user_by_base_user(
             current_user
         )
+        check_existing(corporate_user, JobPostingNotFoundException)
         job_posting = await JobPostingRepository.create_job_posting(
-            corporate_user, data.model_dump()
+            corporate_user=corporate_user, data=data.model_dump()
         )
         return JobPostingService.format_job_posting_response(job_posting)
 
@@ -101,15 +94,6 @@ class JobPostingService:
             )
             raise SameTitleExistException()
         logger.info("[JOBPOSTING-SERVICE] 제목 중복 없음")
-
-    @staticmethod
-    async def get_corporate_user(current_user: BaseUser) -> CorporateUser:
-        corporate_user = await CorporateUser.get_or_none(user_id=current_user.id)
-        if not corporate_user:
-            logger.warning(
-                f"[JOBPOSTING-SERVICE] CorporateUser 조회 실패: user id={current_user.id}"
-            )
-        return corporate_user
 
     @staticmethod
     async def get_job_postings_by_company_user(
