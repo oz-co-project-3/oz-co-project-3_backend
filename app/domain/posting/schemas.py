@@ -2,6 +2,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
+from app.domain.job_posting.models import ApplicantEnum
+
 
 class UserSchema(BaseModel):
     id: int
@@ -51,7 +53,7 @@ class JobPostingResponseDTO(BaseModel):
 
 class ApplicantCreateUpdateSchema(BaseModel):
     resume: int
-    status: str
+    status: ApplicantEnum
     memo: Optional[str] = None
 
     class Config:
@@ -63,7 +65,7 @@ class ApplicantResponseDTO(BaseModel):
     job_posting: JobPostingSchema
     resume: ResumeSchema
     user: UserSchema
-    status: str
+    status: ApplicantEnum
     memo: Optional[str]
 
     class Config:

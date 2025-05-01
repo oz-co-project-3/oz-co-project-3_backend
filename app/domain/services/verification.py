@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def check_superuser(current_user):
-    if not current_user.is_superuser:
+    if "admin" in current_user.user_type:
         logger.warning(f"[AUTH] 권한 없음: 관리자 아님 (user_id={current_user.id})")
         raise PermissionDeniedException()
 

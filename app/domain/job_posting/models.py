@@ -90,11 +90,12 @@ class Region(Model):
         table = "regions"
 
 
-class Applicants(TimestampMixin, Model):
-    class ApplicantEnum(str, Enum):
-        Applied = "지원 중"
-        Cancelled = "지원 취소"
+class ApplicantEnum(str, Enum):
+    Applied = "지원 중"
+    Cancelled = "지원 취소"
 
+
+class Applicants(TimestampMixin, Model):
     id = fields.IntField(pk=True)
     job_posting = fields.ForeignKeyField("models.JobPosting", related_name="applicants")
     resume = fields.ForeignKeyField("models.Resume", related_name="applicants_resume")

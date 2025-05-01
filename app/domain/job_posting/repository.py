@@ -9,7 +9,7 @@ from app.exceptions.job_posting_exceptions import NotCorpUserException
 class JobPostingRepository:
     @staticmethod
     async def get_corporate_user_by_base_user(user: BaseUser) -> CorporateUser:
-        if user.user_type == "seeker":
+        if "business" not in user.user_type:
             raise NotCorpUserException()
         corporate_user = await CorporateUser.get_or_none(user=user)
         return corporate_user
