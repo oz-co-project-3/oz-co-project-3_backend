@@ -59,9 +59,7 @@ async def get_all_applicants_by_corporate_user(
     current_user: CorporateUser = Depends(get_current_user),
 ):
     logger.info(f"[API] 기업 전체 공고 지원자 조회 요청 : BaseUser id={current_user.id}")
-    result = await ApplicantService.get_all_applicants_by_corporate_user(
-        current_user.id
-    )
+    result = await ApplicantService.get_all_applicants_by_corporate_user(current_user)
     logger.info(f"[API] 기업 전체 공고 지원자 조회 완료 : 응답 지원자 수={len(result)}")
     return result
 
