@@ -6,7 +6,7 @@ from app.domain.applicant.schema import ApplicantResponse
 from app.domain.applicant.utils import format_applicant_response
 from app.domain.job_posting.repository import JobPostingRepository
 from app.domain.job_posting.services import JobPostingService
-from app.domain.user.user_models import BaseUser, CorporateUser
+from app.domain.user.models import BaseUser, CorporateUser
 from app.exceptions.auth_exceptions import PermissionDeniedException
 from app.exceptions.job_posting_exceptions import NotificationNotFoundException
 

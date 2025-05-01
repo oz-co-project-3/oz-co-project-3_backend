@@ -22,7 +22,7 @@ class UserRegisterRequest(BaseModel):
     interests: str
     purposes: str
     sources: str
-    status: UserStatus
+    status: SeekerStatus
     gender: Optional[str] = None
     signinMethod: SignInEnum
 

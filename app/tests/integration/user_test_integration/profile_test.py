@@ -4,7 +4,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from passlib.hash import bcrypt
 
-from app.domain.user.user_models import BaseUser, SeekerUser
+from app.domain.user.models import BaseUser, SeekerUser
 from app.main import app
 
 

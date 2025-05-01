@@ -2,6 +2,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+from app.domain.user.models import UserStatus
 from app.domain.user.services.auth_services import login_user, logout_user
 from app.domain.user.services.email_services import (
     EmailVerifyRequest,
@@ -10,7 +11,6 @@ from app.domain.user.services.email_services import (
     verify_email_code,
 )
 from app.domain.user.services.user_register_services import check_email_duplicate
-from app.domain.user.user_models import UserStatus
 from app.domain.user.user_schema import LoginRequest
 from app.main import CustomException
 
