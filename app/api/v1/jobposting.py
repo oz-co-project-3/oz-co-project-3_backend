@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends
 
 from app.core.token import get_current_user
@@ -13,6 +15,7 @@ job_posting_router = APIRouter(
     prefix="/api/job_posting",
     tags=["job_posting"],
 )
+logger = logging.getLogger(__name__)
 
 
 @job_posting_router.post(
@@ -29,8 +32,11 @@ async def create_job_posting(
     data: JobPostingCreateUpdate,
     current_user: BaseUser = Depends(get_current_user),
 ):
+    logger.info(f"[API] 구인 공고 작성 요청 : BaseUser id={current_user.id}")
     corporate_user = await JobPostingService.get_corporate_user(current_user)
-    return await JobPostingService.create_job_posting(corporate_user, data)
+    result = await JobPostingService.create_job_posting(corporate_user, data)
+    logger.info(f"[API] 구인 공고 작성 완료 : CorporateUser id={corporate_user.id}")
+    return result
 
 
 @job_posting_router.get(
@@ -41,8 +47,11 @@ async def create_job_posting(
 async def get_my_company_job_postings(
     current_user: BaseUser = Depends(get_current_user),
 ):
+    logger.info(f"[API] 내 회사 전체 공고 조회 요청 : BaseUser id={current_user.id}")
     corporate_user = await JobPostingService.get_corporate_user(current_user)
-    return await JobPostingService.get_job_postings_by_company_user(corporate_user)
+    result = await JobPostingService.get_job_postings_by_company_user(corporate_user)
+    logger.info(f"[API] 내 회사 전체 공고 조회 완료 : CorporateUser id={corporate_user.id}")
+    return result
 
 
 @job_posting_router.get(
@@ -60,9 +69,15 @@ async def get_specific_job_posting(
     job_posting_id: int,
     current_user: BaseUser = Depends(get_current_user),
 ):
+    logger.info(
+        f"[API] 특정 공고 조회 요청 : job_posting_id={job_posting_id}, BaseUser id={current_user.id}"
+    )
     corporate_user = await JobPostingService.get_corporate_user(current_user)
     job_posting = await JobPostingService.get_specific_job_posting(
         corporate_user, job_posting_id
+    )
+    logger.info(
+        f"[API] 특정 공고 조회 완료 : job_posting_id={job_posting_id}, CorporateUser id={corporate_user.id}"
     )
     return job_posting
 
@@ -83,10 +98,17 @@ async def patch_job_posting(
     updated_data: JobPostingCreateUpdate,
     current_user: BaseUser = Depends(get_current_user),
 ):
+    logger.info(
+        f"[API] 구인 공고 수정 요청 : job_posting_id={job_posting_id}, BaseUser id={current_user.id}"
+    )
     corporate_user = await JobPostingService.get_corporate_user(current_user)
-    return await JobPostingService.patch_job_posting(
+    result = await JobPostingService.patch_job_posting(
         corporate_user, job_posting_id, updated_data
     )
+    logger.info(
+        f"[API] 구인 공고 수정 완료 : job_posting_id={job_posting_id}, CorporateUser id={corporate_user.id}"
+    )
+    return result
 
 
 @job_posting_router.delete(
@@ -103,6 +125,12 @@ async def delete_job_posting_endpoint(
     job_posting_id: int,
     current_user: BaseUser = Depends(get_current_user),
 ):
+    logger.info(
+        f"[API] 구인 공고 삭제 요청 : job_posting_id={job_posting_id}, BaseUser id={current_user.id}"
+    )
     corporate_user = await JobPostingService.get_corporate_user(current_user)
     await JobPostingService.delete_job_posting(corporate_user, job_posting_id)
+    logger.info(
+        f"[API] 구인 공고 삭제 완료 : job_posting_id={job_posting_id}, CorporateUser id={corporate_user.id}"
+    )
     return {"message": "공고가 삭제되었습니다."}
