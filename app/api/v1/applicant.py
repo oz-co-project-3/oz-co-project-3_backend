@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, status
 from app.core.token import get_current_user
 from app.domain.applicant.schema import ApplicantResponse, ApplicantUpdate
 from app.domain.applicant.services import ApplicantService
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
+from app.domain.user.models import BaseUser, CorporateUser, SeekerUser
 
 applicant_router = APIRouter(prefix="/api/applicants", tags=["applicants"])
 

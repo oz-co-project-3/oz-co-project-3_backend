@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from app.domain.resume.models import Resume, WorkExp
-from app.domain.user.user_models import BaseUser, SeekerUser
+from app.domain.user.models import BaseUser, SeekerUser
 
 
 class ResumeRepository:
