@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, Path, status
@@ -12,6 +13,7 @@ from app.domain.comment.services import (
 )
 from app.domain.user.models import BaseUser
 
+logger = logging.getLogger(__name__)
 comment_router = APIRouter(prefix="/api/free-board/{id}/comment", tags=["FreeBoard"])
 
 
@@ -34,6 +36,7 @@ async def create_comment(
     current_user: BaseUser = Depends(get_current_user),
     id: int = Path(..., gt=0, le=2147483647, description="comment ID (1 ~ 2147483647)"),
 ):
+    logger.info(f"[API] 댓글 생성 요청: user_id={current_user.id}, board_id={id}")
     return await create_comment_by_id_service(
         id=id, comment_data=comment, current_user=current_user
     )
@@ -56,6 +59,7 @@ async def get_list_comments(
     current_user: BaseUser = Depends(get_current_user),
     id: int = Path(..., gt=0, le=2147483647, description="comment ID (1 ~ 2147483647)"),
 ):
+    logger.info(f"[API] 댓글 전체 조회 요청: user_id={current_user.id}, board_id={id}")
     return await get_all_comments_service(id=id)
 
 
@@ -79,6 +83,7 @@ async def patch_comment(
         ..., gt=0, le=2147483647, description="comment ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(f"[API] 댓글 수정 요청: user_id={current_user.id}, comment_id={comment_id}")
     return await patch_comment_by_id_service(comment_data, comment_id, current_user)
 
 
@@ -100,5 +105,6 @@ async def delete_comment(
         ..., gt=0, le=2147483647, description="comment ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(f"[API] 댓글 삭제 요청: user_id={current_user.id}, comment_id={comment_id}")
     await delete_comment_by_id_service(comment_id, current_user)
     return {"message": "댓글이 삭제되었습니다."}

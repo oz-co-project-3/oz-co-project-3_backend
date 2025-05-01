@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, Path, Query, status
 
 from app.core.token import get_current_user
@@ -19,6 +21,8 @@ posting_router = APIRouter(
     prefix="/api/postings",
     tags=["postings"],
 )
+
+logger = logging.getLogger(__name__)
 
 
 @posting_router.get(
@@ -50,6 +54,9 @@ async def get_list_postings(
     limit: int = Query(10, description="페이지당 항목 수"),
     employ_method: str = Query("", description="근로 형태: 정규직, 계약직, 일용직, 프리랜서, 파견직"),
 ):
+    logger.info(
+        f"[API] 공고 전체 조회 요청 (search={search_keyword}, location={location}, position={position})"
+    )
     return await get_all_postings_service(
         search_keyword=search_keyword,
         location=location,
@@ -80,6 +87,7 @@ async def get_posting(
         ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(f"[API] 공고 상세 조회 요청: job_posting_id={id}")
     return await get_posting_by_id_service(id)
 
 
@@ -101,6 +109,7 @@ async def create_applicant(
         ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(f"[API] 공고 지원자 생성 요청: user_id={current_user.id}, job_posting_id={id}")
     return await create_applicant_service(id, current_user, applicant)
 
 
@@ -128,6 +137,9 @@ async def patch_posting_applicant(
         ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(
+        f"[API] 공고 지원자 수정 요청: user_id={current_user.id}, job_posting_id={id}, applicant_id={applicant_id}"
+    )
     return await patch_posting_applicant_by_id_service(
         id, current_user, patch_applicant, applicant_id
     )
