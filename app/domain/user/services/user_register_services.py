@@ -1,131 +1,155 @@
+import logging
 import re
 from datetime import datetime
 from typing import Optional
 
 from passlib.hash import bcrypt
 
-from app.domain.user.services.email_services import send_email_code
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
-from app.domain.user.user_schema import (
-    CompanyRegisterRequest,
-    CompanyRegisterResponse,
-    CompanyRegisterResponseData,
-    EmailCheckResponse,
+from app.core.token import create_jwt_tokens
+from app.domain.services.business_verify import verify_business_number
+from app.domain.services.email_detail import send_email_code
+from app.domain.user.models import BaseUser, CorporateUser
+from app.domain.user.repository import (
+    create_base_user,
+    create_seeker_profile,
+    get_user_by_email,
+)
+from app.domain.user.schema import (
+    BusinessUpgradeDTO,
+    BusinessUpgradeRequest,
+    UserDeleteDTO,
     UserRegisterRequest,
-    UserRegisterResponse,
-    UserRegisterResponseData,
+    UserRegisterResponseDTO,
 )
 from app.exceptions.auth_exceptions import (
     InvalidPasswordException,
     PasswordMismatchException,
 )
 from app.exceptions.email_exceptions import DuplicateEmailException
+from app.exceptions.user_exceptions import (
+    AlreadyBusinessUserException,
+    InvalidBusinessNumberException,
+)
+
+logger = logging.getLogger(__name__)
 
 
-async def register_user(request: UserRegisterRequest) -> UserRegisterResponse:
-    existing_user = await BaseUser.get_or_none(email=request.email)
+async def register_user(request: UserRegisterRequest) -> UserRegisterResponseDTO:
+    existing_user = await get_user_by_email(email=request.email)
     if existing_user:
+        logger.warning(f"[CHECK] 동일한 이메일 발견: {request.email}")
         raise DuplicateEmailException()
 
     if len(request.password) < 8 or not re.search(
         r"[!@#$%^&*(),.?\":{}|<>]", request.password
     ):
+        logger.warning(f"[CHECK] 부적절한 패스워드: {request.password}")
         raise InvalidPasswordException()
 
     if request.password != request.password_check:
+        logger.warning(f"[CHECK] 패스워드 같지 않음: {request.password}")
         raise PasswordMismatchException()
 
     hashed_password = bcrypt.hash(request.password)
 
-    base_user = await BaseUser.create(
+    base_user = await create_base_user(
         email=request.email,
         password=hashed_password,
-        user_type="seeker",
+        user_type="normal",
         gender=request.gender,
         is_superuser=False,
         status="pending",
+        signinMethod=request.signinMethod.value,
     )
 
-    seeker_user = await SeekerUser.create(
+    interests = (
+        ",".join(request.interests)
+        if isinstance(request.interests, list)
+        else request.interests
+    )
+    purposes = (
+        ",".join(request.purposes)
+        if isinstance(request.purposes, list)
+        else request.purposes
+    )
+    sources = (
+        ",".join(request.sources)
+        if isinstance(request.sources, list)
+        else request.sources
+    )
+
+    seeker_user = await create_seeker_profile(
         user=base_user,
         name=request.name,
         phone_number=request.phone_number,
         birth=request.birth,
         gender=request.gender,
-        interests=request.interests,
-        purposes=request.purposes,
-        sources=request.sources,
+        interests=interests,
+        purposes=purposes,
+        sources=sources,
         status=request.status,
         is_social=False,
     )
-    # 회원가입 성공 시 인증메일 전송
+
+    # 여기서 인증메일 발송
     await send_email_code(email=base_user.email, purpose="회원가입")
 
-    return UserRegisterResponse(
-        message="회원가입이 완료되었습니다.",
-        data=UserRegisterResponseData(
-            id=base_user.id,
-            email=base_user.email,
-            name=seeker_user.name,
-            user_type=base_user.user_type,
-            email_verified=base_user.email_verified,
-            created_at=base_user.created_at,
-        ),
+    return UserRegisterResponseDTO(
+        id=base_user.id,
+        email=base_user.email,
+        name=seeker_user.name,
+        user_type="normal",
+        email_verified=base_user.email_verified,
+        created_at=base_user.created_at,
     )
 
 
-async def register_company_user(
-    request: CompanyRegisterRequest,
-) -> CompanyRegisterResponse:
-    if len(request.password) < 8 or not re.search(
-        r"[!@#$%^&*(),.?\":{}|<>]", request.password
-    ):
-        raise InvalidPasswordException()
+# 기업회원 업그레이드
+async def upgrade_to_business(
+    user: BaseUser, request: BusinessUpgradeRequest
+) -> BusinessUpgradeDTO:
+    # 이미 business 등록된 경우 막기
+    if user.user_type == "business":
+        logger.warning(f"[CHECK] 이미 존재하는 비지니스 유저: {user.user_type}")
+        raise AlreadyBusinessUserException()
 
-    if request.password != request.password_check:
-        raise PasswordMismatchException()
-    hashed_password = bcrypt.hash(request.password)
-    base_user = await BaseUser.create(
-        email=request.email,
-        password=hashed_password,
-        user_type="business",
-        gender=request.gender,
-        status="pending",
-    )
+    # 사업자번호 인증
+    result = await verify_business_number(request.business_number)
+    if not result.get("is_valid"):
+        logger.warning(f"[CHECK] 국세청에 등록되어 있지 않은 사업자 등록번호: {request.business_number}")
+        raise InvalidBusinessNumberException()
 
-    corp_user = await CorporateUser.create(
-        user=base_user,
-        company_name=request.company_name,
+    # CorporateUser 생성
+    await CorporateUser.create(
+        user=user,
         business_number=request.business_number,
-        business_start_date=request.business_start_date,
-        company_description=request.company_description,
+        company_name=request.company_name,
         manager_name=request.manager_name,
         manager_phone_number=request.manager_phone_number,
-        manager_email=request.manager_email,
-        gender=request.gender,
+        business_start_date=request.business_start_date,
     )
 
-    # 회원가입 성공 시 인증메일 발송
-    await send_email_code(email=base_user.email, purpose="기업 회원가입")
+    # BaseUser user_type 업데이트 = array필드 모델 참조 (리스트였음)
+    user.user_type = "business,normal"
+    await user.save()
 
-    return CompanyRegisterResponse(
-        message="기업 회원가입이 완료되었습니다.",
-        data=CompanyRegisterResponseData(
-            id=base_user.id,
-            email=base_user.email,
-            company_name=corp_user.company_name,
-            manager_name=corp_user.manager_name,
-            user_type=base_user.user_type,
-            email_verified=base_user.email_verified,
-            created_at=base_user.created_at,
-        ),
+    # 새 access_token, refresh_token 발급
+    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
+
+    return BusinessUpgradeDTO(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user_id=user.id,
+        user_type=user.user_type,
+        email=user.email,
     )
 
 
 async def delete_user(
     current_user: BaseUser, password: str, reason: Optional[str] = None
-):
+) -> UserDeleteDTO:
     if not bcrypt.verify(password, current_user.password):
+        logger.warning(f"[CHECK] 패스워드 같지 않음: {password}")
         raise PasswordMismatchException()
 
     current_user.deleted_at = datetime.utcnow()
@@ -133,16 +157,13 @@ async def delete_user(
     current_user.status = "delete"
 
     if reason:
-        current_user.reason = reason  # 탈퇴 사유 추가
+        current_user.reason = reason
 
     await current_user.save()
 
-    return {"message": "회원 탈퇴가 완료되었습니다."}
-
-
-# 이메일 중복 검사 함수
-async def check_email_duplicate(email: str) -> EmailCheckResponse:
-    existing_user = await BaseUser.get_or_none(email=email)
-    if existing_user:
-        return EmailCheckResponse(message="이미 사용 중인 이메일입니다.", is_available=False)
-    return EmailCheckResponse(message="사용 가능한 이메일입니다.", is_available=True)
+    return UserDeleteDTO(
+        user_id=current_user.id,
+        email=current_user.email,
+        reason=current_user.reason,
+        deleted_at=current_user.deleted_at,
+    )

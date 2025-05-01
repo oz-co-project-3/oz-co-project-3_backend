@@ -12,7 +12,7 @@ from app.domain.job_posting.models import (
     StatusEnum,
 )
 from app.domain.resume.models import Resume, WorkExp
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
+from app.domain.user.models import BaseUser, CorporateUser, SeekerUser
 from app.main import app
 
 
@@ -36,7 +36,7 @@ async def access_token(client):
         user = await BaseUser.create(
             email="test@test.com",
             password=hashed_pw,
-            user_type="seeker",
+            user_type="normal",
             status="active",
             email_verified=True,
             is_superuser=True,
@@ -137,8 +137,8 @@ async def access_token(client):
             title="백엔드 개발자 채2용",
             location="서울 강남구",
             employment_type=EmploymentEnum.General,
-            employ_method=MethodEnum.Permanent,  # ✅ 이 필드도 누락 시 에러날 수 있음
-            work_time="09:00~18:00",  # ✅ 추가!
+            employ_method=MethodEnum.Permanent,
+            work_time="09:00~18:00",
             position="백엔드 개발자",
             history="경력 3년 이상",
             recruitment_count=2,

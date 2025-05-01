@@ -14,7 +14,7 @@ from app.domain.success_review.services import (
     get_success_review_by_id,
     patch_success_review_by_id,
 )
-from app.domain.user.user_models import SeekerUser
+from app.domain.user.models import SeekerUser
 
 success_review_router = APIRouter(prefix="/api/success-review", tags=["success-review"])
 

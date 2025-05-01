@@ -11,7 +11,7 @@ from app.domain.comment.services import (
     get_all_comments_service,
     patch_comment_by_id_service,
 )
-from app.domain.user.user_models import BaseUser
+from app.domain.user.models import BaseUser
 
 logger = logging.getLogger(__name__)
 comment_router = APIRouter(prefix="/api/free-board/{id}/comment", tags=["FreeBoard"])

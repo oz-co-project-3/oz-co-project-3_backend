@@ -33,7 +33,7 @@ from app.domain.admin.services.user_services import (
     get_user_by_id_service,
     patch_user_by_id_service,
 )
-from app.domain.user.user_models import BaseUser
+from app.domain.user.models import BaseUser
 
 admin_router = APIRouter(prefix="/api/admin", tags=["admin"])
 

@@ -5,7 +5,7 @@ from app.domain.resume.models import Resume, WorkExp
 from app.domain.resume.repository import ResumeRepository, WorkExpRepository
 from app.domain.resume.schema import ResumeResponseSchema
 from app.domain.services.permission import check_author
-from app.domain.user.user_models import SeekerUser
+from app.domain.user.models import SeekerUser
 from app.exceptions.auth_exceptions import PermissionDeniedException
 from app.exceptions.resume_exceptions import (
     ResumeDeleteFailedException,

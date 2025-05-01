@@ -11,8 +11,9 @@ from app.domain.resume.schema import (
 )
 from app.domain.resume.service import ResumeService
 from app.domain.services.verification import check_existing
-from app.domain.user.user_models import BaseUser, SeekerUser
+from app.domain.user.models import BaseUser, SeekerUser
 from app.exceptions.resume_exceptions import ResumeNotFoundException
+
 
 resume_router = APIRouter(prefix="/api/resume", tags=["resumes"])
 

@@ -15,6 +15,13 @@ def event_loop():
     loop.close()
 
 
+DB_NAME = "test_senior"
+DB_USER = "postgres"
+DB_PASSWORD = "your_password"
+DB_HOST = "localhost"
+DB_PORT = "5432"
+
+
 @pytest.fixture(scope="module", autouse=True)
 async def setup_test_db(event_loop):
     """테스트 데이터베이스를 설정합니다."""
@@ -28,7 +35,7 @@ async def setup_test_db(event_loop):
                 "app.domain.resume.models",
                 "app.domain.comment.models",
                 "app.domain.job_posting.models",
-                "app.domain.user.user_models",
+                "app.domain.user.models",
             ]
         },
     )

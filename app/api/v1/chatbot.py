@@ -11,7 +11,7 @@ from app.domain.chatbot.services import (
     get_all_chatbots_service,
     patch_chatbot_by_id_service,
 )
-from app.domain.user.user_models import BaseUser
+from app.domain.user.models import BaseUser
 
 logger = logging.getLogger(__name__)
 
