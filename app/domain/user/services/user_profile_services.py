@@ -15,8 +15,6 @@ from app.domain.user.schema import (
     SeekerProfileUpdateRequest,
     SeekerProfileUpdateResponse,
     UserProfileUpdateResponseDTO,
-    UserRegisterRequest,
-    UserRegisterResponseDTO,
     UserResponseDTO,
     UserUnionResponseDTO,
 )
@@ -30,16 +28,19 @@ async def get_user_profile(current_user: BaseUser) -> UserUnionResponseDTO:
     corp_profile = await get_corporate_profile_by_user(user=current_user)
     seeker_profile = await get_seeker_profile_by_user(user=current_user)
 
-    applied_qs = await Applicants.filter(user=current_user).order_by("-id").all()
-    applied_posting_ids = [a.job_posting_id for a in applied_qs]
+    if seeker_profile:
+        applied_qs = await Applicants.filter(user=current_user).order_by("-id").all()
+        applied_posting_ids = [a.job_posting_id for a in applied_qs]
 
-    seeker_profile.applied_posting = applied_posting_ids
-    seeker_profile.applied_posting_count = len(applied_posting_ids)
+        seeker_profile.applied_posting = applied_posting_ids
+        seeker_profile.applied_posting_count = len(applied_posting_ids)
 
     return UserUnionResponseDTO(
         base=UserResponseDTO.from_orm(current_user),
-        seeker=SeekerProfileResponse.from_orm(seeker_profile),
-        corp=CorporateProfileResponse.from_orm(corp_profile),
+        seeker=SeekerProfileResponse.from_orm(seeker_profile)
+        if seeker_profile
+        else None,
+        corp=CorporateProfileResponse.from_orm(corp_profile) if corp_profile else None,
     )
 
 

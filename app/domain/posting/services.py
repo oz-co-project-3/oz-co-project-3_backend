@@ -11,6 +11,7 @@ from app.domain.posting.repository import (
     patch_posting_applicant_by_id,
 )
 from app.domain.posting.schemas import (
+    ApplicantCreateUpdateSchema,
     ApplicantResponseDTO,
     JobPostingResponseDTO,
     PaginatedJobPostingsResponseDTO,
@@ -127,7 +128,7 @@ async def get_posting_by_id_service(id: int) -> JobPostingResponseDTO:
 
 
 async def create_applicant_service(
-    id: int, current_user: Any, applicant: Any
+    id: int, current_user: Any, applicant: ApplicantCreateUpdateSchema
 ) -> ApplicantResponseDTO:
     posting = await get_posting_query(id)
     check_existing(posting, JobPostingNotFoundException)

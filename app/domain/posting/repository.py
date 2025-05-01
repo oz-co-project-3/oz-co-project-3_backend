@@ -117,4 +117,10 @@ async def patch_posting_applicant_by_id(applicant, resume, patch_applicant):
 
     await applicant.save()
 
+    applicant = (
+        await Applicants.filter(id=applicant.id)
+        .select_related("job_posting", "resume", "user")
+        .first()
+    )
+
     return applicant
