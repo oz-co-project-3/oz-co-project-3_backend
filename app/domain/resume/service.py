@@ -53,10 +53,15 @@ class ResumeService:
         work_experiences = data.pop("work_experiences", [])
         resume = await Resume.create(**data)
 
-        # 경력 사항 생성
-        for work_exp in work_experiences:
-            work_exp["resume_id"] = resume.id
-            await WorkExp.create(**work_exp)
+        # 경력 사항 벌크 생성
+        if work_experiences:
+            work_exp_objects = []
+            for work_exp in work_experiences:
+                work_exp["resume_id"] = resume.id
+                work_exp_objects.append(WorkExp(**work_exp))
+
+            # 벌크 생성 실행
+            await WorkExp.bulk_create(work_exp_objects)
 
         await resume.fetch_related("work_experiences")
 
