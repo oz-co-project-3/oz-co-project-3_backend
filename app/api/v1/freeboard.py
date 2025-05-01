@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, Path, status
@@ -12,6 +13,8 @@ from app.domain.free_board.services import (
     patch_free_board_by_id_service,
 )
 from app.domain.user.user_models import BaseUser
+
+logger = logging.getLogger(__name__)
 
 free_board_router = APIRouter(prefix="/api/free-board", tags=["FreeBoard"])
 
@@ -34,6 +37,7 @@ async def create_free_board(
     free_board: FreeBoardCreateUpdate,
     current_user: BaseUser = Depends(get_current_user),
 ):
+    logger.info(f"[API] 자유게시판 글 생성 요청: user_id={current_user.id}")
     return await create_free_board_by_id_service(free_board, current_user)
 
 
@@ -48,6 +52,7 @@ async def create_free_board(
     """,
 )
 async def get_list_free_board(current_user: BaseUser = Depends(get_current_user)):
+    logger.info(f"[API] 자유게시판 전체 조회 요청: user_id={current_user.id}")
     return await get_all_free_board_service()
 
 
@@ -69,6 +74,7 @@ async def get_detail_free_board(
         ..., gt=0, le=2147483647, description="free_board ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(f"[API] 자유게시판 상세 조회 요청: user_id={current_user.id}, board_id={id}")
     return await get_free_board_by_id_service(id)
 
 
@@ -92,6 +98,7 @@ async def patch_free_board(
         ..., gt=0, le=2147483647, description="free_board ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(f"[API] 자유게시판 수정 요청: user_id={current_user.id}, board_id={id}")
     return await patch_free_board_by_id_service(id, free_board, current_user)
 
 
@@ -113,5 +120,6 @@ async def delete_free_board(
         ..., gt=0, le=2147483647, description="free_board ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(f"[API] 자유게시판 삭제 요청: user_id={current_user.id}, board_id={id}")
     await delete_free_board_by_id_service(id, current_user)
     return {"message": "삭제가 완료되었습니다."}
