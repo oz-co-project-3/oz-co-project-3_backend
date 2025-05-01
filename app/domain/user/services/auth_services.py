@@ -174,6 +174,10 @@ async def kakao_login(kakao_info: dict) -> LoginResponseDTO:
             status=SeekerStatus.SEEKING,
             is_social=True,
         )
+    else:
+        if SignInEnum.Kakao.value not in user.signinMethod:
+            user.signinMethod += ",Kakao"
+            await user.save()
 
     access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
@@ -204,9 +208,9 @@ async def naver_login(code: str, state: str) -> LoginResponseDTO:
         user = await create_base_user(
             email=email,
             password="naver_social_login",
-            user_type=UserTypeEnum.NORMAL.value,  # 수정
-            signinMethod="naver",  # 추가
-            status="active",
+            user_type=UserTypeEnum.NORMAL.value,
+            signinMethod=SignInEnum.Naver.value,
+            status=UserStatus.ACTIVE.value,
             email_verified=True,
             gender=Gender.MALE,
         )
@@ -221,6 +225,10 @@ async def naver_login(code: str, state: str) -> LoginResponseDTO:
             status=SeekerStatus.SEEKING,
             is_social=True,
         )
+    else:
+        if SignInEnum.Naver.value not in user.signinMethod:
+            user.signinMethod += ",Naver"
+            await user.save()
 
     access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
