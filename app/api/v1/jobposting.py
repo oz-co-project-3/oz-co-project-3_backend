@@ -8,7 +8,6 @@ from app.domain.job_posting.schema import (
 )
 from app.domain.job_posting.services import JobPostingService
 from app.domain.user.user_models import BaseUser, CorporateUser
-from app.exceptions.auth_exceptions import PermissionDeniedException
 
 job_posting_router = APIRouter(
     prefix="/api/job_posting",
@@ -16,13 +15,10 @@ job_posting_router = APIRouter(
 )
 
 
-async def get_corporate_user(
+async def get_corporate_user_dependency(
     current_user: BaseUser = Depends(get_current_user),
 ) -> CorporateUser:
-    corporate_user = await CorporateUser.get_or_none(user=current_user)
-    if not corporate_user:
-        raise PermissionDeniedException()
-    return corporate_user
+    return await JobPostingService.get_corporate_user(current_user)
 
 
 @job_posting_router.post(
@@ -37,9 +33,8 @@ async def get_corporate_user(
 )
 async def create_job_posting(
     data: JobPostingCreateUpdate,
-    current_user: BaseUser = Depends(get_current_user),
+    corporate_user: CorporateUser = Depends(get_corporate_user_dependency),
 ):
-    corporate_user = await get_corporate_user(current_user)
     return await JobPostingService.create_job_posting(corporate_user, data)
 
 
@@ -49,7 +44,7 @@ async def create_job_posting(
     summary="내 회사의 전체 공고 조회",
 )
 async def get_my_company_job_postings(
-    current_user: CorporateUser = Depends(get_corporate_user),
+    current_user: CorporateUser = Depends(get_corporate_user_dependency),
 ):
     return await JobPostingService.get_job_postings_by_company_user(current_user)
 
@@ -67,7 +62,7 @@ async def get_my_company_job_postings(
 )
 async def get_specific_job_posting(
     job_posting_id: int,
-    current_user: CorporateUser = Depends(get_corporate_user),
+    current_user: CorporateUser = Depends(get_corporate_user_dependency),
 ):
     job_posting = await JobPostingService.get_specific_job_posting(
         current_user, job_posting_id
@@ -89,7 +84,7 @@ async def get_specific_job_posting(
 async def patch_job_posting(
     job_posting_id: int,
     updated_data: JobPostingCreateUpdate,
-    current_user: CorporateUser = Depends(get_corporate_user),
+    current_user: CorporateUser = Depends(get_corporate_user_dependency),
 ):
     return await JobPostingService.patch_job_posting(
         current_user, job_posting_id, updated_data
@@ -108,7 +103,7 @@ async def patch_job_posting(
 )
 async def delete_job_posting_endpoint(
     job_posting_id: int,
-    current_user: CorporateUser = Depends(get_corporate_user),
+    current_user: CorporateUser = Depends(get_corporate_user_dependency),
 ):
     # CorporateUser 객체 자체를 전달
     await JobPostingService.delete_job_posting(current_user, job_posting_id)
