@@ -6,6 +6,7 @@ from fastapi.security import HTTPBearer
 from tortoise.contrib.fastapi import register_tortoise
 
 from app.api.v1.admin import admin_router
+from app.api.v1.applicant import applicant_router
 from app.api.v1.chatbot import chatbot_router
 from app.api.v1.comment import comment_router
 from app.api.v1.freeboard import free_board_router
@@ -35,6 +36,7 @@ app.include_router(posting_router)
 app.include_router(public_router)
 app.include_router(resume_router)
 app.include_router(image_upload_router)
+app.include_router(applicant_router)
 
 origins = [
     "http://localhost",
