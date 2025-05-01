@@ -22,16 +22,15 @@ CREATE TABLE IF NOT EXISTS "base_users" (
     "id" SERIAL NOT NULL PRIMARY KEY,
     "password" VARCHAR(80) NOT NULL,
     "email" VARCHAR(50) NOT NULL UNIQUE,
-    "user_type" VARCHAR(20) NOT NULL DEFAULT 'seeker',
+    "user_type" VARCHAR(50) NOT NULL,
+    "signinMethod" VARCHAR(50) NOT NULL,
     "status" VARCHAR(20) NOT NULL DEFAULT 'pending',
     "email_verified" BOOL NOT NULL DEFAULT False,
-    "is_superuser" BOOL NOT NULL DEFAULT False,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMPTZ,
     "gender" VARCHAR(10) NOT NULL,
     "leave_reason" TEXT
 );
-COMMENT ON COLUMN "base_users"."user_type" IS 'SEEKER: seeker\nBUSINESS: business';
 COMMENT ON COLUMN "base_users"."status" IS 'ACTIVE: active\nSUSPEND: suspend\nDELETE: delete\nPENDING: pending';
 COMMENT ON COLUMN "base_users"."gender" IS 'MALE: male\nFEMALE: female';
 CREATE TABLE IF NOT EXISTS "free_boards" (
@@ -47,17 +46,15 @@ CREATE TABLE IF NOT EXISTS "free_boards" (
 CREATE TABLE IF NOT EXISTS "corporate_users" (
     "id" SERIAL NOT NULL PRIMARY KEY,
     "company_name" VARCHAR(255) NOT NULL,
-    "business_start_date" TIMESTAMPTZ NOT NULL,
+    "business_start_date" DATE NOT NULL,
     "business_number" VARCHAR(20) NOT NULL UNIQUE,
     "company_description" TEXT,
     "manager_name" VARCHAR(100) NOT NULL,
     "manager_phone_number" VARCHAR(20) NOT NULL,
     "manager_email" VARCHAR(255) UNIQUE,
-    "gender" VARCHAR(10) NOT NULL,
     "profile_url" VARCHAR(255),
     "user_id" INT NOT NULL REFERENCES "base_users" ("id") ON DELETE CASCADE
 );
-COMMENT ON COLUMN "corporate_users"."gender" IS 'MALE: male\nFEMALE: female';
 CREATE TABLE IF NOT EXISTS "job_postings" (
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -104,7 +101,6 @@ CREATE TABLE IF NOT EXISTS "seeker_users" (
     "sources" VARCHAR(60),
     "applied_posting" VARCHAR(60),
     "applied_posting_count" INT NOT NULL DEFAULT 0,
-    "is_social" BOOL NOT NULL DEFAULT False,
     "status" VARCHAR(20) NOT NULL DEFAULT 'seeking',
     "profile_url" VARCHAR(255),
     "user_id" INT NOT NULL REFERENCES "base_users" ("id") ON DELETE CASCADE

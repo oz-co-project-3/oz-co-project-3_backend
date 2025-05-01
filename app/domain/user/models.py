@@ -74,7 +74,6 @@ class CorporateUser(models.Model):
     manager_name = fields.CharField(max_length=100, null=False)
     manager_phone_number = fields.CharField(max_length=20, null=False)
     manager_email = fields.CharField(max_length=255, null=True, unique=True)
-    gender = fields.CharEnumField(Gender, max_length=10, null=True)
     profile_url = fields.CharField(max_length=255, null=True)
 
     class Meta:
@@ -93,7 +92,6 @@ class SeekerUser(models.Model):
     sources = fields.CharField(max_length=60, null=True)
     applied_posting = fields.CharField(max_length=60, null=True)
     applied_posting_count = fields.IntField(null=False, default=0)
-    is_social = fields.BooleanField(default=False)
     status = fields.CharEnumField(
         SeekerStatus, max_length=20, default=SeekerStatus.SEEKING
     )
