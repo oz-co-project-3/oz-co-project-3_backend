@@ -1,9 +1,5 @@
-from typing import List
-
-from fastapi import Depends
 from tortoise.queryset import QuerySet
 
-from app.core.token import get_current_user
 from app.domain.job_posting.models import JobPosting
 from app.domain.job_posting.repository import JobPostingRepository
 from app.domain.job_posting.schema import (
@@ -37,10 +33,9 @@ class JobPostingService:
                 raise PermissionDeniedException()
 
     @staticmethod
-    async def get_corporate_user(
-        current_user: BaseUser = Depends(get_current_user),
-    ) -> CorporateUser:
-        corporate_user = await CorporateUser.get_or_none(user_id=current_user)
+    async def get_corporate_user_by_base_user(user: BaseUser) -> CorporateUser:
+        """BaseUser로부터 CorporateUser를 조회하는 메서드"""
+        corporate_user = await CorporateUser.get_or_none(user_id=user.id)
         if not corporate_user:
             raise PermissionDeniedException()
         return corporate_user
@@ -52,8 +47,13 @@ class JobPostingService:
 
     @staticmethod
     async def create_job_posting(
-        corporate_user: CorporateUser, data: JobPostingCreateUpdate
+        current_user: BaseUser, data: JobPostingCreateUpdate
     ) -> dict:
+        corporate_user = await JobPostingService.get_corporate_user_by_base_user(
+            current_user
+        )
+
+        # JobPosting 생성
         job_posting = await JobPostingRepository.create_job_posting(
             corporate_user=corporate_user, data=data.model_dump()
         )
@@ -98,6 +98,13 @@ class JobPostingService:
         existing_posting = await query.first()
         if existing_posting:
             raise SameTitleExistException()
+
+    @staticmethod
+    async def get_corporate_user(current_user: BaseUser) -> CorporateUser:
+        corporate_user = await CorporateUser.get_or_none(user_id=current_user.id)
+        if not corporate_user:
+            raise PermissionDeniedException
+        return corporate_user
 
     @staticmethod
     async def get_job_postings_by_company_user(
