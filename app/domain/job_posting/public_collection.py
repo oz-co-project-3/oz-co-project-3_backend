@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 
 from app.domain.job_posting.models import JobPosting
@@ -39,7 +40,7 @@ def map_status(status: str) -> StatusEnum:
 async def save_job_postings():
     # 외부 API 호출
     api_service = ExternalAPIService(
-        base_url="https://openapi.gg.go.kr", api_key="your_api_key_here"
+        base_url="https://openapi.gg.go.kr", api_key=os.getenv("API_KEY")
     )
     response = await api_service.get_data(endpoint="/Oldpsnslfjobbiz")
 
