@@ -11,7 +11,8 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
     "is_terminate" BOOL NOT NULL DEFAULT False,
     "selection_path" VARCHAR(50) NOT NULL,
     "options" VARCHAR(50),
-    "answer" VARCHAR(150)
+    "answer" VARCHAR(150),
+    "url" VARCHAR(255)
 );
 CREATE TABLE IF NOT EXISTS "regions" (
     "id" SERIAL NOT NULL PRIMARY KEY,
@@ -79,6 +80,7 @@ CREATE TABLE IF NOT EXISTS "job_postings" (
     "view_count" INT NOT NULL DEFAULT 0,
     "report" INT NOT NULL DEFAULT 0,
     "career" VARCHAR(10) NOT NULL DEFAULT '경력무관',
+    "image_url" VARCHAR(255),
     "user_id" INT NOT NULL REFERENCES "corporate_users" ("id") ON DELETE CASCADE
 );
 COMMENT ON COLUMN "job_postings"."employment_type" IS 'Public: 공공\nGeneral: 일반';
@@ -130,7 +132,7 @@ CREATE TABLE IF NOT EXISTS "resumes" (
     "name" VARCHAR(30) NOT NULL,
     "phone_number" VARCHAR(40) NOT NULL,
     "email" VARCHAR(50) NOT NULL,
-    "image_profile" VARCHAR(255),
+    "image_url" VARCHAR(255),
     "interests" VARCHAR(100),
     "desired_area" VARCHAR(50) NOT NULL,
     "education" VARCHAR(10),

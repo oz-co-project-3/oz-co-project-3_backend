@@ -7,7 +7,6 @@ from app.domain.posting.repository import (
     get_postings_query,
     get_resume_id_by_applicant_id,
     get_resume_query,
-    paginate_query,
     patch_posting_applicant_by_id,
 )
 from app.domain.posting.schemas import (
@@ -32,6 +31,7 @@ from app.exceptions.search_exceptions import (
     InvalidViewCountException,
     SearchKeywordTooLongException,
 )
+from app.utils.pagination import paginate_query
 
 VALID_EMPLOYMENT_TYPES = {"공공", "일반"}
 VALID_CAREER_TYPES = {"신입", "경력직", "경력무관"}
@@ -94,7 +94,7 @@ async def get_all_postings_service(
         view_count,
         employ_method,
     )
-    return await paginate_query(query, offset, limit)
+    return await paginate_query(query, offset, limit, JobPostingResponseDTO)
 
 
 async def get_posting_by_id_service(id: int) -> JobPostingResponseDTO:
@@ -115,14 +115,7 @@ async def create_applicant_service(
         applicant, current_user, resume, posting
     )
 
-    return ApplicantResponseDTO(
-        id=created_applicant["id"],
-        job_posting=created_applicant["job_posting_id"],
-        resume=created_applicant["resume_id"],
-        user=created_applicant["user_id"],
-        status=created_applicant["status"],
-        memo=created_applicant["memo"],
-    )
+    return created_applicant
 
 
 async def patch_posting_applicant_by_id_service(
@@ -147,11 +140,4 @@ async def patch_posting_applicant_by_id_service(
         applicant, resume, patch_applicant
     )
 
-    return ApplicantResponseDTO(
-        id=patch_applicant["id"],
-        job_posting=patch_applicant["job_posting_id"],
-        resume=patch_applicant["resume_id"],
-        user=patch_applicant["user_id"],
-        status=patch_applicant["status"],
-        memo=patch_applicant["memo"],
-    )
+    return patch_applicant
