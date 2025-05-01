@@ -24,8 +24,11 @@ logger = logging.getLogger(__name__)
     status_code=201,
     summary="구인 공고 작성",
     description="""
-`401` `code`: `invalid_token` 로그인이 필요합니다.
-`403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.
+`401` `code`: `invalid_token` 로그인이 필요합니다.\n
+`403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
+`404` `code`: `user_not_found` 해당 유저를 찾을수 없습니다\n
+`404` `code`: `not_corp_user` 비즈니스 유저가 아닙니다\n
+`422` : Unprocessable Entity
 """,
 )
 async def create_job_posting(
@@ -59,9 +62,10 @@ async def get_my_company_job_postings(
     status_code=200,
     summary="특정 공고 조회",
     description="""
-`401` `code`: `invalid_token` 로그인이 필요합니다.
-`403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.
-`404` `code`: `notification_not_found` 해당 공고를 찾을 수 없습니다.
+`401` `code`: `invalid_token` 로그인이 필요합니다.\n
+`403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
+`404` `code`: `notification_not_found` 해당 공고를 찾을 수 없습니다.\n
+`422` : Unprocessable Entity
 """,
 )
 async def get_specific_job_posting(
@@ -89,9 +93,10 @@ async def get_specific_job_posting(
     status_code=200,
     summary="구인 공고 수정",
     description="""
-`401` `code`: `invalid_token` 로그인이 필요합니다.
-`403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.
-`404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.
+`401` `code`: `invalid_token` 로그인이 필요합니다.\n
+`403` `code`: `permission_denied` 해당 작업을 수행할 권한이 없습니다.\n
+`404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.\n
+`422` : Unprocessable Entity
 """,
 )
 async def patch_job_posting(
@@ -119,9 +124,10 @@ async def patch_job_posting(
     status_code=200,
     summary="구인 공고 삭제",
     description="""
-`401` `code`: `invalid_token` 유효하지 않은 토큰입니다.
-`403` `code`: `permission_denied` 해당 작업을 처리할 권한이 없습니다.
-`404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.
+`401` `code`: `invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`: `permission_denied` 해당 작업을 처리할 권한이 없습니다.\n
+`404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.\n
+`422` : Unprocessable Entity
 """,
 )
 async def delete_job_posting_endpoint(

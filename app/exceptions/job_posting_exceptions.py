@@ -8,6 +8,11 @@ class JobPostingNotFoundException(CustomException):
         )
 
 
+class NotCorpUserException(CustomException):
+    def __init__(self):
+        super().__init__(status_code=404, code="not_corp_user", error="비즈니스 유저가 아닙니다.")
+
+
 class NotificationNotFoundException(CustomException):
     def __init__(self):
         super().__init__(
