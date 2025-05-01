@@ -196,7 +196,7 @@ async def verify_password(
 ):
     logger.info(f"[API] 현재 비밀번호 확인 요청")
     await verify_user_password(current_user, request.password)
-    return {"message": "비밀번호가 확인되었습니다."}
+    return MessageResponse(message="비밀번호가 확인되었습니다.")
 
 
 @router.post(
@@ -297,7 +297,7 @@ async def login(request: LoginRequest):
 async def logout(current_user: BaseUser = Depends(get_current_user)):
     logger.info(f"[API] 사용자 로그아웃 요청")
     await logout_user(current_user)
-    return {"message": "로그아웃이 완료되었습니다."}
+    return MessageResponse(message="로그아웃이 완료되었습니다.")
 
 
 @router.post(
