@@ -14,7 +14,6 @@ from app.domain.services.verification import check_existing
 from app.domain.user.models import BaseUser, SeekerUser
 from app.exceptions.resume_exceptions import ResumeNotFoundException
 
-
 resume_router = APIRouter(prefix="/api/resume", tags=["resumes"])
 
 logger = logging.getLogger(__name__)

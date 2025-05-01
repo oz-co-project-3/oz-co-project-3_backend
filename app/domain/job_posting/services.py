@@ -10,7 +10,6 @@ from app.domain.job_posting.schema import (
 )
 from app.domain.services.verification import check_existing
 from app.domain.user.models import BaseUser, CorporateUser
-
 from app.exceptions.auth_exceptions import PermissionDeniedException
 from app.exceptions.job_posting_exceptions import (
     JobPostingNotFoundException,
