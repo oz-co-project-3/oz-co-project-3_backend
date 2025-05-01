@@ -16,6 +16,7 @@ from app.exceptions.job_posting_exceptions import (
     NotificationNotFoundException,
     SameTitleExistException,
 )
+from app.exceptions.user_exceptions import UserNotFoundException
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class JobPostingService:
         corporate_user = await JobPostingRepository.get_corporate_user_by_base_user(
             current_user
         )
-        check_existing(corporate_user, JobPostingNotFoundException)
+        check_existing(corporate_user, UserNotFoundException)
         job_posting = await JobPostingRepository.create_job_posting(
             corporate_user=corporate_user, data=data.model_dump()
         )
