@@ -85,7 +85,20 @@ class JobPostingResponse(BaseModel):
 class JobPostingSummaryResponse(BaseModel):
     id: int
     title: str
+    location: str
+    employment_type: EmploymentEnum
+    employ_method: MethodEnum
+    position: str
+    history: Optional[str] = None
+    recruitment_count: int
+    education: str
+    deadline: str
+    salary: str
+    summary: Optional[str] = None
+    description: str
     status: StatusEnum
     created_at: datetime
+    view_count: int
+    report: int
 
     model_config = ConfigDict(from_attributes=True)

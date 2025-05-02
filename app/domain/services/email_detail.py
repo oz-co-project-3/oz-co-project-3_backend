@@ -50,10 +50,13 @@ async def send_email_code(email: str, purpose: str) -> str:
         f"※ 인증코드는 10분간 유효합니다.\n"
     )
 
+    URL_SCHEME = os.getenv("URL_SCHEME")
+    DOMAIN = os.getenv("DOMAIN")
+
     # 아이디 찾기 또는 비밀번호 찾기일 경우 링크 포함
     if purpose in ["아이디 찾기", "비밀번호 찾기"]:
         verify_link = (
-            f"https://your-frontend.com/verify-code?email={email}&purpose={purpose}"
+            f"{URL_SCHEME}://{DOMAIN}/reset-password/verify-code?email={email}"
         )
         content += f"\n👇 아래 링크를 눌러 인증코드를 입력해주세요:\n{verify_link}"
 

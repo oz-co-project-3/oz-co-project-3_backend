@@ -48,7 +48,7 @@ def create_token(data: dict, expires_delta: timedelta) -> str:
     return jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
 
 
-def create_jwt_tokens(user_id: str, user_type: str) -> tuple[str, str]:
+def create_jwt_tokens(user_id: int, user_type: str) -> tuple[str, str]:
     access_token = create_token(
         {"sub": str(user_id), "user_type": user_type},
         timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),

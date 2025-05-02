@@ -419,6 +419,4 @@ access_token으로 유저정보 조회 후 로그인 처리\n
 )
 async def naver_callback(request: SocialCallbackRequest):
     logger.info(f"[API] 사용자 소셜 로그인(네이버) 콜백 요청")
-    access_token = await get_naver_access_token(request.code, request.state)
-    naver_info = await get_naver_user_info(access_token)
-    return await naver_login(naver_info, request.state)
+    return await naver_login(request.code, request.state)

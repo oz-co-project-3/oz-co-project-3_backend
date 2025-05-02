@@ -13,6 +13,7 @@ from app.domain.resume.service import ResumeService
 from app.domain.services.verification import check_existing
 from app.domain.user.models import BaseUser, SeekerUser
 from app.exceptions.resume_exceptions import ResumeNotFoundException
+from app.exceptions.user_exceptions import UserNotFoundException
 
 resume_router = APIRouter(prefix="/api/resume", tags=["resumes"])
 
@@ -51,6 +52,7 @@ async def create_resume(
     description="""
 `401` `code`:`auth_required` 인증이 필요합니다.\n
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
+`404` `code`:`user_not_found` 유저가 없습니다\n
     """,
 )
 async def get_all_resumes(
@@ -62,7 +64,7 @@ async def get_all_resumes(
         f"[API] 이력서 전체 조회 요청 : current_user_id={current_user.id}, offset={offset}, limit={limit}"
     )
     seeker_user = await ResumeRepository.get_seeker_user(current_user)
-    check_existing(seeker_user, ResumeNotFoundException)
+    check_existing(seeker_user, UserNotFoundException)
     result = await ResumeService.get_all_resume_service(
         current_user=seeker_user, offset=offset, limit=limit
     )
