@@ -201,18 +201,13 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class LoginResponseData(BaseModel):
+class LoginResponseDTO(BaseModel):
     access_token: str
     refresh_token: str
     user_id: int
     user_type: str
     email: str
     name: Optional[str] = "소셜 유저"
-
-
-class LoginResponseDTO(BaseModel):
-    success: bool
-    data: LoginResponseData
 
 
 class LogoutResponseDTO(BaseModel):
@@ -232,7 +227,6 @@ class RefreshTokenRequest(BaseModel):
 
 
 class RefreshTokenResponseDTO(BaseModel):
-    success: bool
     access_token: str
 
 
