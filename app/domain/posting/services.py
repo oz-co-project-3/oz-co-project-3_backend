@@ -76,20 +76,26 @@ async def get_all_postings_service(
         )
         raise SearchKeywordTooLongException(50)
 
-    # employment_type, career, employ_method 값 검증
-    if employment_type and employment_type not in VALID_EMPLOYMENT_TYPES:
-        logger.warning(f"[SEARCH-TYPE] 허용되지 않는 employment_type : {employment_type}")
-        raise InvalidEmploymentTypeException()
-    if career and career not in VALID_CAREER_TYPES:
-        logger.warning(
-            f"[SEARCH-TYPE] 허용되지 않는 VALID_CAREER_TYPES : {VALID_CAREER_TYPES}"
-        )
-        raise InvalidCareerTypeException()
-    if employ_method and employ_method not in VALID_EMPLOY_METHODS:
-        logger.warning(
-            f"[SEARCH-TYPE] 허용되지 않는 VALID_EMPLOY_METHODS : {VALID_EMPLOY_METHODS}"
-        )
-        raise InvalidEmployMethodException()
+    if employment_type:
+        types = [t.strip() for t in employment_type.split(",")]
+        invalid_types = [t for t in types if t not in VALID_EMPLOYMENT_TYPES]
+        if invalid_types:
+            logger.warning(f"[SEARCH-TYPE] 허용되지 않는 employment_type : {invalid_types}")
+            raise InvalidEmploymentTypeException()
+
+    if career:
+        careers = [c.strip() for c in career.split(",")]
+        invalid_careers = [c for c in careers if c not in VALID_CAREER_TYPES]
+        if invalid_careers:
+            logger.warning(f"[SEARCH-TYPE] 허용되지 않는 career : {invalid_careers}")
+            raise InvalidCareerTypeException()
+
+    if employ_method:
+        methods = [m.strip() for m in employ_method.split(",")]
+        invalid_methods = [m for m in methods if m not in VALID_EMPLOY_METHODS]
+        if invalid_methods:
+            logger.warning(f"[SEARCH-TYPE] 허용되지 않는 employ_method : {invalid_methods}")
+            raise InvalidEmployMethodException()
 
     # view_count, offset, limit 범위 검증
     if view_count is not None and view_count < 0:
