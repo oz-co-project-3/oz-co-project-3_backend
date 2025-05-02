@@ -10,15 +10,12 @@ from app.domain.user.repository import (
 from app.domain.user.schema import (
     CorporateProfileResponse,
     CorporateProfileUpdateRequest,
-    CorporateProfileUpdateResponse,
     SeekerProfileResponse,
     SeekerProfileUpdateRequest,
-    SeekerProfileUpdateResponse,
-    UserProfileUpdateResponseDTO,
     UserResponseDTO,
     UserUnionResponseDTO,
 )
-from app.exceptions.server_exceptions import UnknownUserTypeException
+from app.exceptions.job_posting_exceptions import NotCorpUserException
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +45,9 @@ async def get_user_profile(current_user: BaseUser) -> UserUnionResponseDTO:
 # 구직자 유저
 async def update_seeker_profile(
     current_user: BaseUser, update_data: SeekerProfileUpdateRequest
-) -> UserProfileUpdateResponseDTO:
+) -> UserUnionResponseDTO:
     profile = await get_seeker_profile_by_user(user=current_user)
+    corp_profile = await get_corporate_profile_by_user(user=current_user)
 
     if update_data.name is not None:
         profile.name = update_data.name
@@ -82,27 +80,19 @@ async def update_seeker_profile(
 
     await profile.save()
 
-    seeker_data = SeekerProfileUpdateResponse(
-        id=current_user.id,
-        name=profile.name,
-        email=current_user.email,
-        phone_number=profile.phone_number,
-        birth=profile.birth,
-        interests=profile.interests.split(",")
-        if isinstance(profile.interests, str)
-        else profile.interests,
-        status=profile.status,
-        profile_url=profile.profile_url,
+    return UserUnionResponseDTO(
+        base=UserResponseDTO.from_orm(current_user),
+        seeker=SeekerProfileResponse.from_orm(profile) if profile else None,
+        corp=CorporateProfileResponse.from_orm(corp_profile) if corp_profile else None,
     )
-
-    return UserProfileUpdateResponseDTO(success=True, data=seeker_data)
 
 
 # 기업 유저
 async def update_corporate_profile(
     current_user: BaseUser, update_data: CorporateProfileUpdateRequest
-) -> UserProfileUpdateResponseDTO:
+) -> UserUnionResponseDTO:
     profile = await get_corporate_profile_by_user(user=current_user)
+    seeker_profile = await get_seeker_profile_by_user(user=current_user)
 
     if update_data.company_name is not None:
         profile.company_name = update_data.company_name
@@ -119,31 +109,24 @@ async def update_corporate_profile(
 
     await profile.save()
 
-    corp_data = CorporateProfileUpdateResponse(
-        id=current_user.id,
-        company_name=profile.company_name,
-        email=current_user.email,
-        company_description=profile.company_description,
-        manager_name=profile.manager_name,
-        manager_phone_number=profile.manager_phone_number,
-        manager_email=profile.manager_email,
-        profile_url=profile.profile_url,
+    return UserUnionResponseDTO(
+        base=UserResponseDTO.from_orm(current_user),
+        seeker=SeekerProfileResponse.from_orm(seeker_profile)
+        if seeker_profile
+        else None,
+        corp=CorporateProfileResponse.from_orm(profile) if profile else None,
     )
-
-    return UserProfileUpdateResponseDTO(success=True, data=corp_data)
 
 
 async def update_user_profile(
     current_user: BaseUser, update_data, target_type: str
-) -> UserProfileUpdateResponseDTO:
+) -> UserUnionResponseDTO:
     user_types = split_user_types(current_user.user_type)
 
-    if target_type == "normal" and "normal" in user_types:
-        return await update_seeker_profile(current_user, update_data)
-    elif target_type == "business" and "business" in user_types:
-        return await update_corporate_profile(current_user, update_data)
+    if target_type == "normal":
+        if "normal" in user_types:
+            return await update_seeker_profile(current_user, update_data)
     else:
-        logger.warning(
-            f"[CHECK] 잘못된 target_type 요청:{target_type} 유저 ID:{current_user.id}"
-        )
-        raise UnknownUserTypeException()
+        if "business" in user_types:
+            return await update_corporate_profile(current_user, update_data)
+        raise NotCorpUserException()

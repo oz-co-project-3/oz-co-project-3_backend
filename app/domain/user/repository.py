@@ -1,6 +1,12 @@
 from typing import Optional
 
 from app.domain.user.models import BaseUser, CorporateUser, SeekerUser
+from app.domain.user.schema import UserRegisterRequest
+
+
+async def check_duplicate_phone_number(request: UserRegisterRequest):
+    result = BaseUser.get_or_none(phone_number=request.phone_number)
+    return True if result else False
 
 
 async def get_user_by_email(email: str) -> Optional[BaseUser]:

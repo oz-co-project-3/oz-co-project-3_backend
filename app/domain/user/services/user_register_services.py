@@ -10,16 +10,23 @@ from app.domain.services.business_verify import verify_business_number
 from app.domain.services.email_detail import send_email_code
 from app.domain.user.models import BaseUser, CorporateUser
 from app.domain.user.repository import (
+    check_duplicate_phone_number,
     create_base_user,
     create_seeker_profile,
+    get_corporate_profile_by_user,
+    get_seeker_profile_by_user,
     get_user_by_email,
 )
 from app.domain.user.schema import (
     BusinessUpgradeDTO,
     BusinessUpgradeRequest,
+    CorporateProfileResponse,
+    SeekerProfileResponse,
     UserDeleteDTO,
     UserRegisterRequest,
     UserRegisterResponseDTO,
+    UserResponseDTO,
+    UserUnionResponseDTO,
 )
 from app.exceptions.auth_exceptions import (
     InvalidPasswordException,
@@ -28,17 +35,21 @@ from app.exceptions.auth_exceptions import (
 from app.exceptions.email_exceptions import DuplicateEmailException
 from app.exceptions.user_exceptions import (
     AlreadyBusinessUserException,
+    DuplicatePhoneNumberException,
     InvalidBusinessNumberException,
 )
 
 logger = logging.getLogger(__name__)
 
 
-async def register_user(request: UserRegisterRequest) -> UserRegisterResponseDTO:
+async def register_user(request: UserRegisterRequest) -> UserUnionResponseDTO:
     existing_user = await get_user_by_email(email=request.email)
     if existing_user:
         logger.warning(f"[CHECK] 동일한 이메일 발견: {request.email}")
         raise DuplicateEmailException()
+
+    if not check_duplicate_phone_number(request):
+        raise DuplicatePhoneNumberException()
 
     if len(request.password) < 8 or not re.search(
         r"[!@#$%^&*(),.?\":{}|<>]", request.password
@@ -78,7 +89,7 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponseDTO
         else request.sources
     )
 
-    seeker_user = await create_seeker_profile(
+    await create_seeker_profile(
         user=base_user,
         name=request.name,
         phone_number=request.phone_number,
@@ -94,13 +105,15 @@ async def register_user(request: UserRegisterRequest) -> UserRegisterResponseDTO
     # 여기서 인증메일 발송
     await send_email_code(email=base_user.email, purpose="회원가입")
 
-    return UserRegisterResponseDTO(
-        id=base_user.id,
-        email=base_user.email,
-        name=seeker_user.name,
-        user_type="normal",
-        email_verified=base_user.email_verified,
-        created_at=base_user.created_at,
+    corp_profile = await get_corporate_profile_by_user(user=base_user)
+    seeker_profile = await get_seeker_profile_by_user(user=base_user)
+
+    return UserUnionResponseDTO(
+        base=UserResponseDTO.from_orm(base_user),
+        seeker=SeekerProfileResponse.from_orm(seeker_profile)
+        if seeker_profile
+        else None,
+        corp=CorporateProfileResponse.from_orm(corp_profile) if corp_profile else None,
     )
 
 

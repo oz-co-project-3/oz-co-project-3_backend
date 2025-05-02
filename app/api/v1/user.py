@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 from fastapi import APIRouter, Body, Depends, Query, Request, status
 from pydantic import BaseModel, EmailStr
@@ -40,7 +41,6 @@ from app.domain.user.schema import (
     SocialCallbackRequest,
     UserDeleteDTO,
     UserDeleteRequest,
-    UserProfileUpdateResponseDTO,
     UserRegisterRequest,
     UserRegisterResponseDTO,
     UserUnionResponseDTO,
@@ -86,13 +86,14 @@ class EmailVerifyRequest(BaseModel):
 
 @router.post(
     "/register/",
-    response_model=UserRegisterResponseDTO,
+    response_model=UserUnionResponseDTO,
     status_code=status.HTTP_201_CREATED,
     summary="회원가입(공통)",
     description="""
 `400` `code`:`duplicate_email` : 이미 사용 중인 이메일입니다\n
 `400` `code`:`invalid_password` : 비밀번호 형식이 올바르지 않습니다\n
 `400` `code`:`password_mismatch` : 비밀번호와 비밀번호 확인이 일치하지 않습니다\n
+`422` : Unprocessable Entity
 """,
 )
 async def register(request: UserRegisterRequest):
@@ -240,7 +241,7 @@ async def profile(
 
 @router.patch(
     "/profile/update/",
-    response_model=UserProfileUpdateResponseDTO,
+    response_model=UserUnionResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="유저 프로필 수정 (일반/기업 통합)",
     description="""
@@ -249,17 +250,16 @@ async def profile(
 """,
 )
 async def update_profile(
-    request: Request,
+    body: Union[SeekerProfileUpdateRequest, CorporateProfileUpdateRequest] = Body(...),
     target_type: str = Query("normal"),
     current_user: BaseUser = Depends(get_current_user),
 ):
     logger.info(f"[API] 사용자 프로필 업데이트 요청(일반/기업)")
-    body = await request.json()
 
     if target_type == "normal":
-        update_data = SeekerProfileUpdateRequest(**body)
+        update_data = SeekerProfileUpdateRequest(**body.dict())
     elif target_type == "business":
-        update_data = CorporateProfileUpdateRequest(**body)
+        update_data = CorporateProfileUpdateRequest(**body.dict())
     else:
         raise UnknownUserTypeException()
 

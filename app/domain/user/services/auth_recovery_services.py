@@ -6,9 +6,7 @@ from app.core.redis import redis
 from app.domain.services.email_detail import send_email_code
 from app.domain.user.repository import (
     get_corporate_by_manager_name_and_phone,
-    get_corporate_profile_by_info,
     get_seeker_by_name_and_phone,
-    get_seeker_profile_by_info,
     get_user_by_email,
 )
 from app.domain.user.schema import (

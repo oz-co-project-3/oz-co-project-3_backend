@@ -57,3 +57,10 @@ class AlreadyBusinessUserException(CustomException):
             code="already_business_user",
             error="이미 기업회원으로 등록된 사용자입니다.",
         )
+
+
+class DuplicatePhoneNumberException(CustomException):
+    def __init__(self):
+        super().__init__(
+            status_code=400, code="duplicate_phone_number", error="이미 등록된 핸드폰 번호입니다."
+        )
