@@ -3,8 +3,6 @@ import os
 
 import httpx
 
-from app.exceptions.base_exceptions import CustomException
-
 
 # 카카오 url 이동
 async def generate_kakao_auth_url() -> dict:
@@ -50,7 +48,7 @@ async def get_kakao_user_info(access_token: str) -> dict:
 async def generate_naver_auth_url() -> dict:
     naver_client_id = os.getenv("NAVER_CLIENT_ID")
     redirect_uri = os.getenv("NAVER_REDIRECT_URI")
-    state = os.getenv("NAVER_STATE", "naver_login_test_2025")
+    state = "Test_login"
 
     url = (
         f"https://nid.naver.com/oauth2.0/authorize"
@@ -73,11 +71,9 @@ async def get_naver_access_token(code: str, state: str) -> str:
         "code": code,
         "state": state,
     }
-
-    async with httpx.AsyncClient() as client:
-        response = await client.post(url, data=payload)
-        response.raise_for_status()
-        return response.json()["access_token"]
+    response = await httpx.AsyncClient().post(url, data=payload)
+    response.raise_for_status()
+    return response.json()["access_token"]
 
 
 # 네이버 access_token으로 유저 정보 요청

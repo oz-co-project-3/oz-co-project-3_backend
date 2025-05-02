@@ -17,7 +17,7 @@ class JobPostingRepository:
 
     @staticmethod
     async def get_job_posting_by_id(job_posting_id: int) -> Optional[JobPosting]:
-        return await JobPosting.get_or_none(id=job_posting_id)
+        return await JobPosting.filter(id=job_posting_id).select_related("user").first()
 
     @staticmethod
     async def get_job_postings_by_user(
