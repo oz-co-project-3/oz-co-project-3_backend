@@ -11,9 +11,9 @@ class UserResponseDTO(BaseModel):
     id: int
     email: EmailStr
     user_type: str
+    signinMethod: str
     status: str
     email_verified: bool
-    is_superuser: bool
     created_at: datetime
     deleted_at: Optional[datetime] = None
     gender: str
@@ -32,7 +32,6 @@ class SeekerUserResponseSchema(BaseModel):
     sources: str
     applied_posting: Optional[str] = None
     applied_posting_count: int
-    is_social: bool
     status: str
 
     class Config:
@@ -48,7 +47,6 @@ class CorpUserResponseSchema(BaseModel):
     manager_name: str
     manager_phone_number: str
     manager_email: str
-    gender: str
 
     class Config:
         from_attributes = True

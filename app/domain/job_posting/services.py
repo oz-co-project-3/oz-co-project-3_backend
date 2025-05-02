@@ -24,21 +24,13 @@ logger = logging.getLogger(__name__)
 class JobPostingService:
     @staticmethod
     async def validate_user_permissions(
-        user: BaseUser, corporate_user: CorporateUser, job_posting: JobPosting = None
+        corporate_user: CorporateUser, job_posting: JobPosting = None
     ):
-        if not corporate_user:
-            logger.warning("[JOBPOSTING-SERVICE] CorporateUser가 존재하지 않음.")
+        if job_posting.user_id != corporate_user.id:
+            logger.warning(
+                f"[JOBPOSTING-SERVICE] 권한 없음: job_posting.user_id ({job_posting.user_id}) != corporate_user.user_id ({corporate_user.id})"
+            )
             raise PermissionDeniedException()
-        if job_posting:
-            if hasattr(job_posting, "first"):
-                job_posting = await job_posting.first()
-            if job_posting.user_id != corporate_user.id and not getattr(
-                user, "is_superuser", False
-            ):
-                logger.warning(
-                    f"[JOBPOSTING-SERVICE] 권한 없음: job_posting.user_id ({job_posting.user_id}) != corporate_user.id ({corporate_user.id})"
-                )
-                raise PermissionDeniedException()
         logger.info("[JOBPOSTING-SERVICE] validate_user_permissions 통과됨.")
 
     @staticmethod
@@ -70,9 +62,7 @@ class JobPostingService:
                 f"[JOBPOSTING-SERVICE] patch_job_posting 실패: JobPosting id {job_posting_id} not found."
             )
             raise NotificationNotFoundException()
-        await JobPostingService.validate_user_permissions(
-            corporate_user.user, corporate_user, job_posting
-        )
+        await JobPostingService.validate_user_permissions(corporate_user, job_posting)
         updated_fields = updated_data.model_dump(exclude_unset=True)
         if "title" in updated_fields:
             await JobPostingService._check_title_duplication(
@@ -127,8 +117,6 @@ class JobPostingService:
                 f"[JOBPOSTING-SERVICE] delete_job_posting 실패: JobPosting id {job_posting_id} not found."
             )
             raise NotificationNotFoundException()
-        await JobPostingService.validate_user_permissions(
-            corporate_user.user, corporate_user, job_posting
-        )
+        await JobPostingService.validate_user_permissions(corporate_user, job_posting)
         await JobPostingRepository.delete_job_posting(job_posting)
         return {"message": "구인 공고 삭제가 완료되었습니다.", "data": job_posting_id}

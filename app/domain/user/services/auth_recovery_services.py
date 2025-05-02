@@ -77,22 +77,6 @@ async def find_password(
         logger.warning(f"[CHECK] 일반 유저를 찾을 수 없음 {name},{phone_number},{email}")
         raise UserNotFoundException()
 
-    # user_type을 리스트 기준으로 확인
-    if user.user_type == "normal":
-        profile = await get_seeker_profile_by_info(name=name, phone_number=phone_number)
-    elif user.user_type == "business":
-        profile = await get_corporate_profile_by_info(
-            name=name, phone_number=phone_number
-        )
-    else:
-        logger.warning(f"[CHECK] 기업 유저를 찾을 수 없음 {name},{phone_number}")
-        raise UserNotFoundException()
-
-    # 프로필의 user_id와 이메일이 같은지 최종 체크
-    if profile.user_id != user.id:
-        logger.warning(f"[CHECK] 유저를 찾을 수 없음 {name},{phone_number}")
-        raise UserNotFoundException()
-
     # (여기까지 통과하면) 비밀번호 재설정 이메일 발송
     await send_email_code(email, "비밀번호 찾기")
 

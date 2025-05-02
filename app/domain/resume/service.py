@@ -66,8 +66,6 @@ class ResumeService:
         for resume in resumes:
             await resume.fetch_related("user", "work_experiences")
             serialized.append(ResumeResponseSchema.from_orm(resume))
-        if total_count == 0:
-            logger.warning()
         return {
             "total": total_count,
             "offset": offset,

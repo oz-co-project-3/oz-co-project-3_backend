@@ -13,8 +13,6 @@ from app.core.token import (
     create_token,
 )
 from app.domain.services.social_account import (
-    get_kakao_access_token,
-    get_kakao_user_info,
     get_naver_access_token,
     get_naver_user_info,
 )
@@ -82,7 +80,7 @@ async def login_user(email: str, password: str) -> LoginResponseDTO:
     # user_id + user_type 둘 다 넣어서 토큰 발급 = 프론트 요청사항
     user_type = user.user_type[0] if user.user_type else "normal"
 
-    access_token, refresh_token = create_jwt_tokens(str(user.id), user_type)
+    access_token, refresh_token = create_jwt_tokens(user.id, user_type)
 
     await redis.set(
         f"refresh_token:{user.id}", refresh_token, ex=REFRESH_TOKEN_EXPIRE_SECONDS * 60
@@ -93,7 +91,7 @@ async def login_user(email: str, password: str) -> LoginResponseDTO:
         data=LoginResponseData(
             access_token=access_token,
             refresh_token=refresh_token,
-            user_id=str(user.id),
+            user_id=user.id,
             user_type=user.user_type,
             email=user.email,
             name=None,
@@ -172,14 +170,13 @@ async def kakao_login(kakao_info: dict) -> LoginResponseDTO:
             purposes="",
             sources="",
             status=SeekerStatus.SEEKING,
-            is_social=True,
         )
     else:
         if SignInEnum.Kakao.value not in user.signinMethod:
             user.signinMethod += ",Kakao"
             await user.save()
 
-    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
+    access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
 
     return LoginResponseDTO(
@@ -187,8 +184,8 @@ async def kakao_login(kakao_info: dict) -> LoginResponseDTO:
         data=LoginResponseData(
             access_token=access_token,
             refresh_token=refresh_token,
-            user_id=str(user.id),
-            user_type=[user.user_type],
+            user_id=user.id,
+            user_type=user.user_type,
             email=user.email,
             name=nickname,
         ),
@@ -223,14 +220,13 @@ async def naver_login(code: str, state: str) -> LoginResponseDTO:
             purposes="",
             sources="",
             status=SeekerStatus.SEEKING,
-            is_social=True,
         )
     else:
         if SignInEnum.Naver.value not in user.signinMethod:
             user.signinMethod += ",Naver"
             await user.save()
 
-    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
+    access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
 
     return LoginResponseDTO(
@@ -238,8 +234,8 @@ async def naver_login(code: str, state: str) -> LoginResponseDTO:
         data=LoginResponseData(
             access_token=access_token,
             refresh_token=refresh_token,
-            user_id=str(user.id),
-            user_type=[user.user_type],
+            user_id=user.id,
+            user_type=user.user_type,
             email=user.email,
             name=nickname,
         ),
