@@ -3,6 +3,7 @@ from typing import Optional
 from tortoise.expressions import Q
 
 from app.domain.job_posting.models import Applicants, JobPosting
+from app.domain.posting.schemas import JobPostingResponseDTO
 from app.domain.resume.models import Resume
 
 
@@ -81,46 +82,6 @@ async def get_postings_query(
     return query
 
 
-async def paginate_query(query, offset: int, limit: int):
-    total = await query.count()
-    start = offset * limit
-    raw_results = await query.offset(start).limit(limit)
-
-    results = [
-        {
-            "id": item.id,
-            "user": {
-                "id": item.user.id,
-            },
-            "company": item.company,
-            "title": item.title,
-            "location": item.location,
-            "employment_type": item.employment_type,
-            "employ_method": item.employ_method,
-            "work_time": item.work_time,
-            "position": item.position,
-            "history": item.history,
-            "recruitment_count": item.recruitment_count,
-            "education": item.education,
-            "deadline": item.deadline,
-            "salary": item.salary,
-            "summary": item.summary,
-            "description": item.description,
-            "status": item.status,
-            "view_count": item.view_count,
-            "report": item.report,
-        }
-        for item in raw_results
-    ]
-
-    return {
-        "total": total,
-        "offset": offset,
-        "limit": limit,
-        "data": results,
-    }
-
-
 async def get_posting_query(id):
     return await JobPosting.filter(pk=id).select_related("user").first()
 
@@ -146,14 +107,7 @@ async def create_posting_applicant(applicant, current_user, resume, posting):
         job_posting=posting,
         user=current_user,
     )
-    return {
-        "id": applicant.id,
-        "job_posting_id": applicant.job_posting_id,
-        "resume_id": applicant.resume_id,
-        "user_id": applicant.user_id,
-        "status": applicant.status,
-        "memo": applicant.memo,
-    }
+    return applicant
 
 
 async def patch_posting_applicant_by_id(applicant, resume, patch_applicant):
@@ -163,11 +117,10 @@ async def patch_posting_applicant_by_id(applicant, resume, patch_applicant):
 
     await applicant.save()
 
-    return {
-        "id": applicant.id,
-        "job_posting_id": applicant.job_posting_id,
-        "resume_id": applicant.resume_id,
-        "user_id": applicant.user_id,
-        "status": applicant.status,
-        "memo": applicant.memo,
-    }
+    applicant = (
+        await Applicants.filter(id=applicant.id)
+        .select_related("job_posting", "resume", "user")
+        .first()
+    )
+
+    return applicant

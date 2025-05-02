@@ -6,7 +6,7 @@ from passlib.handlers.bcrypt import bcrypt
 
 from app.domain.comment.models import Comment
 from app.domain.free_board.models import FreeBoard
-from app.domain.user.user_models import BaseUser, CorporateUser, SeekerUser
+from app.domain.user.models import BaseUser, CorporateUser, SeekerUser
 from app.main import app
 
 

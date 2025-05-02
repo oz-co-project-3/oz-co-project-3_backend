@@ -1,28 +1,22 @@
-from typing import List
+import logging
 
 from fastapi import APIRouter, Depends, status
 
 from app.core.token import get_current_user
+from app.domain.resume.repository import ResumeRepository
 from app.domain.resume.schema import (
     PaginatedResumeResponse,
     ResumeRequestSchema,
     ResumeResponseSchema,
 )
 from app.domain.resume.service import ResumeService
-from app.domain.user.user_models import BaseUser, SeekerUser
-from app.exceptions.auth_exceptions import (
-    InvalidTokenException,
-    PermissionDeniedException,
-)
+from app.domain.services.verification import check_existing
+from app.domain.user.models import BaseUser, SeekerUser
+from app.exceptions.resume_exceptions import ResumeNotFoundException
 
 resume_router = APIRouter(prefix="/api/resume", tags=["resumes"])
 
-
-async def get_seeker_user(current_user: BaseUser) -> SeekerUser:
-    seeker_user = await SeekerUser.get_or_none(user=current_user)
-    if not seeker_user:
-        raise PermissionDeniedException
-    return seeker_user
+logger = logging.getLogger(__name__)
 
 
 @resume_router.post(
@@ -38,20 +32,19 @@ async def get_seeker_user(current_user: BaseUser) -> SeekerUser:
 )
 async def create_resume(
     resume_data: ResumeRequestSchema,
-    current_user: SeekerUser = Depends(get_current_user),
+    current_user: BaseUser = Depends(get_current_user),
 ):
-    seeker_user = await get_seeker_user(current_user)
+    logger.info(f"[API] 이력서 생성 요청 : current_user_id={current_user.id}")
+    seeker_user = await ResumeRepository.get_seeker_user(current_user)
+    check_existing(seeker_user, ResumeNotFoundException)
     resume_data.user = seeker_user
-    """
-    이력서를 생성합니다.
-
-    - 필수 입력 필드를 모두 작성해야 성공적으로 생성됩니다.
-    """
-    return await ResumeService.create_resume_service(resume_data.model_dump())
+    result = await ResumeService.create_resume_service(resume_data.model_dump())
+    logger.info(f"[API] 이력서 생성 완료 : seeker_user_id={seeker_user.id}")
+    return result
 
 
 @resume_router.get(
-    "/{user_id}/",
+    "/",
     response_model=PaginatedResumeResponse,
     status_code=status.HTTP_200_OK,
     summary="이력서 전체 조회",
@@ -63,12 +56,18 @@ async def create_resume(
 async def get_all_resumes(
     offset: int = 0,
     limit: int = 10,
-    current_user: SeekerUser = Depends(get_current_user),
+    current_user: BaseUser = Depends(get_current_user),
 ):
-    seeker_user = await get_seeker_user(current_user)
-    return await ResumeService.get_all_resume_service(
+    logger.info(
+        f"[API] 이력서 전체 조회 요청 : current_user_id={current_user.id}, offset={offset}, limit={limit}"
+    )
+    seeker_user = await ResumeRepository.get_seeker_user(current_user)
+    check_existing(seeker_user, ResumeNotFoundException)
+    result = await ResumeService.get_all_resume_service(
         current_user=seeker_user, offset=offset, limit=limit
     )
+    logger.info(f"[API] 이력서 전체 조회 완료 : seeker_user_id={seeker_user.id}")
+    return result
 
 
 @resume_router.get(
@@ -84,15 +83,18 @@ async def get_all_resumes(
 )
 async def get_resume(
     resume_id: int,
-    current_user: SeekerUser = Depends(get_current_user),
+    current_user: BaseUser = Depends(get_current_user),
 ):
-    seeker_user = await get_seeker_user(current_user)
-    """
-    특정 ID의 이력서를 조회합니다.
-
-    - 작성자 또는 관리자가 아닌 경우 권한이 거부됩니다.
-    """
-    return await ResumeService.get_resume_by_id_service(resume_id, seeker_user)
+    logger.info(
+        f"[API] 이력서 상세 조회 요청 : resume_id={resume_id}, current_user_id={current_user.id}"
+    )
+    seeker_user = await ResumeRepository.get_seeker_user(current_user)
+    check_existing(seeker_user, ResumeNotFoundException)
+    result = await ResumeService.get_resume_by_id_service(resume_id, seeker_user)
+    logger.info(
+        f"[API] 이력서 상세 조회 완료 : resume_id={resume_id}, seeker_user_id={seeker_user.id}"
+    )
+    return result
 
 
 @resume_router.patch(
@@ -110,17 +112,20 @@ async def get_resume(
 async def update_resume(
     resume_id: int,
     resume_data: ResumeRequestSchema,
-    current_user: SeekerUser = Depends(get_current_user),
+    current_user: BaseUser = Depends(get_current_user),
 ):
-    seeker_user = await get_seeker_user(current_user)
-    """
-    특정 ID의 이력서를 수정합니다.
-
-    - 작성자 또는 관리자가 아닌 경우 권한이 거부됩니다.
-    """
-    return await ResumeService.update_resume_service(
+    logger.info(
+        f"[API] 이력서 수정 요청 : resume_id={resume_id}, current_user_id={current_user.id}"
+    )
+    seeker_user = await ResumeRepository.get_seeker_user(current_user)
+    check_existing(seeker_user, ResumeNotFoundException)
+    result = await ResumeService.update_resume_service(
         resume_id=resume_id, data=resume_data.model_dump(), current_user=seeker_user
     )
+    logger.info(
+        f"[API] 이력서 수정 완료 : resume_id={resume_id}, seeker_user_id={seeker_user.id}"
+    )
+    return result
 
 
 @resume_router.delete(
@@ -142,6 +147,13 @@ async def delete_resume(
     resume_id: int,
     current_user: SeekerUser = Depends(get_current_user),
 ):
-    seeker_user = await get_seeker_user(current_user)
+    seeker_user = await ResumeRepository.get_seeker_user(current_user)
+    check_existing(seeker_user, ResumeNotFoundException)
+    logger.info(
+        f"[API] 이력서 삭제 요청 : resume_id={resume_id}, seeker_user_id={seeker_user.id}"
+    )
     await ResumeService.delete_resume_service(resume_id, seeker_user)
+    logger.info(
+        f"[API] 이력서 삭제 완료 : resume_id={resume_id}, seeker_user_id={seeker_user.id}"
+    )
     return {"message": "삭제가 완료되었습니다."}

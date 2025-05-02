@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, Path, status
@@ -10,7 +11,9 @@ from app.domain.chatbot.services import (
     get_all_chatbots_service,
     patch_chatbot_by_id_service,
 )
-from app.domain.user.user_models import BaseUser
+from app.domain.user.models import BaseUser
+
+logger = logging.getLogger(__name__)
 
 chatbot_router = APIRouter(prefix="/api/admin/chatbot", tags=["chatbot"])
 
@@ -33,6 +36,7 @@ chatbot_router = APIRouter(prefix="/api/admin/chatbot", tags=["chatbot"])
 async def create_chatbot(
     chatbot: ChatBotCreateUpdate, current_user: BaseUser = Depends(get_current_user)
 ):
+    logger.info(f"[API] 관리자 챗봇 프롬프트 생성 요청: 관리자_id={current_user.id}")
     return await create_chatbot_by_id_service(current_user, chatbot)
 
 
@@ -51,6 +55,7 @@ async def create_chatbot(
     ),
 )
 async def get_list_chatbots(current_user: BaseUser = Depends(get_current_user)):
+    logger.info(f"[API] 관리자 챗봇 프롬프트 전체 조회 요청: 관리자_id={current_user.id}")
     return await get_all_chatbots_service(current_user)
 
 
@@ -75,6 +80,7 @@ async def patch_chatbot(
     current_user: BaseUser = Depends(get_current_user),
     id: int = Path(..., gt=0, le=2147483647, description="chatbot ID (1 ~ 2147483647)"),
 ):
+    logger.info(f"[API] 관리자 챗봇 프롬프트 수정 요청: 관리자_id={current_user.id}, chatbot_id={id}")
     return await patch_chatbot_by_id_service(id, current_user, chatbot)
 
 
@@ -97,5 +103,6 @@ async def delete_chatbot(
     current_user: BaseUser = Depends(get_current_user),
     id: int = Path(..., gt=0, le=2147483647, description="chatbot ID (1 ~ 2147483647)"),
 ):
+    logger.info(f"[API] 관리자 챗봇 프롬프트 삭제 요청: 관리자_id={current_user.id}, chatbot_id={id}")
     await delete_chatbot_by_id_service(id, current_user)
     return {"message": "프롬프트가 삭제되었습니다."}

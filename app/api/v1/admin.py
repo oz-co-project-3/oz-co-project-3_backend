@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Path, Query, status
@@ -32,9 +33,11 @@ from app.domain.admin.services.user_services import (
     get_user_by_id_service,
     patch_user_by_id_service,
 )
-from app.domain.user.user_models import BaseUser
+from app.domain.user.models import BaseUser
 
 admin_router = APIRouter(prefix="/api/admin", tags=["admin"])
+
+logger = logging.getLogger(__name__)
 
 
 @admin_router.get(
@@ -55,6 +58,7 @@ async def get_list_user(
     corp: bool = Query(default=False),
     search: str = Query(default=None),
 ):
+    logger.info(f"[API] 관리자 유저 조회 요청: seeker={seeker}, corp={corp}, search='{search}'")
     return await get_user_all_service(current_user, seeker, corp, search)
 
 
@@ -75,6 +79,7 @@ async def get_user(
     id: int = Path(..., gt=0, le=2147483647, description="유저 ID (1 ~ 2147483647)"),
     current_user: BaseUser = Depends(get_current_user),
 ):
+    logger.info(f"[API] 관리자 유저 상세조회 요청 : 유저_id={id}")
     return await get_user_by_id_service(id=id, current_user=current_user)
 
 
@@ -96,6 +101,7 @@ async def patch_user(
     current_user: BaseUser = Depends(get_current_user),
     id: int = Path(..., gt=0, le=2147483647, description="유저 ID (1 ~ 2147483647)"),
 ):
+    logger.info(f"[API] 관리자 유저 수정 요청 : 유저_id={id}")
     return await patch_user_by_id_service(
         id=id, patch_user=patch_user, current_user=current_user
     )
@@ -119,6 +125,7 @@ async def get_list_resumes(
         default=None, max_length=100, description="이름 (최대 100자)"
     ),
 ):
+    logger.info(f"[API] 관리자 이력서 전체 조회 요청")
     return await get_all_resumes_service(current_user, name)
 
 
@@ -139,6 +146,7 @@ async def get_resume(
     current_user: BaseUser = Depends(get_current_user),
     id: int = Path(..., gt=0, le=2147483647, description="resume ID (1 ~ 2147483647)"),
 ):
+    logger.info(f"[API] 관리자 이력서 상세 조회 요청 : resume_id ={id}")
     return await get_resume_by_id_service(id=id, current_user=current_user)
 
 
@@ -158,6 +166,7 @@ async def delete_resume(
     current_user: BaseUser = Depends(get_current_user),
     id: int = Path(..., gt=0, le=2147483647, description="resume ID (1 ~ 2147483647)"),
 ):
+    logger.info(f"[API] 관리자 이력서 삭제 요청 : resume_id ={id}")
     await delete_resume_by_id_service(id=id, current_user=current_user)
 
     return {"message": "이력서 삭제가 완료되었습니다."}
@@ -182,6 +191,9 @@ async def get_list_job_postings(
     search_keyword=Query(default=None, max_length=50, description="검색 키워드 최대 50자"),
     status=Query(default=None, description="공고 상태"),
 ):
+    logger.info(
+        f"[API-LIST] 관리자 공고 조회, 검색 타입 : {search_type}, 검색 키워드 : {search_keyword}, 필터링 status : {status}"
+    )
     return await get_all_job_postings_service(
         current_user, search_type, search_keyword, status
     )
@@ -206,6 +218,7 @@ async def get_job_posting(
         ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(f"[API] 관리자 공고 상세 조회 : job_posting_id ={id}")
     return await get_job_posting_by_id_service(id=id, current_user=current_user)
 
 
@@ -229,6 +242,9 @@ async def patch_job_posting(
         ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(
+        f"[API] 관리자 공고 상태 수정 : job_posting_id ={id}, patch_job_posting ={job_posting}"
+    )
     return await patch_job_posting_by_id_service(
         id=id, patch_job_posting=job_posting, current_user=current_user
     )
@@ -252,6 +268,7 @@ async def delete_job_posting(
         ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(f"[API] 관리자 공고 삭제 : job_posting_id ={id}")
     await delete_job_posting_by_id_service(id=id, current_user=current_user)
     return {"message": "공고가 삭제되었습니다."}
 
@@ -275,6 +292,7 @@ async def create_reject_posting(
         ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
     ),
 ):
+    logger.info(f"[API] 관리자 공고 거절 사유 생성 : posting={id}")
     return await create_reject_posting_by_id_service(
         id=id, reject_posting=reject_posting, current_user=current_user
     )

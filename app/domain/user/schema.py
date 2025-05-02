@@ -3,7 +3,13 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.domain.user.user_models import Gender, SeekerStatus, UserType
+from app.domain.user.models import (
+    Gender,
+    SeekerStatus,
+    SignInEnum,
+    UserStatus,
+    UserTypeEnum,
+)
 
 
 class UserRegisterRequest(BaseModel):
@@ -13,108 +19,111 @@ class UserRegisterRequest(BaseModel):
     password_check: str
     phone_number: str
     birth: date
-    interests: List[str]
-    purposes: List[str]
-    sources: List[str]
+    interests: str
+    purposes: str
+    sources: str
     status: SeekerStatus
-    gender: Gender
+    gender: Optional[str] = None
+    signinMethod: SignInEnum
+
+    class Config:
+        from_attributes = True
 
 
-class UserRegisterResponseData(BaseModel):
+class UserRegisterResponseDTO(BaseModel):
     id: int
     email: EmailStr
     name: str
-    user_type: UserType
+    user_type: UserTypeEnum
     email_verified: bool
     created_at: datetime
 
-
-class UserRegisterResponse(BaseModel):
-    message: str
-    data: UserRegisterResponseData
+    class Config:
+        from_attributes = True
 
 
-class CompanyRegisterRequest(BaseModel):
-    email: EmailStr
-    password: str
-    password_check: str
-    company_name: str
-    business_number: str
-    business_start_date: datetime
-    company_description: str
-    manager_name: str
-    manager_phone_number: str
-    manager_email: EmailStr
-    gender: Gender
-
-
-class CompanyRegisterResponseData(BaseModel):
+class UserResponseDTO(BaseModel):
     id: int
     email: EmailStr
-    company_name: str
-    manager_name: str
-    user_type: UserType
+    user_type: str
     email_verified: bool
     created_at: datetime
 
-
-class CompanyRegisterResponse(BaseModel):
-    message: str
-    data: CompanyRegisterResponseData
+    class Config:
+        from_attributes = True
 
 
-# 이메일 중복검사 체크스키마
-class EmailCheckRequest(BaseModel):
-    email: EmailStr
+class BusinessUpgradeRequest(BaseModel):
+    business_number: str
+    company_name: str
+    manager_name: str
+    manager_phone_number: str
+    business_start_date: date
+
+    class Config:
+        from_attributes = True
 
 
-class EmailCheckResponse(BaseModel):
-    message: str
-    is_available: bool
+class BusinessUpgradeDTO(BaseModel):
+    access_token: str
+    refresh_token: str
+    user_id: int
+    user_type: str
+    email: str
+
+    class Config:
+        from_attributes = True
 
 
 # 구직자 프로필 조회 응답용
 class SeekerProfileResponse(BaseModel):
     id: int
-    email: EmailStr
-    user_type: UserType
     name: str
     phone_number: str
     birth: Optional[date]
-    interests: List[str]
-    purposes: List[str]
-    sources: List[str]
+    interests: str
+    purposes: str
+    sources: str
     status: SeekerStatus
     is_social: bool
-    email_verified: bool
     applied_posting: List[int] = []
     applied_posting_count: int
-    created_at: datetime
-    updated_at: Optional[datetime] = None
     profile_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
 # 기업 회원용
 class CorporateProfileResponse(BaseModel):
     id: int
-    email: EmailStr
-    user_type: UserType
     company_name: str
     business_number: str
     business_start_date: datetime
     company_description: Optional[str]
     manager_name: str
     manager_phone_number: str
-    manager_email: str
-    email_verified: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    manager_email: Optional[str] = None
+    gender: Optional[str] = None
     profile_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
 # 공통 Wrapper
-class UserProfileResponse(BaseModel):
-    data: Union[SeekerProfileResponse, CorporateProfileResponse]
+# class UserProfileResponseDTO(BaseModel):
+#     success: bool
+#     data: Union["SeekerProfileResponse", "CorporateProfileResponse"]
+
+
+class UserUnionResponseDTO(BaseModel):
+    base: UserResponseDTO
+    seeker: Optional[SeekerProfileResponse] = None
+    corp: Optional[CorporateProfileResponse] = None
+
+    class Config:
+        from_attributes = True
 
 
 class SeekerProfileUpdateRequest(BaseModel):
@@ -127,6 +136,9 @@ class SeekerProfileUpdateRequest(BaseModel):
     status: Optional[SeekerStatus] = None
     profile_url: Optional[str] = None
 
+    class Config:
+        from_attributes = True
+
 
 class CorporateProfileUpdateRequest(BaseModel):
     company_name: Optional[str] = None
@@ -136,17 +148,23 @@ class CorporateProfileUpdateRequest(BaseModel):
     manager_email: Optional[EmailStr] = None
     profile_url: Optional[str] = None
 
+    class Config:
+        from_attributes = True
+
 
 class SeekerProfileUpdateResponse(BaseModel):
     id: int
     name: str
     email: EmailStr
     phone_number: str
+    signin_method: Optional[str] = None
     birth: date
     interests: List[str]
     status: SeekerStatus
-    updated_at: Optional[datetime]
     profile_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
 class CorporateProfileUpdateResponse(BaseModel):
@@ -156,20 +174,26 @@ class CorporateProfileUpdateResponse(BaseModel):
     company_description: Optional[str]
     manager_name: str
     manager_phone_number: str
-    manager_email: str
-    updated_at: Optional[datetime]
+    manager_email: Optional[str] = None
     profile_url: Optional[str] = None
 
 
-class UserProfileUpdateResponse(BaseModel):
-    message: str
-    data: Union[SeekerProfileUpdateResponse, CorporateProfileUpdateResponse]
+class UserProfileUpdateResponseDTO(BaseModel):
+    success: bool
+    data: Union["SeekerProfileUpdateResponse", "CorporateProfileUpdateResponse"]
 
 
 class UserDeleteRequest(BaseModel):
     password: str
     is_active: bool
     reason: Optional[str] = None
+
+
+class UserDeleteDTO(BaseModel):
+    user_id: int
+    email: str
+    reason: Optional[str] = None
+    deleted_at: datetime
 
 
 class LoginRequest(BaseModel):
@@ -180,15 +204,19 @@ class LoginRequest(BaseModel):
 class LoginResponseData(BaseModel):
     access_token: str
     refresh_token: str
-    user_id: int
-    user_type: UserType
+    user_id: str
+    user_type: str
     email: str
-    name: Optional[str] = "소셜유저"
+    name: Optional[str] = "소셜 유저"
 
 
-class LoginResponse(BaseModel):
-    message: str
+class LoginResponseDTO(BaseModel):
+    success: bool
     data: LoginResponseData
+
+
+class LogoutResponseDTO(BaseModel):
+    success: bool
 
 
 class VerifyPasswordRequest(BaseModel):
@@ -203,13 +231,9 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
-class RefreshTokenResponseData(BaseModel):
+class RefreshTokenResponseDTO(BaseModel):
+    success: bool
     access_token: str
-
-
-class RefreshTokenResponse(BaseModel):
-    message: str
-    data: RefreshTokenResponseData
 
 
 class ResendEmailRequest(BaseModel):
@@ -227,20 +251,18 @@ class BusinessVerifyResponse(BaseModel):
     is_valid: bool
 
 
+"""
+DTO 적용 스키마 🔽
+"""
+
+
 class FindEmailRequest(BaseModel):
     name: str
     phone_number: str
 
 
-class FindEmailResponseData(BaseModel):
+class FindEmailResponseDTO(BaseModel):
     email: str
-
-
-# 메일 찾을 시 DICT로 간단하게 가능하지만
-# DICT구조 사용시 SWAGGER에서 안보이거나 깨진다고함
-class FindEmailResponse(BaseModel):
-    message: str
-    data: FindEmailResponseData
 
 
 class FindPasswordRequest(BaseModel):
@@ -249,14 +271,40 @@ class FindPasswordRequest(BaseModel):
     email: str
 
 
+class FindPasswordResponseDTO(BaseModel):
+    success: bool
+
+
 class ResetPasswordRequest(BaseModel):
     email: EmailStr
     new_password: str
     new_password_check: str
 
-    # 카카오 콜백
+
+class ResetPasswordResponseDTO(BaseModel):
+    success: bool
 
 
 class SocialCallbackRequest(BaseModel):
     code: str
     state: Optional[str] = None
+
+
+class EmailVerificationResponseDTO(BaseModel):
+    email: str
+    email_verified: bool
+
+
+class ResendEmailResponseDTO(BaseModel):
+    success: bool
+    email: str
+
+
+# 이메일 중복검사 체크스키마
+class EmailCheckRequest(BaseModel):
+    email: EmailStr
+
+
+class EmailCheckResponseDTO(BaseModel):
+    success: bool
+    is_available: bool

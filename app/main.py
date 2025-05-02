@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
@@ -6,6 +8,7 @@ from fastapi.security import HTTPBearer
 from tortoise.contrib.fastapi import register_tortoise
 
 from app.api.v1.admin import admin_router
+from app.api.v1.applicant import applicant_router
 from app.api.v1.chatbot import chatbot_router
 from app.api.v1.comment import comment_router
 from app.api.v1.freeboard import free_board_router
@@ -35,6 +38,7 @@ app.include_router(posting_router)
 app.include_router(public_router)
 app.include_router(resume_router)
 app.include_router(image_upload_router)
+app.include_router(applicant_router)
 
 origins = [
     "http://localhost",
@@ -50,12 +54,6 @@ app.add_middleware(
     allow_methods=["*"],  # 모든 HTTP 메서드 허용
     allow_headers=["*"],  # 모든 HTTP 헤더 허용
 )
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
 
 register_tortoise(
     app,
@@ -106,3 +104,10 @@ def custom_openapi():
 
 
 app.openapi = custom_openapi
+
+
+logging.basicConfig(
+    level=logging.INFO,  # 출력할 최소 레벨: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
