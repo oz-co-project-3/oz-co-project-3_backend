@@ -1,13 +1,14 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
 from app.exceptions.request_exceptions import RequiredFieldException
 
 
 class UserSchema(BaseModel):
     id: int
+    email: EmailStr
 
     class Config:
         from_attributes = True  # orm_mode → v2 기준

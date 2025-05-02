@@ -196,7 +196,7 @@ async def verify_password(
 ):
     logger.info(f"[API] 현재 비밀번호 확인 요청")
     await verify_user_password(current_user, request.password)
-    return {"message": "비밀번호가 확인되었습니다."}
+    return MessageResponse(message="비밀번호가 확인되었습니다.")
 
 
 @router.post(
@@ -297,7 +297,7 @@ async def login(request: LoginRequest):
 async def logout(current_user: BaseUser = Depends(get_current_user)):
     logger.info(f"[API] 사용자 로그아웃 요청")
     await logout_user(current_user)
-    return {"message": "로그아웃이 완료되었습니다."}
+    return MessageResponse(message="로그아웃이 완료되었습니다.")
 
 
 @router.post(
@@ -419,6 +419,4 @@ access_token으로 유저정보 조회 후 로그인 처리\n
 )
 async def naver_callback(request: SocialCallbackRequest):
     logger.info(f"[API] 사용자 소셜 로그인(네이버) 콜백 요청")
-    access_token = await get_naver_access_token(request.code, request.state)
-    naver_info = await get_naver_user_info(access_token)
-    return await naver_login(naver_info, request.state)
+    return await naver_login(request.code, request.state)

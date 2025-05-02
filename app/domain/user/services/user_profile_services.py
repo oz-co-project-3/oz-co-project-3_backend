@@ -143,4 +143,7 @@ async def update_user_profile(
     elif target_type == "business" and "business" in user_types:
         return await update_corporate_profile(current_user, update_data)
     else:
+        logger.warning(
+            f"[CHECK] 잘못된 target_type 요청:{target_type} 유저 ID:{current_user.id}"
+        )
         raise UnknownUserTypeException()

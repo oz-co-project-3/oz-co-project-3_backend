@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 import jwt
@@ -13,8 +14,6 @@ from app.core.token import (
     create_token,
 )
 from app.domain.services.social_account import (
-    get_kakao_access_token,
-    get_kakao_user_info,
     get_naver_access_token,
     get_naver_user_info,
 )
@@ -33,7 +32,6 @@ from app.domain.user.repository import (
     get_user_by_id,
 )
 from app.domain.user.schema import (
-    LoginResponseData,
     LoginResponseDTO,
     LogoutResponseDTO,
     RefreshTokenRequest,
@@ -51,11 +49,14 @@ from app.exceptions.user_exceptions import (
     UserNotFoundException,
 )
 
+logger = logging.getLogger(__name__)
+
 
 # 비밀번호 검증
 async def authenticate_user(email: str, password: str) -> BaseUser:
     user = await get_user_by_email(email=email)
     if not user or not bcrypt.verify(password, user.password):
+        logger.warning(f"[CHECK] 인증 실패: 이메일 또는 비밀번호 불일치")
         raise PasswordMismatchException()
     return user
 
@@ -63,6 +64,7 @@ async def authenticate_user(email: str, password: str) -> BaseUser:
 # 비밀번호 변경 시 비밀번호 확인
 async def verify_user_password(user: BaseUser, password: str):
     if not bcrypt.verify(password, user.password):
+        logger.warning(f"[CHECK] 현재 비밀번호 불일치 - 유저 ID:{user.id}")
         raise PasswordMismatchException()
 
 
@@ -71,33 +73,33 @@ async def login_user(email: str, password: str) -> LoginResponseDTO:
     user = await BaseUser.get_or_none(email=email)
 
     if not user:
+        logger.warning(f"[CHECK] 로그인 실패 - 유저 없음: {email}")
         raise UserNotFoundException()
 
     if not user.email_verified or user.status != "active":
+        logger.warning(f"[CHECK] 로그인 실패 - 미인증 또는 비활성 상태: {email}")
         raise UnverifiedOrInactiveAccountException()
 
     if not bcrypt.verify(password, user.password):
+        logger.warning(f"[CHECK] 로그인 실패 - 비밀번호 불일치: {email}")
         raise PasswordInvalidException()
 
     # user_id + user_type 둘 다 넣어서 토큰 발급 = 프론트 요청사항
     user_type = user.user_type[0] if user.user_type else "normal"
 
-    access_token, refresh_token = create_jwt_tokens(str(user.id), user_type)
+    access_token, refresh_token = create_jwt_tokens(user.id, user_type)
 
     await redis.set(
         f"refresh_token:{user.id}", refresh_token, ex=REFRESH_TOKEN_EXPIRE_SECONDS * 60
     )
 
     return LoginResponseDTO(
-        success=True,
-        data=LoginResponseData(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            user_id=str(user.id),
-            user_type=user.user_type,
-            email=user.email,
-            name=None,
-        ),
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user_id=str(user.id),
+        user_type=user.user_type,
+        email=user.email,
+        name=None,
     )
 
 
@@ -105,6 +107,7 @@ async def login_user(email: str, password: str) -> LoginResponseDTO:
 async def logout_user(user: BaseUser) -> LogoutResponseDTO:
     refresh_deleted = await redis.delete(f"refresh_token:{user.id}")
     if refresh_deleted == 0:
+        logger.warning(f"[CHECK] 로그아웃 실패 - 토큰 없음: 유저 ID {user.id}")
         raise InvalidTokenException()
 
     return LogoutResponseDTO(
@@ -118,20 +121,25 @@ async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResp
         payload = jwt.decode(request.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
         if user_id is None:
+            logger.warning(f"[CHECK] 리프레시 토큰 디코딩 실패 - sub 없음")
             raise InvalidRefreshTokenException()
 
     except jwt.ExpiredSignatureError:
+        logger.warning(f"[CHECK] 리프레시 토큰 만료됨")
         raise ExpiredRefreshTokenException()
     except jwt.PyJWTError:
+        logger.warning(f"[CHECK] 리프레시 토큰 디코딩 오류")
         raise InvalidRefreshTokenException()
 
     stored_token = await redis.get(f"refresh_token:{str(user_id)}")
     if stored_token != request.refresh_token:
+        logger.warning(f"[CHECK] 리프레시 토큰 불일치: {user_id}")
         raise InvalidRefreshTokenException()
 
     # BaseUser 조회 추가
     user = await get_user_by_id(user_id=user_id)
     if not user:
+        logger.warning(f"[CHECK] 사용자 없음 ID:{user_id}")
         raise InvalidRefreshTokenException()
 
     # access_token 새로 생성 (user_id + user_type 넣기)
@@ -140,7 +148,7 @@ async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResp
         timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
 
-    return RefreshTokenResponseDTO(success=True, access_token=new_access_token)
+    return RefreshTokenResponseDTO(access_token=new_access_token)
 
 
 # 카카오/네이버 로그인
@@ -172,26 +180,22 @@ async def kakao_login(kakao_info: dict) -> LoginResponseDTO:
             purposes="",
             sources="",
             status=SeekerStatus.SEEKING,
-            is_social=True,
         )
     else:
         if SignInEnum.Kakao.value not in user.signinMethod:
             user.signinMethod += ",Kakao"
             await user.save()
 
-    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
+    access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
 
     return LoginResponseDTO(
-        success=True,
-        data=LoginResponseData(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            user_id=str(user.id),
-            user_type=[user.user_type],
-            email=user.email,
-            name=nickname,
-        ),
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user_id=str(user.id),
+        user_type=user.user_type,
+        email=user.email,
+        name=nickname,
     )
 
 
@@ -223,24 +227,20 @@ async def naver_login(code: str, state: str) -> LoginResponseDTO:
             purposes="",
             sources="",
             status=SeekerStatus.SEEKING,
-            is_social=True,
         )
     else:
         if SignInEnum.Naver.value not in user.signinMethod:
             user.signinMethod += ",Naver"
             await user.save()
 
-    access_token, refresh_token = create_jwt_tokens(str(user.id), user.user_type)
+    access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
 
     return LoginResponseDTO(
-        success=True,
-        data=LoginResponseData(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            user_id=str(user.id),
-            user_type=[user.user_type],
-            email=user.email,
-            name=nickname,
-        ),
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user_id=str(user.id),
+        user_type=user.user_type,
+        email=user.email,
+        name=nickname,
     )
