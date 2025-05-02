@@ -93,6 +93,7 @@ class EmailVerifyRequest(BaseModel):
 `400` `code`:`duplicate_email` : 이미 사용 중인 이메일입니다\n
 `400` `code`:`invalid_password` : 비밀번호 형식이 올바르지 않습니다\n
 `400` `code`:`password_mismatch` : 비밀번호와 비밀번호 확인이 일치하지 않습니다\n
+`422` : Unprocessable Entity
 """,
 )
 async def register(request: UserRegisterRequest):

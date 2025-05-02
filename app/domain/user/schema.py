@@ -14,7 +14,7 @@ from app.domain.user.models import (
 
 class UserRegisterRequest(BaseModel):
     name: str
-    email: EmailStr
+    email: EmailStr = Field(..., max_length=50, description="이메일, 길이제한 50자")
     password: str = Field(min_length=8)
     password_check: str
     phone_number: str
