@@ -46,8 +46,13 @@ class UserResponseDTO(BaseModel):
     id: int
     email: EmailStr
     user_type: str
+    signinMethod: str
+    status: UserStatus
     email_verified: bool
+    gender: Gender
+    leave_reason: Optional[str] = None
     created_at: datetime
+    deleted_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -85,8 +90,7 @@ class SeekerProfileResponse(BaseModel):
     purposes: str
     sources: str
     status: SeekerStatus
-    is_social: bool
-    applied_posting: List[int] = []
+    applied_posting: Optional[List[int]] = None
     applied_posting_count: int
     profile_url: Optional[str] = None
 
@@ -104,17 +108,10 @@ class CorporateProfileResponse(BaseModel):
     manager_name: str
     manager_phone_number: str
     manager_email: Optional[str] = None
-    gender: Optional[str] = None
     profile_url: Optional[str] = None
 
     class Config:
         from_attributes = True
-
-
-# 공통 Wrapper
-# class UserProfileResponseDTO(BaseModel):
-#     success: bool
-#     data: Union["SeekerProfileResponse", "CorporateProfileResponse"]
 
 
 class UserUnionResponseDTO(BaseModel):
@@ -176,11 +173,6 @@ class CorporateProfileUpdateResponse(BaseModel):
     manager_phone_number: str
     manager_email: Optional[str] = None
     profile_url: Optional[str] = None
-
-
-class UserProfileUpdateResponseDTO(BaseModel):
-    success: bool
-    data: Union["SeekerProfileUpdateResponse", "CorporateProfileUpdateResponse"]
 
 
 class UserDeleteRequest(BaseModel):
