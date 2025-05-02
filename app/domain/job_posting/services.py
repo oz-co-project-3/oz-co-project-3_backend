@@ -32,9 +32,7 @@ class JobPostingService:
         if job_posting:
             if hasattr(job_posting, "first"):
                 job_posting = await job_posting.first()
-            if job_posting.user_id != corporate_user.id and not getattr(
-                user, "is_superuser", False
-            ):
+            if job_posting.user != corporate_user.user:
                 logger.warning(
                     f"[JOBPOSTING-SERVICE] 권한 없음: job_posting.user_id ({job_posting.user_id}) != corporate_user.id ({corporate_user.id})"
                 )

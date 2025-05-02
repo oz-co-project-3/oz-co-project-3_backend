@@ -204,7 +204,7 @@ class LoginRequest(BaseModel):
 class LoginResponseData(BaseModel):
     access_token: str
     refresh_token: str
-    user_id: str
+    user_id: int
     user_type: str
     email: str
     name: Optional[str] = "소셜 유저"

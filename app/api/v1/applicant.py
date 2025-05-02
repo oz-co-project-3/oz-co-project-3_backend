@@ -69,7 +69,7 @@ async def get_all_applicants_by_corporate_user(
     "/seeker/",
     response_model=List[ApplicantResponse],
     status_code=status.HTTP_200_OK,
-    summary="모든 공고의 지원자 조회",
+    summary="구직자의 지원 공고r 조회",
     description="""
                       """,
 )
