@@ -4,10 +4,12 @@ from app.domain.job_posting.models import Applicants
 from app.domain.services.user_type_helper import split_user_types
 from app.domain.user.models import BaseUser
 from app.domain.user.repository import (
+    get_bookmark_postings_by_repository,
     get_corporate_profile_by_user,
     get_seeker_profile_by_user,
 )
 from app.domain.user.schema import (
+    BookMarkPostingDTO,
     CorporateProfileResponse,
     CorporateProfileUpdateRequest,
     SeekerProfileResponse,
@@ -130,3 +132,10 @@ async def update_user_profile(
         if "business" in user_types:
             return await update_corporate_profile(current_user, update_data)
         raise NotCorpUserException()
+
+
+async def get_bookmark_postings_by_service(current_user: BaseUser):
+    results = await get_bookmark_postings_by_repository(current_user)
+    postings = [BookMarkPostingDTO.from_orm(result) for result in results]
+
+    return postings

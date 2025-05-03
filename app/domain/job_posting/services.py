@@ -8,6 +8,7 @@ from app.domain.job_posting.schema import (
     JobPostingResponse,
     JobPostingSummaryResponse,
 )
+from app.domain.resume.repository import ResumeRepository
 from app.domain.services.verification import check_existing
 from app.domain.user.models import BaseUser, CorporateUser
 from app.exceptions.auth_exceptions import PermissionDeniedException
@@ -120,3 +121,16 @@ class JobPostingService:
         await JobPostingService.validate_user_permissions(corporate_user, job_posting)
         await JobPostingRepository.delete_job_posting(job_posting)
         return {"message": "구인 공고 삭제가 완료되었습니다.", "data": job_posting_id}
+
+    @staticmethod
+    async def toggle_bookmark(current_user: BaseUser, id: int):
+        job_posting = await JobPostingRepository.get_job_posting_by_id(id)
+        if not job_posting:
+            logger.warning(
+                f"[JOBPOSTING-SERVICE] create_job_posting_bookmark 실패: JobPosting id {id} not found."
+            )
+            raise NotificationNotFoundException()
+        seeker_user = await ResumeRepository.get_seeker_user(current_user)
+        return await JobPostingRepository.toggle_job_posting_bookmark(
+            seeker_user, job_posting
+        )
