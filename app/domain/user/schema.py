@@ -174,6 +174,9 @@ class CorporateProfileUpdateResponse(BaseModel):
     manager_email: Optional[str] = None
     profile_url: Optional[str] = None
 
+    class Config:
+        from_attributes = True
+
 
 class UserDeleteRequest(BaseModel):
     password: str
@@ -194,12 +197,14 @@ class LoginRequest(BaseModel):
 
 
 class LoginResponseDTO(BaseModel):
-    access_token: str
-    refresh_token: str
     user_id: int
     user_type: str
     email: str
     name: Optional[str] = "소셜 유저"
+    access_token: str
+
+    class Config:
+        from_attributes = True
 
 
 class LogoutResponseDTO(BaseModel):
@@ -220,6 +225,9 @@ class RefreshTokenRequest(BaseModel):
 
 class RefreshTokenResponseDTO(BaseModel):
     access_token: str
+
+    class Config:
+        from_attributes = True
 
 
 class ResendEmailRequest(BaseModel):

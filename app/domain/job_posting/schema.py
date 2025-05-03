@@ -4,7 +4,12 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
-from app.domain.job_posting.models import EmploymentEnum, MethodEnum, StatusEnum
+from app.domain.job_posting.models import (
+    CareerEnum,
+    EmploymentEnum,
+    MethodEnum,
+    StatusEnum,
+)
 
 
 class ApplicantEnum(str, Enum):
@@ -18,6 +23,7 @@ class JobPostingCreateUpdate(BaseModel):
     location: str = Field(..., max_length=150, description="길이 제한 150자")
     employment_type: EmploymentEnum
     employ_method: MethodEnum
+    career: CareerEnum
     work_time: str = Field(..., max_length=30, description="길이 제한 30자")
     position: str = Field(..., max_length=50, description="길이 제한 50자")
     history: Optional[str] = None
@@ -28,6 +34,7 @@ class JobPostingCreateUpdate(BaseModel):
     summary: Optional[str] = None
     description: str
     status: StatusEnum
+    image_url: Optional[str] = None
 
     # 필수 필드 검증
     @field_validator(
@@ -61,9 +68,12 @@ class JobPostingResponse(BaseModel):
     id: int
     title: str
     location: str
+    company: str
     employment_type: EmploymentEnum
     employ_method: MethodEnum
+    work_time: str
     position: str
+    career: CareerEnum
     history: Optional[str] = None
     recruitment_count: int
     education: str
@@ -74,6 +84,9 @@ class JobPostingResponse(BaseModel):
     status: StatusEnum
     view_count: int
     report: int
+    image_url: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -90,6 +103,7 @@ class JobPostingSummaryResponse(BaseModel):
     employ_method: MethodEnum
     position: str
     history: Optional[str] = None
+    career: CareerEnum
     recruitment_count: int
     education: str
     deadline: str
@@ -100,5 +114,6 @@ class JobPostingSummaryResponse(BaseModel):
     created_at: datetime
     view_count: int
     report: int
+    image_url: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta
 
 import jwt
+from fastapi import Request
 from passlib.hash import bcrypt
 
 from app.core.redis import redis
@@ -69,7 +70,7 @@ async def verify_user_password(user: BaseUser, password: str):
 
 
 # 로그인
-async def login_user(email: str, password: str) -> LoginResponseDTO:
+async def login_user(email: str, password: str) -> tuple[LoginResponseDTO, str, str]:
     user = await BaseUser.get_or_none(email=email)
 
     if not user:
@@ -93,14 +94,15 @@ async def login_user(email: str, password: str) -> LoginResponseDTO:
         f"refresh_token:{user.id}", refresh_token, ex=REFRESH_TOKEN_EXPIRE_SECONDS * 60
     )
 
-    return LoginResponseDTO(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        user_id=str(user.id),
+    dto = LoginResponseDTO(
+        user_id=user.id,
         user_type=user.user_type,
         email=user.email,
         name=None,
+        access_token=access_token,
     )
+
+    return dto, access_token, refresh_token
 
 
 # 로그아웃
@@ -116,9 +118,13 @@ async def logout_user(user: BaseUser) -> LogoutResponseDTO:
 
 
 # 리프레쉬 토큰 발급
-async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResponseDTO:
+async def refresh_access_token(request: Request) -> tuple[RefreshTokenResponseDTO, str]:
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        logger.warning("[CHECK] 리프레시 토큰 없음 (쿠키)")
+        raise InvalidRefreshTokenException()
     try:
-        payload = jwt.decode(request.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
         if user_id is None:
             logger.warning(f"[CHECK] 리프레시 토큰 디코딩 실패 - sub 없음")
@@ -132,7 +138,7 @@ async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResp
         raise InvalidRefreshTokenException()
 
     stored_token = await redis.get(f"refresh_token:{str(user_id)}")
-    if stored_token != request.refresh_token:
+    if stored_token != refresh_token:
         logger.warning(f"[CHECK] 리프레시 토큰 불일치: {user_id}")
         raise InvalidRefreshTokenException()
 
@@ -147,12 +153,14 @@ async def refresh_access_token(request: RefreshTokenRequest) -> RefreshTokenResp
         {"sub": user_id, "user_type": user.user_type},  # 리스트니까 첫 번째 꺼냄
         timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
-
-    return RefreshTokenResponseDTO(access_token=new_access_token)
+    dto = RefreshTokenResponseDTO(
+        access_token=new_access_token,
+    )
+    return dto, new_access_token
 
 
 # 카카오/네이버 로그인
-async def kakao_login(kakao_info: dict) -> LoginResponseDTO:
+async def kakao_login(kakao_info: dict) -> tuple[LoginResponseDTO, str, str]:
     kakao_account = kakao_info.get("kakao_account", {})
     profile = kakao_account.get("profile", {})
 
@@ -189,17 +197,17 @@ async def kakao_login(kakao_info: dict) -> LoginResponseDTO:
     access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
 
-    return LoginResponseDTO(
+    dto = LoginResponseDTO(
         access_token=access_token,
-        refresh_token=refresh_token,
-        user_id=str(user.id),
+        user_id=user.id,
         user_type=user.user_type,
         email=user.email,
         name=nickname,
     )
+    return dto, access_token, refresh_token
 
 
-async def naver_login(code: str, state: str) -> LoginResponseDTO:
+async def naver_login(code: str, state: str) -> tuple[LoginResponseDTO, str, str]:
     access_token = await get_naver_access_token(code, state)
     naver_info = await get_naver_user_info(access_token)
 
@@ -236,11 +244,11 @@ async def naver_login(code: str, state: str) -> LoginResponseDTO:
     access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)
     await redis.set(f"refresh_token:{user.id}", refresh_token)
 
-    return LoginResponseDTO(
+    dto = LoginResponseDTO(
         access_token=access_token,
-        refresh_token=refresh_token,
-        user_id=str(user.id),
+        user_id=user.id,
         user_type=user.user_type,
         email=user.email,
         name=nickname,
     )
+    return dto, access_token, refresh_token
