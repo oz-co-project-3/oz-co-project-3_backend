@@ -322,7 +322,11 @@ async def login(request: LoginRequest):
 async def logout(current_user: BaseUser = Depends(get_current_user)):
     logger.info(f"[API] 사용자 로그아웃 요청")
     await logout_user(current_user)
-    return MessageResponse(message="로그아웃이 완료되었습니다.")
+    response = JSONResponse(content={"message": "로그아웃이 완료되었습니다."})
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+
+    return response
 
 
 @router.post(
