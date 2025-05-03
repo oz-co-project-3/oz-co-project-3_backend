@@ -36,15 +36,16 @@ async def test_get_user_all_service(
     seeker_user.user = MagicMock(
         id=1,
         email="test@test.com",
-        user_type="seeker",
+        user_type="normal,admin",
+        signinMethod="email",
         status="active",
         email_verified=True,
-        is_superuser=False,
         created_at=datetime.now(),
         deleted_at=None,
         gender="male",
     )
     seeker_user.id = 1
+    seeker_user.user.email = "test@test.com"
     seeker_user.name = "홍길동"
     seeker_user.phone_number = "01012345678"
     seeker_user.birth = date(1990, 1, 1)
@@ -53,8 +54,8 @@ async def test_get_user_all_service(
     seeker_user.sources = "지인 추천"
     seeker_user.applied_posting = None
     seeker_user.applied_posting_count = 3
-    seeker_user.is_social = False
     seeker_user.status = "active"
+    seeker_user.gender = "male"
 
     corp_user = MagicMock()
     corp_user.user = MagicMock(
@@ -63,12 +64,11 @@ async def test_get_user_all_service(
         user_type="corp",
         status="active",
         email_verified=True,
-        is_superuser=False,
         created_at=datetime.now(),
         deleted_at=None,
-        gender="female",
     )
     corp_user.id = 2
+    corp_user.user.signinMethod = "email"
     corp_user.company_name = "테스트 회사"
     corp_user.business_start_date = datetime.now()
     corp_user.business_number = "123-45-67890"
@@ -76,7 +76,7 @@ async def test_get_user_all_service(
     corp_user.manager_name = "김매니저"
     corp_user.manager_phone_number = "01098765432"
     corp_user.manager_email = "manager@test.com"
-    corp_user.gender = "female"
+    corp_user.user.gender = "female"
 
     mock_get_seeker_users.return_value = [seeker_user]
     mock_get_corp_users.return_value = [corp_user]
@@ -123,10 +123,10 @@ async def test_get_user_by_id_service(
     base_user = SimpleNamespace(
         id=1,
         email="test@test.com",
-        user_type="seeker",
+        user_type="normal,admin",
+        signinMethod="email",
         status="active",
         email_verified=True,
-        is_superuser=False,
         created_at=datetime.now(),
         deleted_at=None,
         gender="male",
@@ -142,7 +142,6 @@ async def test_get_user_by_id_service(
         sources="지인 추천",
         applied_posting=None,
         applied_posting_count=3,
-        is_social=False,
         status="active",
         user=base_user,
     )
@@ -156,7 +155,6 @@ async def test_get_user_by_id_service(
         manager_name="홍매니저",
         manager_phone_number="01012345678",
         manager_email="manager@test.com",
-        gender="female",
         user=base_user,
     )
 

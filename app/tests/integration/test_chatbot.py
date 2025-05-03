@@ -29,13 +29,13 @@ async def access_token(client):
         user = await BaseUser.create(
             email="test@test.com",
             password=hashed_pw,
-            user_type="seeker",
+            user_type="normal,admin",
+            signinMethod="email",
             status="active",
             email_verified=True,
-            is_superuser=True,
             gender="male",
         )
-        await SeekerUser.create(
+        seeker = await SeekerUser.create(
             user=user,
             name="테스트유저",
             phone_number="01012345678",
@@ -48,12 +48,12 @@ async def access_token(client):
             email="test2@test.com",
             password=hashed_pw,
             user_type="business",
+            signinMethod="email",
             status="active",
             email_verified=True,
-            is_superuser=False,
             gender="male",
         )
-        await CorporateUser.create(
+        corp_user = await CorporateUser.create(
             user=user2,
             company_name="테스트 주식회사",
             business_start_date="2010-01-01",
@@ -62,16 +62,15 @@ async def access_token(client):
             manager_name="홍길동",
             manager_phone_number="01012345678",
             manager_email="manager@test.com",
-            gender="male",
         )
 
         login_data = {"email": "test@test.com", "password": "!!Test1234"}
         response = await client.post("/api/user/login/", json=login_data)
-        access_token = [response.json()["data"]["access_token"]]
+        access_token = [response.json()["access_token"]]
 
         login_data = {"email": "test2@test.com", "password": "!!Test1234"}
         response = await client.post("/api/user/login/", json=login_data)
-        access_token.append(response.json()["data"]["access_token"])
+        access_token.append(response.json()["access_token"])
 
         return access_token
 

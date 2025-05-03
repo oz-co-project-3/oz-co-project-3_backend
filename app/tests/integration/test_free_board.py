@@ -29,25 +29,27 @@ async def access_token(client):
         user = await BaseUser.create(
             email="test@test.com",
             password=hashed_pw,
-            user_type="seeker",
-            is_active=True,
+            user_type="normal,admin",
+            signinMethod="email",
             status="active",
             email_verified=True,
-            is_superuser=False,
             gender="male",
         )
-        await SeekerUser.create(
+        seeker = await SeekerUser.create(
             user=user,
             name="테스트유저",
             phone_number="01012345678",
             birth="1990-01-01",
+            interests="프론트엔드",
+            purposes="취업",
+            sources="지인 추천",
         )
 
         login_data = {"email": "test@test.com", "password": "!!Test1234"}
         response = await client.post("/api/user/login/", json=login_data)
 
         assert response.status_code == 200
-        return response.json()["data"]["access_token"]
+        return response.json()["access_token"]
 
 
 @pytest.mark.asyncio
