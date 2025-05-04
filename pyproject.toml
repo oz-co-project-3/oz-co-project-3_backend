@@ -41,6 +41,7 @@ pytest = "^8.3.5"
 pre-commit = "^4.2.0"
 black = "^23.11.0"
 isort = "^5.10.1"
+asyncpg = "^0.30.0"
 
 [tool.aerich]
 tortoise_orm = "app.core.config.TORTOISE_ORM"
