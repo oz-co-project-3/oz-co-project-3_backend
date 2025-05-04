@@ -13,7 +13,6 @@ class StatusEnum(str, Enum):
 
 # 경력 생성 및 수정
 class WorkExpRequestSchema(BaseModel):
-    resume_id: int
     company: str
     period: str
     position: str

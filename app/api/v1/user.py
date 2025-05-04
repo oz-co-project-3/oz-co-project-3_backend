@@ -1,5 +1,5 @@
 import logging
-from typing import Union
+from typing import List, Union
 
 from fastapi import APIRouter, Body, Depends, Query, Request, status
 from fastapi.responses import JSONResponse
@@ -17,6 +17,7 @@ from app.domain.services.social_account import (
 )
 from app.domain.user.models import BaseUser
 from app.domain.user.schema import (
+    BookMarkPostingDTO,
     BusinessUpgradeDTO,
     BusinessUpgradeRequest,
     BusinessVerifyRequest,
@@ -64,6 +65,7 @@ from app.domain.user.services.auth_services import (
     verify_user_password,
 )
 from app.domain.user.services.user_profile_services import (
+    get_bookmark_postings_by_service,
     get_user_profile,
     update_user_profile,
 )
@@ -241,6 +243,23 @@ async def profile(
     return await get_user_profile(current_user)
 
 
+@router.get(
+    "/profile/bookmark/",
+    response_model=List[BookMarkPostingDTO],
+    status_code=status.HTTP_200_OK,
+    summary="회원 북마크 공고 전체 조회",
+    description="""
+`401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다\n
+`404` `code`:`user_not_found` : 사용자 정보를 찾을 수 없습니다\n
+`500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다\n
+""",
+)
+async def get_bookmark_postings(
+    current_user: BaseUser = Depends(get_current_user),
+):
+    return await get_bookmark_postings_by_service(current_user)
+
+
 @router.patch(
     "/profile/update/",
     response_model=UserUnionResponseDTO,
@@ -303,7 +322,11 @@ async def login(request: LoginRequest):
 async def logout(current_user: BaseUser = Depends(get_current_user)):
     logger.info(f"[API] 사용자 로그아웃 요청")
     await logout_user(current_user)
-    return MessageResponse(message="로그아웃이 완료되었습니다.")
+    response = JSONResponse(content={"message": "로그아웃이 완료되었습니다."})
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+
+    return response
 
 
 @router.post(

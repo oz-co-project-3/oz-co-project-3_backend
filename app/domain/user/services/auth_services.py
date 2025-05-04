@@ -3,6 +3,7 @@ from datetime import timedelta
 
 import jwt
 from fastapi import Request
+from fastapi.responses import JSONResponse
 from passlib.hash import bcrypt
 
 from app.core.redis import redis
@@ -111,7 +112,6 @@ async def logout_user(user: BaseUser) -> LogoutResponseDTO:
     if refresh_deleted == 0:
         logger.warning(f"[CHECK] 로그아웃 실패 - 토큰 없음: 유저 ID {user.id}")
         raise InvalidTokenException()
-
     return LogoutResponseDTO(
         success=True,
     )

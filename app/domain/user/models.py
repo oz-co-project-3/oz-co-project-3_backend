@@ -87,7 +87,9 @@ class SeekerUser(models.Model):
     phone_number = fields.CharField(max_length=20, null=False)
     birth = fields.DateField(null=True)
     interests = fields.CharField(max_length=100, null=True)
-    interests_posting = fields.CharField(max_length=255, null=True)
+    interests_posting = fields.ManyToManyField(
+        "models.JobPosting", related_name="seekers", through="seeker_job_posting"
+    )
     purposes = fields.CharField(max_length=100, null=True)
     sources = fields.CharField(max_length=60, null=True)
     applied_posting = fields.CharField(max_length=60, null=True)

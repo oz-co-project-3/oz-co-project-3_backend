@@ -154,3 +154,29 @@ async def delete_job_posting_endpoint(
         f"[API] 구인 공고 삭제 완료 : job_posting_id={job_posting_id}, CorporateUser id={corporate_user.id}"
     )
     return {"message": "공고가 삭제되었습니다."}
+
+
+@job_posting_router.post(
+    "/{id}/bookmark/",
+    status_code=200,
+    summary="공고 찜하기",
+    description="""
+`401` `code`: `invalid_token` 유효하지 않은 토큰입니다.\n
+`403` `code`: `permission_denied` 해당 작업을 처리할 권한이 없습니다.\n
+`404` `code`: `notification_not_found` 공고를 찾을 수 없습니다.\n
+`422` : Unprocessable Entity
+""",
+)
+async def create_job_posting_bookmark(
+    current_user: BaseUser = Depends(get_current_user),
+    id: int = Path(
+        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+    ),
+):
+    logger.info(f"[API] 공고 찜하기 요청 공고_id :{id}, user_id :{current_user.id}")
+    is_added = await JobPostingService.toggle_bookmark(current_user, id)
+    message = "북마크가 추가되었습니다." if is_added else "북마크가 해제되었습니다."
+    logger.info(
+        f"[JOBPOSTING-SERVICE] Bookmark {'추가' if is_added else '해제'} 완료: user_id={current_user.id}, posting_id={id}"
+    )
+    return {"message": message}

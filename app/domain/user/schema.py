@@ -302,3 +302,19 @@ class EmailCheckRequest(BaseModel):
 class EmailCheckResponseDTO(BaseModel):
     success: bool
     is_available: bool
+
+
+class BookMarkResponseDTO(BaseModel):
+    job_posting_id: int
+
+
+class BookMarkPostingDTO(BaseModel):
+    id: int
+    title: str
+    company: str
+    location: str
+    image_url: Optional[str] = None
+    employ_method: str
+
+    class Config:
+        from_attributes = True
