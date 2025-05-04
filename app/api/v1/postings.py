@@ -118,7 +118,7 @@ async def create_applicant(
 @posting_router.patch(
     "/{id}/applicant/{applicant_id}/",
     response_model=ApplicantResponseDTO,
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_200_OK,
     summary="공고 지원자 수정",
     description="""
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n

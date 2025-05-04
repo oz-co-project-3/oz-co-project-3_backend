@@ -52,7 +52,7 @@ class JobPostingResponseDTO(BaseModel):
 
 
 class ApplicantCreateUpdateSchema(BaseModel):
-    resume: int
+    resume: Optional[int]
     status: ApplicantEnum
     memo: Optional[str] = None
 
