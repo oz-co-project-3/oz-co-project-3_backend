@@ -1,6 +1,8 @@
 import logging
+from typing import List, Union
 
 from fastapi import APIRouter, Body, Depends, Query, Request, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 
 from app.core.token import get_current_user
@@ -15,6 +17,7 @@ from app.domain.services.social_account import (
 )
 from app.domain.user.models import BaseUser
 from app.domain.user.schema import (
+    BookMarkPostingDTO,
     BusinessUpgradeDTO,
     BusinessUpgradeRequest,
     BusinessVerifyRequest,
@@ -40,7 +43,6 @@ from app.domain.user.schema import (
     SocialCallbackRequest,
     UserDeleteDTO,
     UserDeleteRequest,
-    UserProfileUpdateResponseDTO,
     UserRegisterRequest,
     UserRegisterResponseDTO,
     UserUnionResponseDTO,
@@ -63,6 +65,7 @@ from app.domain.user.services.auth_services import (
     verify_user_password,
 )
 from app.domain.user.services.user_profile_services import (
+    get_bookmark_postings_by_service,
     get_user_profile,
     update_user_profile,
 )
@@ -72,6 +75,7 @@ from app.domain.user.services.user_register_services import (
     upgrade_to_business,
 )
 from app.exceptions.server_exceptions import UnknownUserTypeException
+from app.utils.cookies import set_token_cookies
 
 router = APIRouter(prefix="/api/user", tags=["user"])
 
@@ -86,13 +90,14 @@ class EmailVerifyRequest(BaseModel):
 
 @router.post(
     "/register/",
-    response_model=UserRegisterResponseDTO,
+    response_model=UserUnionResponseDTO,
     status_code=status.HTTP_201_CREATED,
     summary="회원가입(공통)",
     description="""
 `400` `code`:`duplicate_email` : 이미 사용 중인 이메일입니다\n
 `400` `code`:`invalid_password` : 비밀번호 형식이 올바르지 않습니다\n
 `400` `code`:`password_mismatch` : 비밀번호와 비밀번호 확인이 일치하지 않습니다\n
+`422` : Unprocessable Entity
 """,
 )
 async def register(request: UserRegisterRequest):
@@ -238,9 +243,26 @@ async def profile(
     return await get_user_profile(current_user)
 
 
+@router.get(
+    "/profile/bookmark/",
+    response_model=List[BookMarkPostingDTO],
+    status_code=status.HTTP_200_OK,
+    summary="회원 북마크 공고 전체 조회",
+    description="""
+`401` `code`:`invalid_token` : 유효하지 않은 인증 토큰입니다\n
+`404` `code`:`user_not_found` : 사용자 정보를 찾을 수 없습니다\n
+`500` `code`:`unknown_user_type` : 알 수 없는 사용자 유형입니다\n
+""",
+)
+async def get_bookmark_postings(
+    current_user: BaseUser = Depends(get_current_user),
+):
+    return await get_bookmark_postings_by_service(current_user)
+
+
 @router.patch(
     "/profile/update/",
-    response_model=UserProfileUpdateResponseDTO,
+    response_model=UserUnionResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="유저 프로필 수정 (일반/기업 통합)",
     description="""
@@ -249,17 +271,16 @@ async def profile(
 """,
 )
 async def update_profile(
-    request: Request,
+    body: Union[SeekerProfileUpdateRequest, CorporateProfileUpdateRequest] = Body(...),
     target_type: str = Query("normal"),
     current_user: BaseUser = Depends(get_current_user),
 ):
     logger.info(f"[API] 사용자 프로필 업데이트 요청(일반/기업)")
-    body = await request.json()
 
     if target_type == "normal":
-        update_data = SeekerProfileUpdateRequest(**body)
+        update_data = SeekerProfileUpdateRequest(**body.dict())
     elif target_type == "business":
-        update_data = CorporateProfileUpdateRequest(**body)
+        update_data = CorporateProfileUpdateRequest(**body.dict())
     else:
         raise UnknownUserTypeException()
 
@@ -279,8 +300,12 @@ async def update_profile(
 )
 async def login(request: LoginRequest):
     logger.info(f"[API] 사용자 로그인 요청")
-    result = await login_user(email=request.email, password=request.password)
-    return result
+    dto, access_token, refresh_token = await login_user(
+        email=request.email, password=request.password
+    )
+    response = JSONResponse(content=dto.model_dump())
+    set_token_cookies(response, access_token=access_token, refresh_token=refresh_token)
+    return response
 
 
 @router.post(
@@ -297,7 +322,11 @@ async def login(request: LoginRequest):
 async def logout(current_user: BaseUser = Depends(get_current_user)):
     logger.info(f"[API] 사용자 로그아웃 요청")
     await logout_user(current_user)
-    return MessageResponse(message="로그아웃이 완료되었습니다.")
+    response = JSONResponse(content={"message": "로그아웃이 완료되었습니다."})
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+
+    return response
 
 
 @router.post(
@@ -310,9 +339,12 @@ async def logout(current_user: BaseUser = Depends(get_current_user)):
 `401` `code`:`expired_refresh_token` : 만료된 리프레시 토큰입니다\n
 """,
 )
-async def refresh_token(request: RefreshTokenRequest):
+async def refresh_token(request: Request):
     logger.info(f"[API] 사용자 토큰 재요청")
-    return await refresh_access_token(request)
+    dto, access_token = await refresh_access_token(request)
+    response = JSONResponse(content=dto.model_dump())
+    set_token_cookies(response, access_token=access_token, refresh_token=None)
+    return response
 
 
 @router.post(
@@ -391,8 +423,10 @@ async def kakao_callback(request: SocialCallbackRequest):
     logger.info(f"[API] 사용자 소셜 로그인(카카오) 콜백 요청")
     access_token = await get_kakao_access_token(request.code)
     kakao_info = await get_kakao_user_info(access_token)
-    result = await kakao_login(kakao_info)
-    return result
+    dto, access_token, refresh_token = await kakao_login(kakao_info)
+    response = JSONResponse(content=dto.model_dump())
+    set_token_cookies(response, access_token, refresh_token)
+    return response
 
 
 @router.get(
@@ -419,4 +453,7 @@ access_token으로 유저정보 조회 후 로그인 처리\n
 )
 async def naver_callback(request: SocialCallbackRequest):
     logger.info(f"[API] 사용자 소셜 로그인(네이버) 콜백 요청")
-    return await naver_login(request.code, request.state)
+    dto, access_token, refresh_token = await naver_login(request.code, request.state)
+    response = JSONResponse(content=dto.model_dump())
+    set_token_cookies(response, access_token, refresh_token)
+    return response

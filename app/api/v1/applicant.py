@@ -69,9 +69,9 @@ async def get_all_applicants_by_corporate_user(
     "/seeker/",
     response_model=List[ApplicantResponse],
     status_code=status.HTTP_200_OK,
-    summary="구직자의 지원 공고r 조회",
+    summary="구직자의 지원 공고 조회",
     description="""
-                      """,
+""",
 )
 async def get_seeker_applications(current_user: BaseUser = Depends(get_current_user)):
     logger.info(f"[API] 구직자 지원 내역 전체 조회 요청 : BaseUser id={current_user.id}")

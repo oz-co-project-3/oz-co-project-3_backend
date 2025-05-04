@@ -1,6 +1,12 @@
 from typing import Optional
 
 from app.domain.user.models import BaseUser, CorporateUser, SeekerUser
+from app.domain.user.schema import UserRegisterRequest
+
+
+async def check_duplicate_phone_number(request: UserRegisterRequest):
+    result = BaseUser.get_or_none(phone_number=request.phone_number)
+    return True if result else False
 
 
 async def get_user_by_email(email: str) -> Optional[BaseUser]:
@@ -69,3 +75,12 @@ async def get_corporate_profile_by_info(name: str, phone_number: str) -> Corpora
 
 async def get_user_by_id(user_id: str) -> BaseUser:
     return await BaseUser.get_or_none(id=user_id)
+
+
+async def get_bookmark_postings_by_repository(current_user: BaseUser):
+    seeker_user = (
+        await SeekerUser.filter(user=current_user)
+        .prefetch_related("interests_posting")
+        .first()
+    )
+    return await seeker_user.interests_posting.all()

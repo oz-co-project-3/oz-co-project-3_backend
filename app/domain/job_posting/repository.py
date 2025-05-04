@@ -56,3 +56,13 @@ class JobPostingRepository:
     async def delete_job_posting(job_posting: JobPosting) -> None:
         # JobPosting 삭제
         await job_posting.delete()
+
+    @staticmethod
+    async def toggle_job_posting_bookmark(seeker_user, posting):
+        exists = await seeker_user.interests_posting.filter(id=posting.id).exists()
+        if exists:
+            await seeker_user.interests_posting.remove(posting)
+            return False
+        else:
+            await seeker_user.interests_posting.add(posting)
+            return True

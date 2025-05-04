@@ -14,7 +14,7 @@ from app.domain.user.models import (
 
 class UserRegisterRequest(BaseModel):
     name: str
-    email: EmailStr
+    email: EmailStr = Field(..., max_length=50, description="이메일, 길이제한 50자")
     password: str = Field(min_length=8)
     password_check: str
     phone_number: str
@@ -46,8 +46,13 @@ class UserResponseDTO(BaseModel):
     id: int
     email: EmailStr
     user_type: str
+    signinMethod: str
+    status: UserStatus
     email_verified: bool
+    gender: Gender
+    leave_reason: Optional[str] = None
     created_at: datetime
+    deleted_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -85,8 +90,7 @@ class SeekerProfileResponse(BaseModel):
     purposes: str
     sources: str
     status: SeekerStatus
-    is_social: bool
-    applied_posting: List[int] = []
+    applied_posting: Optional[List[int]] = None
     applied_posting_count: int
     profile_url: Optional[str] = None
 
@@ -104,17 +108,10 @@ class CorporateProfileResponse(BaseModel):
     manager_name: str
     manager_phone_number: str
     manager_email: Optional[str] = None
-    gender: Optional[str] = None
     profile_url: Optional[str] = None
 
     class Config:
         from_attributes = True
-
-
-# 공통 Wrapper
-# class UserProfileResponseDTO(BaseModel):
-#     success: bool
-#     data: Union["SeekerProfileResponse", "CorporateProfileResponse"]
 
 
 class UserUnionResponseDTO(BaseModel):
@@ -177,10 +174,8 @@ class CorporateProfileUpdateResponse(BaseModel):
     manager_email: Optional[str] = None
     profile_url: Optional[str] = None
 
-
-class UserProfileUpdateResponseDTO(BaseModel):
-    success: bool
-    data: Union["SeekerProfileUpdateResponse", "CorporateProfileUpdateResponse"]
+    class Config:
+        from_attributes = True
 
 
 class UserDeleteRequest(BaseModel):
@@ -202,12 +197,14 @@ class LoginRequest(BaseModel):
 
 
 class LoginResponseDTO(BaseModel):
-    access_token: str
-    refresh_token: str
     user_id: int
     user_type: str
     email: str
     name: Optional[str] = "소셜 유저"
+    access_token: str
+
+    class Config:
+        from_attributes = True
 
 
 class LogoutResponseDTO(BaseModel):
@@ -228,6 +225,9 @@ class RefreshTokenRequest(BaseModel):
 
 class RefreshTokenResponseDTO(BaseModel):
     access_token: str
+
+    class Config:
+        from_attributes = True
 
 
 class ResendEmailRequest(BaseModel):
@@ -302,3 +302,19 @@ class EmailCheckRequest(BaseModel):
 class EmailCheckResponseDTO(BaseModel):
     success: bool
     is_available: bool
+
+
+class BookMarkResponseDTO(BaseModel):
+    job_posting_id: int
+
+
+class BookMarkPostingDTO(BaseModel):
+    id: int
+    title: str
+    company: str
+    location: str
+    image_url: Optional[str] = None
+    employ_method: str
+
+    class Config:
+        from_attributes = True
