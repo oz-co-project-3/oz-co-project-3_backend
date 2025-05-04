@@ -7,9 +7,9 @@ from app.exceptions.base_exceptions import CustomException
 
 
 class DummyUser:
-    def __init__(self, id, is_superuser=False):
+    def __init__(self, id, user_type="normal"):
         self.id = id
-        self.is_superuser = is_superuser
+        self.user_type = user_type
 
 
 class DummyObject:
@@ -19,14 +19,14 @@ class DummyObject:
 
 @pytest.mark.asyncio
 async def test_check_superuser_permission_denied():
-    user = DummyUser(id=1, is_superuser=False)
+    user = DummyUser(id=1, user_type="normal")
     with pytest.raises(PermissionDeniedException):
         check_superuser(user)
 
 
 @pytest.mark.asyncio
 async def test_check_superuser_pass():
-    user = DummyUser(id=1, is_superuser=True)
+    user = DummyUser(id=1, user_type="normal,admin")
     assert check_superuser(user) is None
 
 
@@ -52,7 +52,7 @@ async def test_check_existing_found():
 @pytest.mark.asyncio
 async def test_check_author_not_author():
     obj = DummyObject(user_id=1)
-    user = DummyUser(id=2, is_superuser=False)
+    user = DummyUser(id=2)
 
     with pytest.raises(PermissionDeniedException):
         await check_author(obj, user)
@@ -61,7 +61,7 @@ async def test_check_author_not_author():
 @pytest.mark.asyncio
 async def test_check_author_is_author():
     obj = DummyObject(user_id=1)
-    user = DummyUser(id=1, is_superuser=False)
+    user = DummyUser(id=1)
 
     assert await check_author(obj, user) is None
 
@@ -69,6 +69,6 @@ async def test_check_author_is_author():
 @pytest.mark.asyncio
 async def test_check_author_superuser():
     obj = DummyObject(user_id=1)
-    user = DummyUser(id=99, is_superuser=True)
+    user = DummyUser(id=99, user_type="normal,admin")
 
     assert await check_author(obj, user) is None

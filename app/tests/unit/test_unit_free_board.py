@@ -21,7 +21,7 @@ async def test_create_free_board_by_id_service(mock_create):
     dummy_data = AsyncMock()
     dummy_result = FreeBoardResponseDTO(
         id=1,
-        user=UserSchema(id=1),
+        user=UserSchema(id=1, email="test@test.com"),
         title="test title",
         content="test content",
         image_url=None,
@@ -46,7 +46,7 @@ async def test_get_all_free_board_service(mock_get_query):
     mock_data = [
         FreeBoardResponseDTO(
             id=1,
-            user=UserSchema(id=1),
+            user=UserSchema(id=1, email="test@test.com"),
             title="test title",
             content="test content",
             image_url=None,
@@ -72,7 +72,7 @@ async def test_get_free_board_by_id_service(mock_get_query):
     dummy_id = 100
     mock_data = FreeBoardResponseDTO(
         id=1,
-        user=UserSchema(id=1),
+        user=UserSchema(id=1, email="test@test.com"),
         title="test title",
         content="test content",
         image_url=None,
@@ -104,7 +104,7 @@ async def test_patch_free_board_by_id_service(
     mock_get_query.return_value = dummy_obj
     mock_patch_free_board_by_id.return_value = FreeBoardResponseDTO(
         id=1,
-        user=UserSchema(id=1),
+        user=UserSchema(id=1, email="test@test.com"),
         title="updated title",
         content="updated content",
         image_url=None,
