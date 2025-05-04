@@ -2,6 +2,7 @@ import logging
 from typing import Union
 
 from fastapi import APIRouter, Body, Depends, Query, Request, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 
 from app.core.token import get_current_user
@@ -72,6 +73,7 @@ from app.domain.user.services.user_register_services import (
     upgrade_to_business,
 )
 from app.exceptions.server_exceptions import UnknownUserTypeException
+from app.utils.cookies import set_token_cookies
 
 router = APIRouter(prefix="/api/user", tags=["user"])
 
@@ -279,8 +281,12 @@ async def update_profile(
 )
 async def login(request: LoginRequest):
     logger.info(f"[API] 사용자 로그인 요청")
-    result = await login_user(email=request.email, password=request.password)
-    return result
+    dto, access_token, refresh_token = await login_user(
+        email=request.email, password=request.password
+    )
+    response = JSONResponse(content=dto.model_dump())
+    set_token_cookies(response, access_token=access_token, refresh_token=refresh_token)
+    return response
 
 
 @router.post(
@@ -310,9 +316,12 @@ async def logout(current_user: BaseUser = Depends(get_current_user)):
 `401` `code`:`expired_refresh_token` : 만료된 리프레시 토큰입니다\n
 """,
 )
-async def refresh_token(request: RefreshTokenRequest):
+async def refresh_token(request: Request):
     logger.info(f"[API] 사용자 토큰 재요청")
-    return await refresh_access_token(request)
+    dto, access_token = await refresh_access_token(request)
+    response = JSONResponse(content=dto.model_dump())
+    set_token_cookies(response, access_token=access_token, refresh_token=None)
+    return response
 
 
 @router.post(
@@ -391,8 +400,10 @@ async def kakao_callback(request: SocialCallbackRequest):
     logger.info(f"[API] 사용자 소셜 로그인(카카오) 콜백 요청")
     access_token = await get_kakao_access_token(request.code)
     kakao_info = await get_kakao_user_info(access_token)
-    result = await kakao_login(kakao_info)
-    return result
+    dto, access_token, refresh_token = await kakao_login(kakao_info)
+    response = JSONResponse(content=dto.model_dump())
+    set_token_cookies(response, access_token, refresh_token)
+    return response
 
 
 @router.get(
@@ -419,4 +430,7 @@ access_token으로 유저정보 조회 후 로그인 처리\n
 )
 async def naver_callback(request: SocialCallbackRequest):
     logger.info(f"[API] 사용자 소셜 로그인(네이버) 콜백 요청")
-    return await naver_login(request.code, request.state)
+    dto, access_token, refresh_token = await naver_login(request.code, request.state)
+    response = JSONResponse(content=dto.model_dump())
+    set_token_cookies(response, access_token, refresh_token)
+    return response
