@@ -1,6 +1,11 @@
+import os
 from pathlib import Path
 
 from pydantic_settings import BaseSettings
+
+ENV = os.getenv("ENV", "dev")
+
+ENV_PATH = Path(__file__).resolve().parent.parent / f".envs/.{ENV}.env"
 
 
 class Settings(BaseSettings):
@@ -49,7 +54,7 @@ class Settings(BaseSettings):
     NAVER_STATE: str
 
     class Config:
-        env_file = f"{Path(__file__).resolve().parent.parent.parent}/.envs/.dev.env"
+        env_file = ENV_PATH
         extra = "ignore"
 
 
