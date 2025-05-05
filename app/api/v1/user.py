@@ -74,6 +74,7 @@ from app.domain.user.services.user_register_services import (
     register_user,
     upgrade_to_business,
 )
+from app.exceptions.auth_exceptions import InvalidTokenException
 from app.exceptions.server_exceptions import UnknownUserTypeException
 from app.utils.cookies import set_token_cookies
 
@@ -319,9 +320,18 @@ async def login(request: LoginRequest):
 `500` `code`:`SERVER_ERROR` : 서버 내부 오류가 발생했습니다\n
 """,
 )
-async def logout(current_user: BaseUser = Depends(get_current_user)):
+async def logout(
+    request: Request,
+    current_user: BaseUser = Depends(get_current_user),
+):
     logger.info(f"[API] 사용자 로그아웃 요청")
-    await logout_user(current_user)
+
+    access_token = request.cookies.get("access_token")
+    if not access_token:
+        raise InvalidTokenException()
+
+    await logout_user(current_user, access_token)
+
     response = JSONResponse(content={"message": "로그아웃이 완료되었습니다."})
     response.delete_cookie("access_token", path="/")
     response.delete_cookie("refresh_token", path="/")
