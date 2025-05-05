@@ -13,18 +13,18 @@ from app.domain.user.models import (
 
 
 class UserRegisterRequest(BaseModel):
-    name: str
+    name: str = Field(..., max_length=20, description="이름, 길이제한 20자")
     email: EmailStr = Field(..., max_length=50, description="이메일, 길이제한 50자")
-    password: str = Field(min_length=8)
-    password_check: str
-    phone_number: str
-    birth: date
-    interests: str
-    purposes: str
-    sources: str
-    status: SeekerStatus
-    gender: Optional[str] = None
-    signinMethod: SignInEnum
+    password: str = Field(min_length=8, description="비밀번호 최소 8자 이상")
+    password_check: str = Field(min_length=8, description="비밀번호 최소 8자 이상")
+    phone_number: str = Field(max_length=15, description="번호 길이제한 15자")
+    birth: date = Field(..., description="생년월일")
+    interests: str = Field(..., max_length=100, description="관심사, 최대 100자")
+    purposes: str = Field(..., max_length=100, description="가입 목적, 최대 100자")
+    sources: str = Field(..., max_length=100, description="가입 경로, 최대 100자")
+    status: SeekerStatus = Field(..., description="구직 상태 (예: seeking, not_seeking)")
+    gender: Optional[str] = Field(None, max_length=10, description="성별 (선택)")
+    signinMethod: str = Field(..., description="가입 방식")
 
     class Config:
         from_attributes = True
@@ -59,11 +59,13 @@ class UserResponseDTO(BaseModel):
 
 
 class BusinessUpgradeRequest(BaseModel):
-    business_number: str
-    company_name: str
-    manager_name: str
-    manager_phone_number: str
-    business_start_date: date
+    business_number: str = Field(..., max_length=20, description="사업자등록번호, 길이제한 20자")
+    company_name: str = Field(..., max_length=255, description="회사명, 최대 255자")
+    manager_name: str = Field(..., max_length=100, description="담당자 이름, 최대 100자")
+    manager_phone_number: str = Field(
+        ..., max_length=20, description="담당자 전화번호, 최대 20자"
+    )
+    business_start_date: date = Field(..., description="사업 시작일자")
 
     class Config:
         from_attributes = True
@@ -124,26 +126,46 @@ class UserUnionResponseDTO(BaseModel):
 
 
 class SeekerProfileUpdateRequest(BaseModel):
-    name: Optional[str] = None
-    phone_number: Optional[str] = None
-    birth: Optional[date] = None
-    interests: Optional[List[str]] = None
-    purposes: Optional[List[str]] = None
-    sources: Optional[List[str]] = None
-    status: Optional[SeekerStatus] = None
-    profile_url: Optional[str] = None
+    name: Optional[str] = Field(None, max_length=20, description="이름 (선택), 최대 20자")
+    phone_number: Optional[str] = Field(
+        None, max_length=20, description="전화번호 (선택), 최대 20자"
+    )
+    birth: Optional[date] = Field(None, description="생년월일 (선택)")
+    interests: Optional[List[str]] = Field(
+        None, description="관심사 리스트 (선택), 각 항목 최대 100자"
+    )
+    purposes: Optional[List[str]] = Field(
+        None, description="가입 목적 리스트 (선택), 각 항목 최대 100자"
+    )
+    sources: Optional[List[str]] = Field(
+        None, description="가입 경로 리스트 (선택), 각 항목 최대 60자"
+    )
+    status: Optional[SeekerStatus] = Field(None, description="구직 상태 (선택)")
+    profile_url: Optional[str] = Field(
+        None, max_length=255, description="프로필 이미지 URL (선택), 최대 255자"
+    )
 
     class Config:
         from_attributes = True
 
 
 class CorporateProfileUpdateRequest(BaseModel):
-    company_name: Optional[str] = None
-    company_description: Optional[str] = None
-    manager_name: Optional[str] = None
-    manager_phone_number: Optional[str] = None
-    manager_email: Optional[EmailStr] = None
-    profile_url: Optional[str] = None
+    company_name: Optional[str] = Field(
+        None, max_length=255, description="회사명 (선택), 최대 255자"
+    )
+    company_description: Optional[str] = Field(None, description="회사 소개 (선택)")
+    manager_name: Optional[str] = Field(
+        None, max_length=100, description="담당자 이름 (선택), 최대 100자"
+    )
+    manager_phone_number: Optional[str] = Field(
+        None, max_length=20, description="담당자 전화번호 (선택), 최대 20자"
+    )
+    manager_email: Optional[EmailStr] = Field(
+        None, max_length=255, description="담당자 이메일 (선택), 최대 255자"
+    )
+    profile_url: Optional[str] = Field(
+        None, max_length=255, description="프로필 이미지 URL (선택), 최대 255자"
+    )
 
     class Config:
         from_attributes = True
@@ -179,9 +201,9 @@ class CorporateProfileUpdateResponse(BaseModel):
 
 
 class UserDeleteRequest(BaseModel):
-    password: str
+    password: str = Field(..., description="비밀번호")
     is_active: bool
-    reason: Optional[str] = None
+    reason: Optional[str] = Field(None, description="탈퇴 사유 (선택)")
 
 
 class UserDeleteDTO(BaseModel):
@@ -192,8 +214,8 @@ class UserDeleteDTO(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+    email: EmailStr = Field(..., description="이메일")
+    password: str = Field(..., description="패스워드")
 
 
 class LoginResponseDTO(BaseModel):
@@ -251,8 +273,8 @@ DTO 적용 스키마 🔽
 
 
 class FindEmailRequest(BaseModel):
-    name: str
-    phone_number: str
+    name: str = Field(..., description="이름")
+    phone_number: str = Field(..., description="전화번호")
 
 
 class FindEmailResponseDTO(BaseModel):
@@ -260,9 +282,9 @@ class FindEmailResponseDTO(BaseModel):
 
 
 class FindPasswordRequest(BaseModel):
-    name: str
-    phone_number: str
-    email: str
+    name: str = Field(..., description="이름")
+    phone_number: str = Field(..., description="전화번호")
+    email: str = Field(..., description="이메일")
 
 
 class FindPasswordResponseDTO(BaseModel):
@@ -270,9 +292,9 @@ class FindPasswordResponseDTO(BaseModel):
 
 
 class ResetPasswordRequest(BaseModel):
-    email: EmailStr
-    new_password: str
-    new_password_check: str
+    email: EmailStr = Field(..., description="이메일")
+    new_password: str = Field(..., description="새로운 비밀번호")
+    new_password_check: str = Field(..., description="새로운 비밀번호")
 
 
 class ResetPasswordResponseDTO(BaseModel):
@@ -296,7 +318,7 @@ class ResendEmailResponseDTO(BaseModel):
 
 # 이메일 중복검사 체크스키마
 class EmailCheckRequest(BaseModel):
-    email: EmailStr
+    email: EmailStr = Field(..., description="이메일")
 
 
 class EmailCheckResponseDTO(BaseModel):
@@ -309,12 +331,12 @@ class BookMarkResponseDTO(BaseModel):
 
 
 class BookMarkPostingDTO(BaseModel):
-    id: int
-    title: str
-    company: str
-    location: str
-    image_url: Optional[str] = None
-    employ_method: str
+    id: int = Field(..., description="공고 ID")
+    title: str = Field(..., max_length=255, description="공고 제목")
+    company: str = Field(..., max_length=100, description="회사명")
+    location: str = Field(..., max_length=100, description="근무 위치")
+    image_url: Optional[str] = Field(None, max_length=255, description="이미지 URL (선택)")
+    employ_method: str = Field(..., max_length=50, description="고용 형태 (예: 정규직, 계약직 등)")
 
     class Config:
         from_attributes = True

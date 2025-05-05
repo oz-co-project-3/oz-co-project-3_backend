@@ -9,6 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette.requests import Request
 
+from app.core.redis import redis
 from app.domain.user.models import BaseUser
 from app.exceptions.auth_exceptions import (
     AuthRequiredException,
@@ -60,6 +61,11 @@ def create_jwt_tokens(user_id: int, user_type: str) -> tuple[str, str]:
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> BaseUser:
+    # 블랙리스트 체크
+    is_blacklisted = await redis.get(f"blacklist:{token}")
+    if is_blacklisted:
+        raise InvalidTokenException()
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
