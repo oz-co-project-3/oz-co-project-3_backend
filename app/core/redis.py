@@ -1,11 +1,8 @@
-import os
-
-from dotenv import load_dotenv
 from redis.asyncio import Redis
 
-load_dotenv()
+from app.core.settings import settings
 
-REDIS_HOST = os.getenv("REDIS_HOST", "redis-dev")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_HOST = settings.REDIS_HOST
+REDIS_PORT = settings.REDIS_PORT
 
 redis = Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)

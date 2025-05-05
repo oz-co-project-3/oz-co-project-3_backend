@@ -42,6 +42,7 @@ pre-commit = "^4.2.0"
 black = "^23.11.0"
 isort = "^5.10.1"
 asyncpg = "^0.30.0"
+pydantic-settings = "^2.9.1"
 
 [tool.aerich]
 tortoise_orm = "app.core.config.TORTOISE_ORM"
