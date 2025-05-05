@@ -98,7 +98,7 @@ class EmailVerifyRequest(BaseModel):
 `400` `code`:`duplicate_email` : 이미 사용 중인 이메일입니다\n
 `400` `code`:`invalid_password` : 비밀번호 형식이 올바르지 않습니다\n
 `400` `code`:`password_mismatch` : 비밀번호와 비밀번호 확인이 일치하지 않습니다\n
-`422` : Unprocessable Entity
+`422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
 """,
 )
 async def register(request: UserRegisterRequest):
@@ -115,6 +115,7 @@ async def register(request: UserRegisterRequest):
     description="""
 `400` `code`:`already_business_user` : 이미 기업회원으로 등록된 사용자입니다\n
 `400` `code`:`invalid_business_number` : 국세청에 등록되지 않은 사업자등록번호입니다\n
+`422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
 """,
 )
 async def upgrade_to_business_route(
@@ -132,6 +133,7 @@ async def upgrade_to_business_route(
     summary="이메일 중복 확인",
     description="""
 `200` `code`:`is_available=false` : 이미 존재하는 이메일입니다\n
+`422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
 """,
 )
 async def check_email(request: EmailCheckRequest):
@@ -146,6 +148,7 @@ async def check_email(request: EmailCheckRequest):
     summary="회원 탈퇴",
     description="""
 `400` `code`:`invalid_password` : 비밀번호가 일치하지 않습니다.\n
+`422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
 """,
 )
 async def delete_profile(
@@ -165,6 +168,7 @@ async def delete_profile(
     summary="아이디(이메일) 찾기",
     description="""
 `404` `code`:`user_not_found` : 일치하는 사용자 정보가 없습니다\n
+`422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
 """,
 )
 async def find_email_route(request: FindEmailRequest):
@@ -179,6 +183,7 @@ async def find_email_route(request: FindEmailRequest):
     summary="비밀번호 찾기",
     description="""
 `404` `code`:`user_not_found` : 일치하는 사용자 정보가 없습니다\n
+`422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
 """,
 )
 async def find_password_route(request: FindPasswordRequest):
@@ -195,6 +200,9 @@ async def find_password_route(request: FindPasswordRequest):
     response_model=MessageResponse,
     status_code=status.HTTP_200_OK,
     summary="현재 비밀번호 확인",
+    description="""
+    `422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
+    """,
 )
 async def verify_password(
     request: VerifyPasswordRequest,
@@ -215,6 +223,7 @@ async def verify_password(
 `400` `code`:`invalid_password` : 비밀번호 조건 불충족\n
 `400` `code`:`password_previously_used` : 이전 비밀번호 재사용\n
 `404` `code`:`user_not_found` : 이메일에 해당하는 유저 없음\n
+`422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
 """,
 )
 async def reset_password_route(request: ResetPasswordRequest):
@@ -269,6 +278,7 @@ async def get_bookmark_postings(
     description="""
 `target_type=normal` : 일반회원 프로필 수정\n
 `target_type=business` : 기업회원 프로필 수정\n
+`422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
 """,
 )
 async def update_profile(
@@ -297,6 +307,7 @@ async def update_profile(
 `400` `code`:`invalid_credentials` : 이메일 또는 비밀번호가 일치하지 않습니다\n
 `403` `code`:`unverified_or_inactive_account` : 이메일 인증이 완료되지 않았거나 계정이 활성화되지 않았습니다\n
 `404` `code`:`user_not_found` : 유저를 찾을 수 없습니다\n
+`422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
 """,
 )
 async def login(request: LoginRequest):
@@ -365,6 +376,7 @@ async def refresh_token(request: Request):
     description="""
 `400` `code`:`invalid_verification_code` : 유효하지 않은 인증코드입니다.\n
 `404` `code`:`user_not_found` : 사용자를 찾을 수 없습니다.\n
+`422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
 """,
 )
 async def verify_email(request: EmailVerifyRequest):
@@ -400,6 +412,7 @@ async def resend_email_code(request: ResendEmailRequest):
 결과가 '계속사업자'일 경우 `is_valid = true` 로 반환됩니다.\n
 `400` `code`:`invalid_business_number` : 국세청에 등록되지 않은 사업자등록번호입니다.\n
 `500` `code`:`external_api_error` : 국세청 API 호출 실패\n
+`422` 'code': Unprocessable Entity : 입력값이 잘못되어 요청을 처리할 수 없습니다
 """,
 )
 async def business_verify(request: BusinessVerifyRequest):
