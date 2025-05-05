@@ -1,22 +1,6 @@
-import os
-from pathlib import Path
+from app.core.settings import settings
 
-from dotenv import load_dotenv
-
-ENV = os.getenv("ENV", "dev")
-
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-ENV_PATH = BASE_DIR / f".envs/.{ENV}.env"
-
-load_dotenv(dotenv_path=ENV_PATH)
-
-POSTGRES_DB = os.getenv("POSTGRES_DB")
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-POSTGRES_HOST = os.getenv("POSTGRES_HOST")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT")
-
-POSTGRES_URL = f"postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+POSTGRES_URL = f"postgres://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
 
 TORTOISE_ORM = {
     "connections": {"default": POSTGRES_URL},
@@ -36,7 +20,3 @@ TORTOISE_ORM = {
         }
     },
 }
-
-# 외부 api
-base_url = os.getenv("BASE_URL")
-api_key = os.getenv("API_KEY")

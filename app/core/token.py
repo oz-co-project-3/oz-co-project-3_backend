@@ -1,23 +1,20 @@
-import os
 from datetime import datetime, timedelta
 from typing import Optional
 
 import jwt
-from dotenv import load_dotenv
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette.requests import Request
 
 from app.core.redis import redis
+from app.core.settings import settings
 from app.domain.user.models import BaseUser
 from app.exceptions.auth_exceptions import (
     AuthRequiredException,
     ExpiredTokenException,
     InvalidTokenException,
 )
-
-load_dotenv()
 
 
 class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
@@ -37,7 +34,7 @@ oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl="/api/user/login/")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 1
 REFRESH_TOKEN_EXPIRE_SECONDS = REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
 
 

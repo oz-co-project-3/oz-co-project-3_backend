@@ -1,11 +1,10 @@
-import os
-
 import httpx
 
+from app.core.settings import settings
 from app.exceptions.server_exceptions import ExternalApiErrorException
 from app.exceptions.user_exceptions import InvalidBusinessNumberException
 
-BIZINFO_API_KEY = os.getenv("BIZINFO_API_KEY")
+BIZINFO_API_KEY = settings.BIZINFO_API_KEY
 
 
 async def verify_business_number(business_number: str):
