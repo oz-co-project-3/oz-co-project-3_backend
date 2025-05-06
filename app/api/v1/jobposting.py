@@ -4,11 +4,7 @@ from fastapi import APIRouter, Depends, Path
 
 from app.core.token import get_current_user
 from app.domain.job_posting.repository import JobPostingRepository
-from app.domain.job_posting.schema import (
-    JobPostingCreateUpdate,
-    JobPostingResponse,
-    JobPostingSummaryResponse,
-)
+from app.domain.job_posting.schema import JobPostingCreateUpdate, JobPostingResponse
 from app.domain.job_posting.services import JobPostingService
 from app.domain.user.models import BaseUser
 
@@ -44,7 +40,7 @@ async def create_job_posting(
 
 @job_posting_router.get(
     "/",
-    response_model=list[JobPostingSummaryResponse],
+    response_model=list[JobPostingResponse],
     summary="내 회사의 전체 공고 조회",
 )
 async def get_my_company_job_postings(

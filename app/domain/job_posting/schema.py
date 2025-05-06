@@ -93,27 +93,3 @@ class JobPostingResponse(BaseModel):
     @field_serializer("deadline")
     def serialize_deadline(self, value: str, _info) -> str:
         return datetime.strptime(value, "%Y-%m-%d").strftime("%Y-%m-%d")
-
-
-class JobPostingSummaryResponse(BaseModel):
-    id: int
-    title: str
-    location: str
-    employment_type: EmploymentEnum
-    employ_method: MethodEnum
-    position: str
-    history: Optional[str] = None
-    career: CareerEnum
-    recruitment_count: int
-    education: str
-    deadline: str
-    salary: str
-    summary: Optional[str] = None
-    description: str
-    status: StatusEnum
-    created_at: datetime
-    view_count: int
-    report: int
-    image_url: Optional[str] = None
-
-    model_config = ConfigDict(from_attributes=True)

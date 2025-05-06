@@ -68,9 +68,8 @@ async def register_user(request: UserRegisterRequest) -> UserUnionResponseDTO:
         password=hashed_password,
         user_type="normal",
         gender=request.gender,
-        is_superuser=False,
         status="pending",
-        signinMethod=request.signinMethod.value,
+        signinMethod=request.signinMethod,
     )
 
     interests = (
@@ -99,7 +98,6 @@ async def register_user(request: UserRegisterRequest) -> UserUnionResponseDTO:
         purposes=purposes,
         sources=sources,
         status=request.status,
-        is_social=False,
     )
 
     # 여기서 인증메일 발송
