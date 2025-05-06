@@ -43,10 +43,10 @@ class CorpUserResponseSchema(BaseModel):
     company_name: str
     business_start_date: datetime
     business_number: str
-    company_description: str
+    company_description: Optional[str]
     manager_name: str
     manager_phone_number: str
-    manager_email: str
+    manager_email: Optional[str]
 
     class Config:
         from_attributes = True
