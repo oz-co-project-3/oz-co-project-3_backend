@@ -19,14 +19,21 @@ from app.exceptions.auth_exceptions import (
 
 class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
     async def __call__(self, request: Request) -> Optional[str]:
+        # 1. 먼저 Authorization 헤더 확인
         authorization = request.headers.get("Authorization")
         scheme, param = get_authorization_scheme_param(authorization)
-        if not authorization or scheme.lower() != "bearer":
-            if self.auto_error:
-                raise AuthRequiredException()
-            else:
-                return None
-        return param
+
+        if authorization and scheme.lower() == "bearer":
+            return param
+
+        # 2. Authorization 없으면 access_token 쿠키 시도
+        token = request.cookies.get("access_token")
+        if token:
+            return token
+
+        if self.auto_error:
+            raise AuthRequiredException()
+        return None
 
 
 oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl="/api/user/login/")
