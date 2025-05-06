@@ -1,19 +1,15 @@
 import asyncio
-import os
 import random
 import smtplib
 from email.mime.text import MIMEText
 
-from dotenv import load_dotenv
-
 from app.core.redis import redis
+from app.core.settings import settings
 
-load_dotenv()
-
-SMTP_USER = os.getenv("SMTP_USER")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
-SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.naver.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 465))
+SMTP_USER = settings.SMTP_USER
+SMTP_PASSWORD = settings.SMTP_PASSWORD
+SMTP_SERVER = settings.SMTP_SERVER
+SMTP_PORT = settings.SMTP_PORT
 
 
 # 동기 함수로 변경
@@ -50,8 +46,8 @@ async def send_email_code(email: str, purpose: str) -> str:
         f"※ 인증코드는 10분간 유효합니다.\n"
     )
 
-    URL_SCHEME = os.getenv("URL_SCHEME")
-    DOMAIN = os.getenv("DOMAIN")
+    URL_SCHEME = settings.URL_SCHEME
+    DOMAIN = settings.DOMAIN
 
     # 아이디 찾기 또는 비밀번호 찾기일 경우 링크 포함
     if purpose in ["아이디 찾기", "비밀번호 찾기"]:

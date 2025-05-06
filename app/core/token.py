@@ -1,22 +1,20 @@
-import os
 from datetime import datetime, timedelta
 from typing import Optional
 
 import jwt
-from dotenv import load_dotenv
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette.requests import Request
 
+from app.core.redis import redis
+from app.core.settings import settings
 from app.domain.user.models import BaseUser
 from app.exceptions.auth_exceptions import (
     AuthRequiredException,
     ExpiredTokenException,
     InvalidTokenException,
 )
-
-load_dotenv()
 
 
 class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
@@ -36,7 +34,7 @@ oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl="/api/user/login/")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 1
 REFRESH_TOKEN_EXPIRE_SECONDS = REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
 
 
@@ -60,6 +58,11 @@ def create_jwt_tokens(user_id: int, user_type: str) -> tuple[str, str]:
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> BaseUser:
+    # 블랙리스트 체크
+    is_blacklisted = await redis.get(f"blacklist:{token}")
+    if is_blacklisted:
+        raise InvalidTokenException()
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")

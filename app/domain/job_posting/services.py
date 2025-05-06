@@ -3,17 +3,12 @@ from typing import List
 
 from app.domain.job_posting.models import JobPosting
 from app.domain.job_posting.repository import JobPostingRepository
-from app.domain.job_posting.schema import (
-    JobPostingCreateUpdate,
-    JobPostingResponse,
-    JobPostingSummaryResponse,
-)
+from app.domain.job_posting.schema import JobPostingCreateUpdate, JobPostingResponse
 from app.domain.resume.repository import ResumeRepository
 from app.domain.services.verification import check_existing
 from app.domain.user.models import BaseUser, CorporateUser
 from app.exceptions.auth_exceptions import PermissionDeniedException
 from app.exceptions.job_posting_exceptions import (
-    JobPostingNotFoundException,
     NotificationNotFoundException,
     SameTitleExistException,
 )
@@ -90,9 +85,9 @@ class JobPostingService:
     @staticmethod
     async def get_job_postings_by_company_user(
         user: CorporateUser,
-    ) -> List[JobPostingSummaryResponse]:
+    ) -> List[JobPostingResponse]:
         job_postings = await JobPostingRepository.get_job_postings_by_user(user)
-        return [JobPostingSummaryResponse.from_orm(posting) for posting in job_postings]
+        return [JobPostingResponse.from_orm(posting) for posting in job_postings]
 
     @staticmethod
     async def get_specific_job_posting(

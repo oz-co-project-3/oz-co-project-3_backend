@@ -1,5 +1,5 @@
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import jwt
 from fastapi import Request
@@ -107,14 +107,22 @@ async def login_user(email: str, password: str) -> tuple[LoginResponseDTO, str, 
 
 
 # 로그아웃
-async def logout_user(user: BaseUser) -> LogoutResponseDTO:
+async def logout_user(user: BaseUser, access_token: str) -> LogoutResponseDTO:
     refresh_deleted = await redis.delete(f"refresh_token:{user.id}")
     if refresh_deleted == 0:
         logger.warning(f"[CHECK] 로그아웃 실패 - 토큰 없음: 유저 ID {user.id}")
         raise InvalidTokenException()
-    return LogoutResponseDTO(
-        success=True,
-    )
+
+    try:
+        payload = jwt.decode(access_token, options={"verify_signature": False})
+        exp = payload.get("exp")
+        ttl = exp - int(datetime.utcnow().timestamp())
+        if ttl > 0:
+            await redis.setex(f"blacklist:{access_token}", ttl, "1")
+    except Exception as e:
+        logger.error(f"[ERROR] access_token 블랙리스트 등록 실패: {e}")
+
+    return LogoutResponseDTO(success=True)
 
 
 # 리프레쉬 토큰 발급

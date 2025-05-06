@@ -1,13 +1,12 @@
-import logging
-import os
-
 import httpx
+
+from app.core.settings import settings
 
 
 # 카카오 url 이동
 async def generate_kakao_auth_url() -> dict:
-    kakao_client_id = os.getenv("KAKAO_CLIENT_ID")
-    redirect_uri = os.getenv("KAKAO_REDIRECT_URI")
+    kakao_client_id = settings.KAKAO_CLIENT_ID
+    redirect_uri = settings.KAKAO_REDIRECT_URI
     url = (
         f"https://kauth.kakao.com/oauth/authorize?"
         f"client_id={kakao_client_id}&redirect_uri={redirect_uri}&response_type=code"
@@ -20,9 +19,9 @@ async def get_kakao_access_token(code: str) -> str:
     url = "https://kauth.kakao.com/oauth/token"
     payload = {
         "grant_type": "authorization_code",
-        "client_id": os.getenv("KAKAO_CLIENT_ID"),
-        "client_secret": os.getenv("KAKAO_CLIENT_SECRET"),
-        "redirect_uri": os.getenv("KAKAO_REDIRECT_URI"),
+        "client_id": settings.KAKAO_CLIENT_ID,
+        "client_secret": settings.KAKAO_CLIENT_SECRET,
+        "redirect_uri": settings.KAKAO_REDIRECT_URI,
         "code": code,
     }
 
@@ -46,9 +45,9 @@ async def get_kakao_user_info(access_token: str) -> dict:
 # 네이버
 # 네이버 인가 URL 생성
 async def generate_naver_auth_url() -> dict:
-    naver_client_id = os.getenv("NAVER_CLIENT_ID")
-    redirect_uri = os.getenv("NAVER_REDIRECT_URI")
-    state = "Test_login"
+    naver_client_id = settings.NAVER_CLIENT_ID
+    redirect_uri = settings.NAVER_REDIRECT_URI
+    state = settings.NAVER_STATE
 
     url = (
         f"https://nid.naver.com/oauth2.0/authorize"
@@ -66,8 +65,8 @@ async def get_naver_access_token(code: str, state: str) -> str:
     url = "https://nid.naver.com/oauth2.0/token"
     payload = {
         "grant_type": "authorization_code",
-        "client_id": os.getenv("NAVER_CLIENT_ID"),
-        "client_secret": os.getenv("NAVER_CLIENT_SECRET"),
+        "client_id": settings.NAVER_CLIENT_ID,
+        "client_secret": settings.NAVER_CLIENT_SECRET,
         "code": code,
         "state": state,
     }

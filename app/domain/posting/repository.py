@@ -17,7 +17,11 @@ async def get_postings_query(
     view_count: Optional[int] = 0,
     employ_method: Optional[str] = "",
 ):
-    query = JobPosting.all().select_related("user")
+    query = (
+        JobPosting.filter(status__in=["모집중", "마감 임박", "모집 종료"])
+        .select_related("user")
+        .all()
+    )
 
     # 검색 키워드 (제목, 회사, 요약, 포지션, 위치, 고용 형태)
     if search_keyword:

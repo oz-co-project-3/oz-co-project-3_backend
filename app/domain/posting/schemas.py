@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
@@ -46,13 +47,15 @@ class JobPostingResponseDTO(BaseModel):
     status: str
     view_count: int
     report: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
 
 
 class ApplicantCreateUpdateSchema(BaseModel):
-    resume: int
+    resume: Optional[int]
     status: ApplicantEnum
     memo: Optional[str] = None
 
