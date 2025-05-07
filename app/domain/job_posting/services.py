@@ -10,6 +10,7 @@ from app.domain.job_posting.repository import (
     rep_get_job_posting_by_id,
     rep_get_job_postings_by_user,
     rep_update_job_posting,
+    toggle_job_posting_bookmark,
 )
 from app.domain.job_posting.schema import JobPostingCreateUpdate, JobPostingResponse
 from app.domain.resume.repository import get_seeker_user
@@ -112,20 +113,34 @@ async def delete_job_posting(
         logger.warning(
             f"[JOBPOSTING-SERVICE] delete_job_posting 실패: JobPosting id {job_posting_id} not found."
         )
+        if not job_posting:
+            logger.warning(
+                f"[JOBPOSTING-SERVICE] get_specific_job_posting 실패: JobPosting id {job_posting_id} not found for corporate_user id={corporate_user.id}"
+            )
+            raise NotificationNotFoundException()
+        return job_posting
+
+
+async def delete_job_posting(
+    corporate_user: CorporateUser, job_posting_id: int
+) -> dict:
+    job_posting = await rep_get_job_posting_by_id(job_posting_id)
+    if not job_posting:
+        logger.warning(
+            f"[JOBPOSTING-SERVICE] delete_job_posting 실패: JobPosting id {job_posting_id} not found."
+        )
         raise NotificationNotFoundException()
     await validate_user_permissions(corporate_user, job_posting)
     await rep_delete_job_posting(job_posting)
     return {"message": "구인 공고 삭제가 완료되었습니다.", "data": job_posting_id}
 
 
-async def toggle_bookmark(
-    current_user: BaseUser, job_posting_id: int, toggle_job_posting_bookmark_fn
-):
-    job_posting = await rep_get_job_posting_by_id(job_posting_id)
+async def toggle_bookmark(current_user: BaseUser, id: int):
+    job_posting = await rep_get_job_posting_by_id(id)
     if not job_posting:
         logger.warning(
-            f"[JOBPOSTING-SERVICE] toggle_bookmark 실패: JobPosting id {job_posting_id} not found."
+            f"[JOBPOSTING-SERVICE] toggle_job_posting_bookmark 실패: JobPosting id {id} not found."
         )
         raise NotificationNotFoundException()
     seeker_user = await get_seeker_user(current_user)
-    return await toggle_job_posting_bookmark_fn(seeker_user, job_posting)
+    return await toggle_job_posting_bookmark(seeker_user, job_posting)
