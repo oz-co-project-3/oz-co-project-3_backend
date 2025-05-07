@@ -51,7 +51,7 @@ async def get_resume_by_id_service(
     await resume.fetch_related("user", "work_experiences")
 
     try:
-        check_author(resume, current_user)
+        await check_author(resume, current_user)
     except PermissionDeniedException:
         logger.warning(
             f"[RESUME] 이력서 id {resume_id}에 대해 사용자 id {current_user.id}의 접근 권한이 없습니다."
@@ -92,7 +92,7 @@ async def update_resume_service(
     await resume.fetch_related("user", "work_experiences")
 
     try:
-        check_author(resume, current_user)
+        await check_author(resume, current_user)
     except PermissionDeniedException:
         logger.warning(
             f"[RESUME] 이력서 id {resume_id}의 수정 권한이 사용자 id {current_user.id}에게 없습니다."
@@ -120,7 +120,7 @@ async def delete_resume_service(resume_id: int, current_user: Any) -> None:
         raise ResumeNotFoundException()
 
     try:
-        check_author(resume, current_user)
+        await check_author(resume, current_user)
     except PermissionDeniedException:
         logger.warning(
             f"[RESUME] 이력서 id {resume_id} 삭제 권한이 사용자 id {current_user.id}에게 없습니다."
