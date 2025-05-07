@@ -5,6 +5,7 @@ from typing import Optional
 
 from passlib.hash import bcrypt
 
+from app.core.redis import get_redis
 from app.core.token import create_jwt_tokens
 from app.domain.services.business_verify import verify_business_number
 from app.domain.services.email_detail import send_email_code
@@ -37,6 +38,7 @@ from app.exceptions.user_exceptions import (
     AlreadyBusinessUserException,
     DuplicatePhoneNumberException,
     InvalidBusinessNumberException,
+    UnverifiedOrInactiveAccountException,
 )
 
 logger = logging.getLogger(__name__)
@@ -48,7 +50,7 @@ async def register_user(request: UserRegisterRequest) -> UserUnionResponseDTO:
         logger.warning(f"[CHECK] 동일한 이메일 발견: {request.email}")
         raise DuplicateEmailException()
 
-    if not check_duplicate_phone_number(request):
+    if not await check_duplicate_phone_number(request):
         raise DuplicatePhoneNumberException()
 
     if len(request.password) < 8 or not re.search(
@@ -62,6 +64,12 @@ async def register_user(request: UserRegisterRequest) -> UserUnionResponseDTO:
         raise PasswordMismatchException()
 
     hashed_password = bcrypt.hash(request.password)
+
+    redis = get_redis()
+    is_verified = await redis.get(f"email_verified:{request.email}")
+    if is_verified != "true":
+        logger.warning(f"[CHECK] 이메일 인증 미완료: {request.email}")
+        raise UnverifiedOrInactiveAccountException()
 
     base_user = await create_base_user(
         email=request.email,
