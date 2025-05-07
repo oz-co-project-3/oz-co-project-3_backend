@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
     """,
 )
-async def create_resume(
+async def create_resume_endpoint(
     resume_data: ResumeRequestSchema,
     current_user: BaseUser = Depends(get_current_user),
 ):
@@ -61,7 +61,7 @@ async def create_resume(
 `404` `code`:`user_not_found` 유저가 없습니다\n
     """,
 )
-async def get_all_resumes(
+async def get_all_resumes_endpoint(
     offset: int = 0,
     limit: int = 10,
     current_user: BaseUser = Depends(get_current_user),
@@ -89,7 +89,7 @@ async def get_all_resumes(
 `404` `code`:`resume_not_found` 존재하지 않는 이력서입니다.\n
     """,
 )
-async def get_resume(
+async def get_resume_endpoint(
     resume_id: int,
     current_user: BaseUser = Depends(get_current_user),
 ):
@@ -117,7 +117,7 @@ async def get_resume(
 `404` `code`:`resume_not_found` 존재하지 않는 이력서입니다.\n
     """,
 )
-async def update_resume(
+async def update_resume_enpoint(
     resume_id: int,
     resume_data: ResumeRequestSchema,
     current_user: BaseUser = Depends(get_current_user),
@@ -151,7 +151,7 @@ async def update_resume(
         404: {"description": "존재하지 않는 이력서입니다."},
     },
 )
-async def delete_resume(
+async def delete_resume_endpoint(
     resume_id: int,
     current_user: SeekerUser = Depends(get_current_user),
 ):
