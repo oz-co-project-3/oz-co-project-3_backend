@@ -112,19 +112,38 @@ async def delete_job_posting(
         logger.warning(
             f"[JOBPOSTING-SERVICE] delete_job_posting 실패: JobPosting id {job_posting_id} not found."
         )
-        raise NotificationNotFoundException()
-    await validate_user_permissions(corporate_user, job_posting)
-    await rep_delete_job_posting(job_posting)
-    return {"message": "구인 공고 삭제가 완료되었습니다.", "data": job_posting_id}
+        if not job_posting:
+            logger.warning(
+                f"[JOBPOSTING-SERVICE] get_specific_job_posting 실패: JobPosting id {job_posting_id} not found for corporate_user id={corporate_user.id}"
+            )
+            raise NotificationNotFoundException()
+        return job_posting
 
+    @staticmethod
+    async def delete_job_posting(
+        corporate_user: CorporateUser, job_posting_id: int
+    ) -> dict:
+        job_posting = await JobPostingRepository.get_job_posting_by_id(job_posting_id)
+        if not job_posting:
+            logger.warning(
+                f"[JOBPOSTING-SERVICE] delete_job_posting 실패: JobPosting id {job_posting_id} not found."
+            )
+            raise NotificationNotFoundException()
+        await JobPostingService.validate_user_permissions(corporate_user, job_posting)
+        await JobPostingRepository.delete_job_posting(job_posting)
+        return {"message": "구인 공고 삭제가 완료되었습니다.", "data": job_posting_id}
 
-async def toggle_bookmark(
-    current_user: BaseUser, job_posting_id: int, toggle_job_posting_bookmark_fn
-):
-    job_posting = await rep_get_job_posting_by_id(job_posting_id)
-    if not job_posting:
-        logger.warning(
-            f"[JOBPOSTING-SERVICE] toggle_bookmark 실패: JobPosting id {job_posting_id} not found."
+    @staticmethod
+    async def toggle_bookmark(current_user: BaseUser, id: int):
+        job_posting = await JobPostingRepository.get_job_posting_by_id(id)
+        if not job_posting:
+            logger.warning(
+                f"[JOBPOSTING-SERVICE] toggle_job_posting_bookmark 실패: JobPosting id {id} not found."
+            )
+            raise NotificationNotFoundException()
+        seeker_user = await ResumeRepository.get_seeker_user(current_user)
+        return await JobPostingRepository.toggle_job_posting_bookmark(
+            seeker_user, job_posting
         )
         raise NotificationNotFoundException()
     seeker_user = await get_seeker_user(current_user)
