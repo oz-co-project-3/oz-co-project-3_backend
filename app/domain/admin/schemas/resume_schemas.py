@@ -34,7 +34,7 @@ class ResumeResponseDTO(BaseModel):
     visibility: bool
     name: str
     phone_number: str
-    email: EmailStr
+    email: str
     image_url: Optional[str] = None
     interests: str
     desired_area: str
