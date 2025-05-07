@@ -160,6 +160,14 @@ async def test_job_posting_bookmark(client, access_token):
     id = 3
     url = f"/api/job_posting/{id}/bookmark/"
 
+    # 초기상태로 설정
+    init_response = await client.post(url, headers=headers)
+    init_message = init_response.json().get("message")
+    # 이미 북마크 등록되어 있을 경우 한번 더 실행해서 해제 상태로 만듬
+    if init_message == "북마크가 추가되었습니다.":
+        await client.post(url, headers=headers)
+    # 북마크가 추가되지 않은 상태를 가정하고 테스트 진행
+
     # 추가되어야함
     response = await client.post(url, headers=headers)
     assert response.status_code == 200
