@@ -3,13 +3,13 @@ from typing import List
 
 from app.domain.job_posting.models import JobPosting
 from app.domain.job_posting.repository import (
-    create_job_posting,
-    delete_job_posting,
     get_corporate_user_by_base_user,
-    get_job_posting_by_company_and_id,
-    get_job_posting_by_id,
-    get_job_postings_by_user,
-    update_job_posting,
+    rep_create_job_posting,
+    rep_delete_job_posting,
+    rep_get_job_posting_by_company_and_id,
+    rep_get_job_posting_by_id,
+    rep_get_job_postings_by_user,
+    rep_update_job_posting,
 )
 from app.domain.job_posting.schema import JobPostingCreateUpdate, JobPostingResponse
 from app.domain.resume.repository import get_seeker_user
@@ -45,7 +45,7 @@ async def create_job_posting(
 ) -> JobPostingResponse:
     corporate_user = await get_corporate_user_by_base_user(current_user)
     check_existing(corporate_user, UserNotFoundException)
-    job_posting = await create_job_posting(
+    job_posting = await rep_create_job_posting(
         corporate_user=corporate_user, data=data.model_dump()
     )
     return format_job_posting_response(job_posting)
@@ -56,7 +56,7 @@ async def patch_job_posting(
     job_posting_id: int,
     updated_data: JobPostingCreateUpdate,
 ) -> JobPostingResponse:
-    job_posting = await get_job_posting_by_id(job_posting_id)
+    job_posting = await rep_get_job_posting_by_id(job_posting_id)
     if not job_posting:
         logger.warning(
             f"[JOBPOSTING-SERVICE] patch_job_posting 실패: JobPosting id {job_posting_id} not found."
@@ -68,7 +68,7 @@ async def patch_job_posting(
         await _check_title_duplication(
             updated_fields["title"], exclude_id=job_posting.id
         )
-    updated_job_posting = await update_job_posting(job_posting, updated_fields)
+    updated_job_posting = await rep_update_job_posting(job_posting, updated_fields)
     return format_job_posting_response(updated_job_posting)
 
 
@@ -86,14 +86,14 @@ async def _check_title_duplication(title: str, exclude_id: int = None):
 async def get_job_postings_by_company_user(
     user: CorporateUser,
 ) -> List[JobPostingResponse]:
-    job_postings = await get_job_postings_by_user(user)
+    job_postings = await rep_get_job_postings_by_user(user)
     return [JobPostingResponse.from_orm(posting) for posting in job_postings]
 
 
 async def get_specific_job_posting(
     corporate_user: CorporateUser, job_posting_id: int
 ) -> JobPosting:
-    job_posting = await get_job_posting_by_company_and_id(
+    job_posting = await rep_get_job_posting_by_company_and_id(
         user_id=corporate_user.id, job_posting_id=job_posting_id
     )
     if not job_posting:
@@ -107,21 +107,21 @@ async def get_specific_job_posting(
 async def delete_job_posting(
     corporate_user: CorporateUser, job_posting_id: int
 ) -> dict:
-    job_posting = await get_job_posting_by_id(job_posting_id)
+    job_posting = await rep_get_job_posting_by_id(job_posting_id)
     if not job_posting:
         logger.warning(
             f"[JOBPOSTING-SERVICE] delete_job_posting 실패: JobPosting id {job_posting_id} not found."
         )
         raise NotificationNotFoundException()
     await validate_user_permissions(corporate_user, job_posting)
-    await delete_job_posting(job_posting)
+    await rep_delete_job_posting(job_posting)
     return {"message": "구인 공고 삭제가 완료되었습니다.", "data": job_posting_id}
 
 
 async def toggle_bookmark(
     current_user: BaseUser, job_posting_id: int, toggle_job_posting_bookmark_fn
 ):
-    job_posting = await get_job_posting_by_id(job_posting_id)
+    job_posting = await rep_get_job_posting_by_id(job_posting_id)
     if not job_posting:
         logger.warning(
             f"[JOBPOSTING-SERVICE] toggle_bookmark 실패: JobPosting id {job_posting_id} not found."

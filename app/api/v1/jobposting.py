@@ -3,12 +3,10 @@ import logging
 from fastapi import APIRouter, Depends, Path
 
 from app.core.token import get_current_user
-from app.domain.job_posting.repository import (
-    create_job_posting,
-    get_corporate_user_by_base_user,
-)
+from app.domain.job_posting.repository import get_corporate_user_by_base_user
 from app.domain.job_posting.schema import JobPostingCreateUpdate, JobPostingResponse
 from app.domain.job_posting.services import (
+    create_job_posting,
     delete_job_posting,
     get_job_postings_by_company_user,
     get_specific_job_posting,
