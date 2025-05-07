@@ -37,7 +37,7 @@ async def create_resume_service(data: dict) -> ResumeResponseSchema:
 
     await resume.fetch_related("work_experiences")
 
-    return ResumeResponseSchema.model_config(resume)
+    return ResumeResponseSchema.model_validate(resume)
 
 
 async def get_resume_by_id_service(
@@ -58,7 +58,7 @@ async def get_resume_by_id_service(
         )
         raise
 
-    return ResumeResponseSchema.model_config(resume)
+    return ResumeResponseSchema.model_validate(resume)
 
 
 async def get_all_resume_service(
@@ -71,7 +71,7 @@ async def get_all_resume_service(
     serialized = []
     for resume in resumes:
         await resume.fetch_related("user", "work_experiences")
-        serialized.append(ResumeResponseSchema.model_config(resume))
+        serialized.append(ResumeResponseSchema.model_validate(resume))
 
     return {
         "total": total_count,

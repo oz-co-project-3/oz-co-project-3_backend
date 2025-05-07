@@ -12,7 +12,9 @@ async def get_applicants_by_job_posting(job_posting_id: int) -> List[Applicants]
     )
 
 
-async def get_applicants_by_corporate_user(corporate_user_id: int) -> List[Applicants]:
+async def repo_get_applicants_by_corporate_user(
+    corporate_user_id: int,
+) -> List[Applicants]:
     """기업 사용자가 올린 모든 공고에 대한 지원자 조회 - 공고가 없으면 빈 리스트 반환"""
     if not await JobPosting.filter(user_id=corporate_user_id).exists():
         return []  # 예외 대신 빈 리스트 반환
