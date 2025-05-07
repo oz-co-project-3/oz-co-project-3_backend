@@ -77,7 +77,8 @@ async def test_get_all_resume(client, access_token):
     response = await client.get("/api/resume/", headers=header)
 
     assert response.status_code == 200
-    assert len(response.json()) == 4  # PaginatedResumeResponse 반환 되기 때문에 4개
+    json_data = response.json()
+    assert len(json_data["data"]) == 3
 
 
 @pytest.mark.asyncio
