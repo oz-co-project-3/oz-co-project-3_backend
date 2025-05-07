@@ -1,5 +1,3 @@
-from unittest.mock import AsyncMock, patch
-
 import pytest
 from httpx import ASGITransport, AsyncClient
 from passlib.handlers.bcrypt import bcrypt
@@ -13,11 +11,12 @@ from app.domain.job_posting.models import (
 )
 from app.domain.resume.models import Resume, WorkExp
 from app.domain.user.models import BaseUser, CorporateUser, SeekerUser
-from app.main import app
 
 
 @pytest.fixture(scope="module")
-async def client():
+async def client(apply_redis_patch):
+    from app.main import app
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
@@ -25,139 +24,132 @@ async def client():
 
 @pytest.fixture(scope="module")
 async def access_token(client):
-    mock_set = AsyncMock(return_value=True)
-    mock_get = AsyncMock(return_value=None)
+    hashed_pw = bcrypt.hash("!!Test1234")  # 서비스에서 쓰는 방식 확인 필수!
+    user = await BaseUser.create(
+        email="test@test.com",
+        password=hashed_pw,
+        user_type="normal,admin",
+        signinMethod="email",
+        status="active",
+        email_verified=True,
+        gender="male",
+    )
+    seeker = await SeekerUser.create(
+        user=user,
+        name="테스트유저",
+        phone_number="01012345678",
+        birth="1990-01-01",
+        interests="프론트엔드",
+        purposes="취업",
+        sources="지인 추천",
+    )
+    user2 = await BaseUser.create(
+        email="test2@test.com",
+        password=hashed_pw,
+        user_type="business",
+        signinMethod="email",
+        status="active",
+        email_verified=True,
+        gender="male",
+    )
+    corp_user = await CorporateUser.create(
+        user=user2,
+        company_name="테스트 주식회사",
+        business_start_date="2010-01-01",
+        business_number="123-45-67890",
+        company_description="테스트 기업 설명입니다.",
+        manager_name="홍길동",
+        manager_phone_number="01012345678",
+        manager_email="manager@test.com",
+    )
 
-    with (
-        patch("app.core.redis.redis.set", mock_set),
-        patch("app.core.redis.redis.get", mock_get),
-    ):
-        hashed_pw = bcrypt.hash("!!Test1234")  # 서비스에서 쓰는 방식 확인 필수!
-        user = await BaseUser.create(
-            email="test@test.com",
-            password=hashed_pw,
-            user_type="normal,admin",
-            signinMethod="email",
-            status="active",
-            email_verified=True,
-            gender="male",
-        )
-        seeker = await SeekerUser.create(
-            user=user,
-            name="테스트유저",
-            phone_number="01012345678",
-            birth="1990-01-01",
-            interests="프론트엔드",
-            purposes="취업",
-            sources="지인 추천",
-        )
-        user2 = await BaseUser.create(
-            email="test2@test.com",
-            password=hashed_pw,
-            user_type="business",
-            signinMethod="email",
-            status="active",
-            email_verified=True,
-            gender="male",
-        )
-        corp_user = await CorporateUser.create(
-            user=user2,
-            company_name="테스트 주식회사",
-            business_start_date="2010-01-01",
-            business_number="123-45-67890",
-            company_description="테스트 기업 설명입니다.",
-            manager_name="홍길동",
-            manager_phone_number="01012345678",
-            manager_email="manager@test.com",
-        )
+    resume = await Resume.create(
+        user=seeker,
+        title="테스트 이력서",
+        visibility=True,
+        name="테스터",
+        phone_number="01012345678",
+        email="resume@test.com",
+        interests="백엔드 개발",
+        desired_area="서울",
+        education="대졸",
+        school_name="테스트대학교",
+        graduation_status="졸업",
+        introduce="이력서 소개글입니다.",
+    )
+    await WorkExp.create(
+        resume=resume,
+        company="테스트 회사",
+        period="2020-2022",
+        position="백엔드 개발자",
+    )
+    await Resume.create(
+        user=seeker,
+        title="테스트 이력서2",
+        visibility=True,
+        name="테스터2",
+        phone_number="01012345678",
+        email="resume@test.com",
+        interests="백엔드 개발",
+        desired_area="서울",
+        education="대졸",
+        school_name="테스트대학교",
+        graduation_status="졸업",
+        introduce="이력서 소개글입니다.",
+    )
+    job_posting = await JobPosting.create(
+        user=corp_user,
+        company="테스트 주식회사",
+        title="백엔드 개발자 채용",
+        location="서울 강남구",
+        employment_type=EmploymentEnum.General,
+        employ_method=MethodEnum.Permanent,  # ✅ 이 필드도 누락 시 에러날 수 있음
+        work_time="09:00~18:00",  # ✅ 추가!
+        position="백엔드 개발자",
+        history="경력 3년 이상",
+        recruitment_count=2,
+        education="대졸",
+        deadline="2025-05-01",
+        salary="4000",
+        summary="백엔드 개발 채용 요약",
+        description="백엔드 개발 관련 상세 업무 내용",
+        status=StatusEnum.Pending,
+    )
 
-        resume = await Resume.create(
-            user=seeker,
-            title="테스트 이력서",
-            visibility=True,
-            name="테스터",
-            phone_number="01012345678",
-            email="resume@test.com",
-            interests="백엔드 개발",
-            desired_area="서울",
-            education="대졸",
-            school_name="테스트대학교",
-            graduation_status="졸업",
-            introduce="이력서 소개글입니다.",
-        )
-        await WorkExp.create(
-            resume=resume,
-            company="테스트 회사",
-            period="2020-2022",
-            position="백엔드 개발자",
-        )
-        await Resume.create(
-            user=seeker,
-            title="테스트 이력서2",
-            visibility=True,
-            name="테스터2",
-            phone_number="01012345678",
-            email="resume@test.com",
-            interests="백엔드 개발",
-            desired_area="서울",
-            education="대졸",
-            school_name="테스트대학교",
-            graduation_status="졸업",
-            introduce="이력서 소개글입니다.",
-        )
-        job_posting = await JobPosting.create(
-            user=corp_user,
-            company="테스트 주식회사",
-            title="백엔드 개발자 채용",
-            location="서울 강남구",
-            employment_type=EmploymentEnum.General,
-            employ_method=MethodEnum.Permanent,  # ✅ 이 필드도 누락 시 에러날 수 있음
-            work_time="09:00~18:00",  # ✅ 추가!
-            position="백엔드 개발자",
-            history="경력 3년 이상",
-            recruitment_count=2,
-            education="대졸",
-            deadline="2025-05-01",
-            salary="4000",
-            summary="백엔드 개발 채용 요약",
-            description="백엔드 개발 관련 상세 업무 내용",
-            status=StatusEnum.Pending,
-        )
+    await RejectPosting.create(
+        job_posting=job_posting,
+        user=user,
+        content="기업 정보가 부족합니다.",
+    )
 
-        await RejectPosting.create(
-            job_posting=job_posting,
-            user=user,
-            content="기업 정보가 부족합니다.",
-        )
+    await JobPosting.create(
+        user=corp_user,
+        company="테스트 주식회사2",
+        title="백엔드 개발자 채2용",
+        location="서울 강남구",
+        employment_type=EmploymentEnum.General,
+        employ_method=MethodEnum.Permanent,
+        work_time="09:00~18:00",
+        position="백엔드 개발자",
+        history="경력 3년 이상",
+        recruitment_count=2,
+        education="대졸",
+        deadline="2025-05-01",
+        salary="4000",
+        summary="백엔드 개발 채용 요약",
+        description="백엔드 2개발 관련 상세 업무 내용",
+        status=StatusEnum.Pending,
+    )
 
-        await JobPosting.create(
-            user=corp_user,
-            company="테스트 주식회사2",
-            title="백엔드 개발자 채2용",
-            location="서울 강남구",
-            employment_type=EmploymentEnum.General,
-            employ_method=MethodEnum.Permanent,
-            work_time="09:00~18:00",
-            position="백엔드 개발자",
-            history="경력 3년 이상",
-            recruitment_count=2,
-            education="대졸",
-            deadline="2025-05-01",
-            salary="4000",
-            summary="백엔드 개발 채용 요약",
-            description="백엔드 2개발 관련 상세 업무 내용",
-            status=StatusEnum.Pending,
-        )
+    login_data = {"email": "test@test.com", "password": "!!Test1234"}
+    response = await client.post("/api/user/login/", json=login_data)
+    access_token = [response.json()["access_token"]]
 
-        login_data = {"email": "test@test.com", "password": "!!Test1234"}
-        response = await client.post("/api/user/login/", json=login_data)
-        access_token = [response.json()["access_token"]]
+    login_data = {"email": "test2@test.com", "password": "!!Test1234"}
+    response = await client.post("/api/user/login/", json=login_data)
+    access_token.append(response.json()["access_token"])
 
-        login_data = {"email": "test2@test.com", "password": "!!Test1234"}
-        response = await client.post("/api/user/login/", json=login_data)
-        access_token.append(response.json()["access_token"])
-
-        return access_token
+    return access_token
 
 
 @pytest.mark.asyncio

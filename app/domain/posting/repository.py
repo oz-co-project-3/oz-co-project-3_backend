@@ -1,10 +1,14 @@
-from typing import Optional
+from typing import Any, Optional
 
 from tortoise.expressions import Q
 
 from app.domain.job_posting.models import Applicants, JobPosting
-from app.domain.posting.schemas import JobPostingResponseDTO
+from app.domain.posting.schemas import (
+    JobPostingResponseDTO,
+    PaginatedJobPostingsResponseDTO,
+)
 from app.domain.resume.models import Resume
+from app.domain.user.models import SeekerUser
 
 
 async def get_postings_query(
@@ -16,7 +20,19 @@ async def get_postings_query(
     education: Optional[str] = "",
     view_count: Optional[int] = 0,
     employ_method: Optional[str] = "",
+    current_user: Optional[Any] = None,
+    offset: Optional[int] = 0,
+    limit: Optional[int] = 100,
 ):
+    bookmarked_ids = []
+    if current_user:
+        seeker = await SeekerUser.get_or_none(user=current_user).prefetch_related(
+            "interests_posting"
+        )
+        if seeker:
+            bookmarked_ids = await seeker.interests_posting.all().values_list(
+                "id", flat=True
+            )
     query = (
         JobPosting.filter(status__in=["모집중", "마감 임박", "모집 종료"])
         .select_related("user")
@@ -83,7 +99,21 @@ async def get_postings_query(
             employ_method__in=[m for m in methods if m in allowed_methods]
         )
 
-    return query
+    total = await query.count()
+    start = offset * limit
+    postings = await query.offset(start).limit(limit)
+    result = []
+    for post in postings:
+        dto = JobPostingResponseDTO.from_orm(post)
+        dto.is_bookmarked = post.id in bookmarked_ids
+        result.append(dto.model_dump())
+
+    return PaginatedJobPostingsResponseDTO(
+        total=total,
+        offset=offset,
+        limit=limit,
+        data=result,
+    )
 
 
 async def get_posting_query(id):
