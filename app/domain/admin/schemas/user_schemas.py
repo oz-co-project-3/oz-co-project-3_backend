@@ -17,6 +17,7 @@ class UserResponseDTO(BaseModel):
     created_at: datetime
     deleted_at: Optional[datetime] = None
     gender: str
+    leave_reason: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -33,6 +34,7 @@ class SeekerUserResponseSchema(BaseModel):
     applied_posting: Optional[str] = None
     applied_posting_count: int
     status: str
+    profile_url: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -47,6 +49,7 @@ class CorpUserResponseSchema(BaseModel):
     manager_name: str
     manager_phone_number: str
     manager_email: Optional[str]
+    profile_url: Optional[str]
 
     class Config:
         from_attributes = True
