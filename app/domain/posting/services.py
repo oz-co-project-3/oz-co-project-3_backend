@@ -33,7 +33,6 @@ from app.exceptions.search_exceptions import (
     InvalidViewCountException,
     SearchKeywordTooLongException,
 )
-from app.utils.pagination import paginate_query
 
 VALID_EMPLOYMENT_TYPES = {"공공", "일반"}
 VALID_CAREER_TYPES = {"신입", "경력직", "경력무관"}
@@ -58,6 +57,7 @@ async def get_all_postings_service(
     offset: int = 0,
     limit: int = 10,
     employ_method: Optional[str] = "",
+    current_user: Optional[Any] = None,
 ) -> PaginatedJobPostingsResponseDTO:
     # 문자열 길이 검증
     if len(search_keyword) > MAX_SEARCH_KEYWORD_LENGTH:
@@ -114,7 +114,7 @@ async def get_all_postings_service(
         logger.warning(f"[SEARCH-TYPE] position 10개 이하 여야 합니다 : {len(position_list)}")
         raise TooManyPositionsException(MAX_POSITION_COUNT)
 
-    query = await get_postings_query(
+    return await get_postings_query(
         search_keyword,
         location,
         employment_type,
@@ -123,8 +123,10 @@ async def get_all_postings_service(
         education,
         view_count,
         employ_method,
+        current_user,
+        offset,
+        limit,
     )
-    return await paginate_query(query, offset, limit, JobPostingResponseDTO)
 
 
 async def get_posting_by_id_service(id: int) -> JobPostingResponseDTO:

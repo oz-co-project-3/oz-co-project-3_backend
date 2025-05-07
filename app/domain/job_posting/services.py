@@ -122,7 +122,7 @@ class JobPostingService:
         job_posting = await JobPostingRepository.get_job_posting_by_id(id)
         if not job_posting:
             logger.warning(
-                f"[JOBPOSTING-SERVICE] create_job_posting_bookmark 실패: JobPosting id {id} not found."
+                f"[JOBPOSTING-SERVICE] toggle_job_posting_bookmark 실패: JobPosting id {id} not found."
             )
             raise NotificationNotFoundException()
         seeker_user = await ResumeRepository.get_seeker_user(current_user)

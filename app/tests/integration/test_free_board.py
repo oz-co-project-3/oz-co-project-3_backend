@@ -1,16 +1,15 @@
-from unittest.mock import AsyncMock, patch
-
 import pytest
 from httpx import ASGITransport, AsyncClient
 from passlib.handlers.bcrypt import bcrypt
 
 from app.domain.free_board.models import FreeBoard
 from app.domain.user.models import BaseUser, SeekerUser
-from app.main import app
 
 
 @pytest.fixture(scope="module")
-async def client():
+async def client(apply_redis_patch):
+    from app.main import app
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
@@ -18,38 +17,31 @@ async def client():
 
 @pytest.fixture(scope="module")
 async def access_token(client):
-    mock_set = AsyncMock(return_value=True)
-    mock_get = AsyncMock(return_value=None)
+    hashed_pw = bcrypt.hash("!!Test1234")  # 서비스에서 쓰는 방식 확인 필수!
+    user = await BaseUser.create(
+        email="test@test.com",
+        password=hashed_pw,
+        user_type="normal,admin",
+        signinMethod="email",
+        status="active",
+        email_verified=True,
+        gender="male",
+    )
+    seeker = await SeekerUser.create(
+        user=user,
+        name="테스트유저",
+        phone_number="01012345678",
+        birth="1990-01-01",
+        interests="프론트엔드",
+        purposes="취업",
+        sources="지인 추천",
+    )
 
-    with (
-        patch("app.core.redis.redis.set", mock_set),
-        patch("app.core.redis.redis.get", mock_get),
-    ):
-        hashed_pw = bcrypt.hash("!!Test1234")  # 서비스에서 쓰는 방식 확인 필수!
-        user = await BaseUser.create(
-            email="test@test.com",
-            password=hashed_pw,
-            user_type="normal,admin",
-            signinMethod="email",
-            status="active",
-            email_verified=True,
-            gender="male",
-        )
-        seeker = await SeekerUser.create(
-            user=user,
-            name="테스트유저",
-            phone_number="01012345678",
-            birth="1990-01-01",
-            interests="프론트엔드",
-            purposes="취업",
-            sources="지인 추천",
-        )
+    login_data = {"email": "test@test.com", "password": "!!Test1234"}
+    response = await client.post("/api/user/login/", json=login_data)
 
-        login_data = {"email": "test@test.com", "password": "!!Test1234"}
-        response = await client.post("/api/user/login/", json=login_data)
-
-        assert response.status_code == 200
-        return response.json()["access_token"]
+    assert response.status_code == 200
+    return response.json()["access_token"]
 
 
 @pytest.mark.asyncio
