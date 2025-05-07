@@ -163,7 +163,7 @@ async def delete_job_posting_endpoint(
 `422` : Unprocessable Entity
 """,
 )
-async def create_job_posting_bookmark(
+async def toggle_job_posting_bookmark(
     current_user: BaseUser = Depends(get_current_user),
     id: int = Path(
         ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"

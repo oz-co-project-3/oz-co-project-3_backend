@@ -1,8 +1,9 @@
 import logging
+from typing import Optional
 
 from fastapi import APIRouter, Depends, Path, Query, status
 
-from app.core.token import get_current_user
+from app.core.token import get_current_user, get_optional_user
 from app.domain.posting.schemas import (
     ApplicantCreateUpdateSchema,
     ApplicantResponseDTO,
@@ -55,6 +56,7 @@ async def get_list_postings(
     employ_method: str = Query(
         "", description="근로 형태: 정규직, 계약직, 일용직, 프리랜서, 파견직, (,로 구분하여 다중 가능)"
     ),
+    current_user: Optional[BaseUser] = Depends(get_optional_user),
 ):
     logger.info(
         f"[API] 공고 전체 조회 요청 (search={search_keyword}, location={location}, position={position})"
@@ -70,6 +72,7 @@ async def get_list_postings(
         employ_method=employ_method,
         offset=offset,
         limit=limit,
+        current_user=current_user,
     )
 
 

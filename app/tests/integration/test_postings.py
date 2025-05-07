@@ -1,5 +1,3 @@
-from unittest.mock import AsyncMock, patch
-
 import pytest
 from httpx import ASGITransport, AsyncClient
 from passlib.handlers.bcrypt import bcrypt
@@ -7,11 +5,12 @@ from passlib.handlers.bcrypt import bcrypt
 from app.domain.job_posting.models import Applicants, JobPosting
 from app.domain.resume.models import Resume
 from app.domain.user.models import BaseUser, CorporateUser, SeekerUser
-from app.main import app
 
 
 @pytest.fixture(scope="module")
-async def client():
+async def client(apply_redis_patch):
+    from app.main import app
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
@@ -19,79 +18,72 @@ async def client():
 
 @pytest.fixture(scope="module")
 async def access_token(client):
-    mock_set = AsyncMock(return_value=True)
-    mock_get = AsyncMock(return_value=None)
+    hashed_pw = bcrypt.hash("!!Test1234")
+    user = await BaseUser.create(
+        email="test@test.com",
+        password=hashed_pw,
+        signinMethod="email",
+        user_type="normal,business",
+        status="active",
+        email_verified=True,
+        gender="male",
+    )
+    seeker_user = await SeekerUser.create(
+        user=user,
+        name="테스트유저",
+        phone_number="01012345678",
+        birth="1990-01-01",
+        interests="프론트엔드",
+        purposes="취업",
+        sources="지인 추천",
+    )
+    corp_user = await CorporateUser.create(
+        user=user,
+        company_name="테스트 주식회사",
+        business_start_date="2010-01-01",
+        business_number="123-45-67890",
+        company_description="테스트 기업 설명입니다.",
+        manager_name="홍길동",
+        manager_phone_number="01012345678",
+        manager_email="manager@test.com",
+    )
 
-    with (
-        patch("app.core.redis.redis.set", mock_set),
-        patch("app.core.redis.redis.get", mock_get),
-    ):
-        hashed_pw = bcrypt.hash("!!Test1234")
-        user = await BaseUser.create(
-            email="test@test.com",
-            password=hashed_pw,
-            signinMethod="email",
-            user_type="normal,business",
-            status="active",
-            email_verified=True,
-            gender="male",
-        )
-        seeker_user = await SeekerUser.create(
-            user=user,
-            name="테스트유저",
-            phone_number="01012345678",
-            birth="1990-01-01",
-            interests="프론트엔드",
-            purposes="취업",
-            sources="지인 추천",
-        )
-        corp_user = await CorporateUser.create(
-            user=user,
-            company_name="테스트 주식회사",
-            business_start_date="2010-01-01",
-            business_number="123-45-67890",
-            company_description="테스트 기업 설명입니다.",
-            manager_name="홍길동",
-            manager_phone_number="01012345678",
-            manager_email="manager@test.com",
-        )
+    posting = await JobPosting.create(
+        user=corp_user,
+        title="백엔드 개발자",
+        company="테스트컴퍼니",
+        location="서울",
+        employment_type="일반",
+        position="백엔드",
+        career="경력직",
+        education="학사",
+        employ_method="정규직",
+        work_time="time",
+        deadline="2020-01-01",
+        salary="급여",
+        description="설명",
+        view_count=100,
+        summary="test",
+        history="test",
+    )
+    resume = await Resume.create(
+        user=seeker_user,
+        title="이력서",
+        name="TEST",
+        phone_number="01012345678",
+        email="test@email.com",
+        desired_area="서울",
+        status="구직중",
+    )
+    await Applicants.create(
+        job_posting=posting, resume=resume, user=user, status="지원 중"
+    )
 
-        posting = await JobPosting.create(
-            user=corp_user,
-            title="백엔드 개발자",
-            company="테스트컴퍼니",
-            location="서울",
-            employment_type="일반",
-            position="백엔드",
-            career="경력직",
-            education="학사",
-            employ_method="정규직",
-            work_time="time",
-            deadline="2020-01-01",
-            salary="급여",
-            description="설명",
-            view_count=100,
-            summary="test",
-            history="test",
-        )
-        resume = await Resume.create(
-            user=seeker_user,
-            title="이력서",
-            name="TEST",
-            phone_number="01012345678",
-            email="test@email.com",
-            desired_area="서울",
-            status="구직중",
-        )
-        await Applicants.create(
-            job_posting=posting, resume=resume, user=user, status="지원 중"
-        )
+    login_data = {"email": "test@test.com", "password": "!!Test1234"}
+    response = await client.post("/api/user/login/", json=login_data)
+    access_token = response.json()["access_token"]
 
-        login_data = {"email": "test@test.com", "password": "!!Test1234"}
-        response = await client.post("/api/user/login/", json=login_data)
-        access_token = response.json()["access_token"]
-
-        return access_token
+    return access_token
 
 
 @pytest.mark.asyncio

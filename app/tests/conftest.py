@@ -1,4 +1,5 @@
 import os
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from tortoise import Tortoise
@@ -68,3 +69,13 @@ async def setup_test_db(event_loop):
 
 # SECRET_KEY 기본값 보장 (환경 변수 없을 때)
 os.environ.setdefault("SECRET_KEY", "test_secret_key_123")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def apply_redis_patch():
+    mock = AsyncMock()
+    mock.get.return_value = None
+    mock.set.return_value = True
+
+    with patch("app.core.redis.get_redis", return_value=mock):
+        yield
