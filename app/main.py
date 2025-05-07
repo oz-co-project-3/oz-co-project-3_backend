@@ -14,7 +14,6 @@ from app.api.v1.comment import comment_router
 from app.api.v1.freeboard import free_board_router
 from app.api.v1.jobposting import job_posting_router
 from app.api.v1.postings import posting_router
-from app.api.v1.public_api import public_router
 from app.api.v1.resume import resume_router
 from app.api.v1.success_review import success_review_router
 from app.api.v1.user import router as user_router
@@ -35,7 +34,6 @@ app.include_router(job_posting_router)
 app.include_router(chatbot_router)
 app.include_router(websocket_router)
 app.include_router(posting_router)
-app.include_router(public_router)
 app.include_router(resume_router)
 app.include_router(image_upload_router)
 app.include_router(applicant_router)
