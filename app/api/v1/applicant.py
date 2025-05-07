@@ -12,6 +12,7 @@ from app.domain.applicant.services import (
     get_applicants_by_seeker_user_service,
 )
 from app.domain.user.models import BaseUser, CorporateUser
+from app.exceptions.applicant_exceptions import ApplicantNotFoundException
 
 applicant_router = APIRouter(prefix="/api/applicants", tags=["applicants"])
 logger = logging.getLogger(__name__)
@@ -106,6 +107,6 @@ async def get_applicant_detail_endpoint(
     )
     result = await get_applicant_detail_service(applicant_id, current_user.id)
     if result is None:
-        raise HTTPException(status_code=404, detail="지원 내역을 찾을 수 없습니다.")
+        raise ApplicantNotFoundException()
     logger.info(f"[API] 구직자 특정 지원 내역 조회 완료 : applicant_id={applicant_id}")
     return result
