@@ -50,12 +50,15 @@ jobs:
       - name: Run Isort
         run: poetry run isort . --check-only
 
-      - name: Run Tests
+      - name: Create test database
         env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: 1q2w3e4r
-          POSTGRES_DB: senior
+          PGPASSWORD: 1q2w3e4r
+        run: |
+          psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS test_senior;"
+          psql -h localhost -U postgres -c "CREATE DATABASE test_senior;"
+          echo "Test database created successfully"
+
+
+      - name: Run Tests
         run: |
           poetry run pytest || echo "No tests found, skipping failure."

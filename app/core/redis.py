@@ -1,3 +1,12 @@
-from redis.asyncio import Redis
+import redis.asyncio as aioredis
 
-redis = Redis(host="redis-dev", port=6379, decode_responses=True)
+from app.core.settings import get_settings
+
+
+def get_redis():
+    settings = get_settings()
+    return aioredis.Redis(
+        host=settings.REDIS_HOST,
+        port=int(settings.REDIS_PORT),
+        decode_responses=True,
+    )
