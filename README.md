@@ -15,35 +15,12 @@
 ## ⚒️ 기술 스택
 
 💛 Front End
-+ TypeScript
-+ NEXT.js
-+ React
-+ TailwindCSS, shadcn/ui
-+ Zustand
-+ Axios, SWR
-+ Draft.js / Quill
-+ Naver Cloud Platform / Vercel
-+ GitHub Actions
-+ React Hook Form
-+ Zod
-+ JWT, OAuth2
-+ VScode, Cursor
+![image](https://github.com/user-attachments/assets/c07c91f7-da7a-4b29-bfb1-92ecc253a6ce)
+
 
 💚 Back End
-+ FastAPI
-+ PostgreSQL
-+ swagger(자동 API 문서)
-+ Docker
-+ Pre-commit
-+ CI/CD: black, isort
-+ Nginx
-+ Redis
-+ Tortoise orm
-+ GitHub Actions
-+ JWT, OAuth2
-+ Bycrpt
-+ Pydantic
-+ Asyncio, Uvicorn
+![image](https://github.com/user-attachments/assets/486a4508-f7dd-4469-85f0-34777194c66c)
+
 
 ---
 # 📁 프로젝트 규칙
@@ -55,6 +32,7 @@ Pull Request
 CI
 + PR 진행시 자동으로 테스트 진행 (github action)
 + 테스트 결과 알림: PR 진행 시 CI 테스트 결과가 실패한 경우 팀 채널(Discord)로 알림이 가도록 설정
+
 CD
 + docker hub + github action
 
@@ -63,6 +41,11 @@ Swagger
 
 Kanvan Board
 + 깃 허브 내의 칸반 보드를 이용하여 ToDo 리스트 명확화, 중요도 배치, 진행도 확인
+
+---
+# 🖼️Infra Architecture
+![image](https://github.com/user-attachments/assets/61d82d53-b22e-4a1f-b37b-4a0ddeda8874)
+
 
 ---
 # 📚 핵심 기능 요약 
@@ -84,6 +67,14 @@ Kanvan Board
 - 추가 제출용 서류 필드 제공
 
 # 👤 마이 페이지
+개인회원
+- 작성된 이력서 열람
+- 지원한 공고 열람
+- 북마크한 공고 열람
+
+기업회원
+- 공고 작성
+- 작성된 공고별 지원자 열람
 
 ---
 # ⚙️ 사용 방법
