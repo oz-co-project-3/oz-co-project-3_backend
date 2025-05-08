@@ -17,8 +17,8 @@ def format_applicant_response(applicant) -> ApplicantResponse:
         memo=applicant.memo,
         created_at=applicant.created_at,
         updated_at=applicant.updated_at,
-        job_title=job_posting.title if job_posting else "",
-        company_name=job_posting.company if job_posting else "",
+        title=job_posting.title if job_posting else "",
+        company=job_posting.company if job_posting else "",
         position=job_posting.position if job_posting else "",
         deadline=job_posting.deadline if job_posting else "",
     )
