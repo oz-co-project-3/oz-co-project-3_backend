@@ -97,23 +97,13 @@ async def login_user(email: str, password: str) -> tuple[LoginResponseDTO, str, 
         f"refresh_token:{user.id}", refresh_token, ex=REFRESH_TOKEN_EXPIRE_SECONDS * 60
     )
 
-    name = "소셜 유저"
-
-    if user.user_type == "normal":
-        seeker = await SeekerUser.get_or_none(user=user)
-        if seeker and seeker.name:
-            name = seeker.name
-
-    elif user.user_type == "corporate":
-        corp = await CorporateUser.get_or_none(user=user)
-        if corp and corp.manager_name:
-            name = corp.manager_name
+    seeker = await SeekerUser.get_or_none(user=user)
 
     dto = LoginResponseDTO(
         user_id=user.id,
         user_type=user.user_type,
         email=user.email,
-        name=name,
+        name=seeker.name,
         access_token=access_token,
     )
 

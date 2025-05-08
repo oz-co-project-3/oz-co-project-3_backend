@@ -6,7 +6,7 @@ from httpx import ASGITransport, AsyncClient
 from passlib.hash import bcrypt
 
 from app.core.redis import get_redis
-from app.domain.user.models import BaseUser, Gender
+from app.domain.user.models import BaseUser, Gender, SeekerUser
 
 
 @pytest.fixture(scope="module")
@@ -18,17 +18,25 @@ async def client(apply_redis_patch):
         yield client
 
 
-@pytest.fixture(autouse=True)
-def mock_redis():
+@pytest.fixture(scope="module", autouse=True)
+def apply_redis_patch():
     mock = AsyncMock()
-    mock.get.return_value = "true"  # 블랙리스트 확인용
-    mock.set.return_value = True  # 로그아웃시 저장
+
+    # email_verified 키에 대해선 항상 True 반환
+    def get_side_effect(key):
+        if key.startswith("email_verified:"):
+            return "true"
+        return None
+
+    mock.get.side_effect = get_side_effect
+    mock.set.return_value = True
+    mock.delete.return_value = True
 
     with patch("app.core.redis.get_redis", return_value=mock):
         yield
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 async def activated_user(client):
     email = f"test_{uuid.uuid4().hex[:6]}@test.com"
     hashed_pw = bcrypt.hash("Test1234!")
@@ -41,10 +49,22 @@ async def activated_user(client):
         signinMethod="email",
         gender=Gender.MALE,
     )
+    await SeekerUser.create(
+        user=user,
+        name="김이준",
+        phone_number="010-1234-5678",
+        birth="1994-05-16",
+        interests="IT,Gaming",
+        purposes="취업,자기계발",
+        sources="지인추천,검색",
+        status="seeking",
+        profile_url=None,
+    )
+
     return user
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 async def access_user_token(client, activated_user):
     # 실제 암호는 평문으로 테스트 (위와 bcrypt 해시 일치해야 함)
     await client.post(
@@ -177,12 +197,19 @@ async def test_register_without_email_verification(client):
         "signinMethod": "email",
     }
 
-    # Redis mock이 기본적으로 "email_verified:<email>" → 없음 상태라면
-    response = await client.post("/api/user/register/", json=user_data)
+    mock_redis = AsyncMock()
+    mock_redis.get.return_value = None
+    mock_redis.set.return_value = True
 
-    assert response.status_code == 400
+    with patch(
+        "app.domain.user.services.user_register_services.get_redis",
+        return_value=mock_redis,
+    ):
+        response = await client.post("/api/user/register/", json=user_data)
+
+    assert response.status_code == 403
     response_json = response.json()
-    assert response_json["message"]["code"] == "email_not_verified"
+    assert response_json["message"]["code"] == "unverified_or_inactive_account"
 
 
 @pytest.mark.asyncio
