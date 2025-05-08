@@ -11,9 +11,7 @@ async def client(apply_redis_patch):
     from app.main import app
 
     transport = ASGITransport(app)
-    async with AsyncClient(
-        transport=transport, base_url="http://test", follow_redirects=True
-    ) as client:
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
 
 
@@ -40,7 +38,7 @@ async def access_token(client):
     )
 
     login_data = {"email": "test@test.com", "password": "!Test1234"}
-    response = await client.post("/api/user/login", json=login_data)
+    response = await client.post("/api/user/login/", json=login_data)
 
     assert response.status_code == 200
     return response.json()["access_token"]

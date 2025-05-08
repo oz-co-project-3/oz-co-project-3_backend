@@ -13,9 +13,7 @@ async def client(apply_redis_patch):
     from app.main import app
 
     transport = ASGITransport(app)
-    async with AsyncClient(
-        transport=transport, base_url="http://test", follow_redirects=True
-    ) as client:
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
 
 
