@@ -36,8 +36,8 @@ class ApplicantResponse(BaseModel):
     memo: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-    job_title: str
-    company_name: str
+    title: str
+    company: str
     position: str
     deadline: str
 
