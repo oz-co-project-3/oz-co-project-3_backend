@@ -57,11 +57,6 @@ async def get_all_applicants_by_corporate_user_service(
 
 async def get_applicants_by_seeker_user_service(user_id=int) -> List[ApplicantResponse]:
     applicants = await get_applicants_by_seeker_user(user_id)
-    if not applicants:
-        logger.warning(
-            f"[APPLICANT-SERVICE] 구직자 BaseUser ID {user_id}에 대한 지원 내역이 없습니다."
-        )
-        raise NotificationNotFoundException()
     return [format_applicant_response(app) for app in applicants]
 
 
