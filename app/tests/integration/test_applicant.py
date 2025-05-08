@@ -14,9 +14,7 @@ async def client(apply_redis_patch):
     from app.main import app
 
     transport = ASGITransport(app)
-    async with AsyncClient(
-        transport=transport, base_url="http://test", follow_redirects=True
-    ) as client:
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
 
 
@@ -128,7 +126,7 @@ async def test_applicant_all_seeker(client, access_token):
 async def test_applicant_seeker(client, access_token):
     headers = {"Authorization": f"Bearer {access_token}"}
     id = 1
-    response = await client.get(f"/api/applicants/seeker/{id}", headers=headers)
+    response = await client.get(f"/api/applicants/seeker/{id}/", headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
