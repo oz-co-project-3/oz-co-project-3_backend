@@ -40,5 +40,7 @@ class ApplicantResponse(BaseModel):
     company: str
     position: str
     deadline: str
+    location: str
+    image_url: str
 
     model_config = ConfigDict(from_attributes=True)

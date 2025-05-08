@@ -21,4 +21,6 @@ def format_applicant_response(applicant) -> ApplicantResponse:
         company=job_posting.company if job_posting else "",
         position=job_posting.position if job_posting else "",
         deadline=job_posting.deadline if job_posting else "",
+        location=job_posting.location if job_posting else "",
+        image_url=job_posting.image_url if job_posting else "",
     )
