@@ -443,10 +443,30 @@ async def get_kakao_auth_url():
     response_model=LoginResponseDTO,
 )
 async def kakao_callback(request: SocialCallbackRequest):
-    logger.info(f"[API] 사용자 소셜 로그인(카카오) 콜백 요청")
-    access_token = await get_kakao_access_token(request.code)
-    kakao_info = await get_kakao_user_info(access_token)
-    dto, access_token, refresh_token = await kakao_login(kakao_info)
+    logger.info("[API] 사용자 소셜 로그인(카카오) 콜백 요청")
+    logger.info(f"[DEBUG] 받은 code = {request.code}")
+
+    try:
+        access_token = await get_kakao_access_token(request.code)
+        logger.info(f"[DEBUG] 발급 받은 access_token = {access_token}")
+    except Exception as e:
+        logger.exception("[ERROR] 카카오 access_token 발급 실패")
+        raise
+
+    try:
+        kakao_info = await get_kakao_user_info(access_token)
+        logger.info(f"[DEBUG] 카카오 사용자 정보 = {kakao_info}")
+    except Exception as e:
+        logger.exception("[ERROR] 카카오 사용자 정보 조회 실패")
+        raise
+
+    try:
+        dto, access_token, refresh_token = await kakao_login(kakao_info)
+        logger.info(f"[DEBUG] 로그인 응답 DTO = {dto}")
+    except Exception as e:
+        logger.exception("[ERROR] 내부 로그인 로직 실패")
+        raise
+
     response = JSONResponse(content=dto.model_dump())
     set_token_cookies(response, access_token, refresh_token)
     return response

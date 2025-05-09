@@ -168,13 +168,13 @@ async def delete_user(
     current_user.status = "delete"
 
     if reason:
-        current_user.reason = reason
+        current_user.leave_reason = reason
 
     await current_user.save()
 
     return UserDeleteDTO(
         user_id=current_user.id,
         email=current_user.email,
-        reason=current_user.reason,
+        reason=current_user.leave_reason,
         deleted_at=current_user.deleted_at,
     )
