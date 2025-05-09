@@ -5,11 +5,12 @@
 # from passlib.hash import bcrypt
 #
 # from app.domain.user.models import BaseUser, SeekerUser
-# from app.main import app
 #
 #
 # @pytest.fixture(scope="module")
 # async def client():
+#     from app.main import app
+#
 #     transport = ASGITransport(app=app)
 #     async with AsyncClient(transport=transport, base_url="http://test") as ac:
 #         yield ac
@@ -26,6 +27,7 @@
 #         status="active",
 #         email_verified=True,
 #         gender="male",
+#         signin_method="email",
 #     )
 #     await SeekerUser.create(
 #         user=user,

@@ -21,8 +21,10 @@ from app.domain.services.social_account import (
 )
 from app.domain.user.models import (
     BaseUser,
+    CorporateUser,
     Gender,
     SeekerStatus,
+    SeekerUser,
     SignInEnum,
     UserStatus,
     UserTypeEnum,
@@ -95,11 +97,13 @@ async def login_user(email: str, password: str) -> tuple[LoginResponseDTO, str, 
         f"refresh_token:{user.id}", refresh_token, ex=REFRESH_TOKEN_EXPIRE_SECONDS * 60
     )
 
+    seeker = await SeekerUser.get_or_none(user=user)
+
     dto = LoginResponseDTO(
         user_id=user.id,
         user_type=user.user_type,
         email=user.email,
-        name=None,
+        name=seeker.name,
         access_token=access_token,
     )
 
