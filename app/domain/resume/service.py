@@ -82,7 +82,7 @@ async def get_all_resume_service(
 
 
 async def update_resume_service(
-    resume_id: int, data: dict, current_user: Any
+    resume_id: int, data: dict, current_user: Any, base_user: Any
 ) -> ResumeResponseSchema:
     resume = await get_resume_by_id(resume_id)
     if not resume:
@@ -92,7 +92,7 @@ async def update_resume_service(
     await resume.fetch_related("user", "work_experiences")
 
     try:
-        await check_author(resume, current_user)
+        await check_author(resume, base_user)
     except PermissionDeniedException:
         logger.warning(
             f"[RESUME] 이력서 id {resume_id}의 수정 권한이 사용자 id {current_user.id}에게 없습니다."
