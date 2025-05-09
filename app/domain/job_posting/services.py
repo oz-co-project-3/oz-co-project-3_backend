@@ -113,22 +113,6 @@ async def delete_job_posting(
         logger.warning(
             f"[JOBPOSTING-SERVICE] delete_job_posting 실패: JobPosting id {job_posting_id} not found."
         )
-        if not job_posting:
-            logger.warning(
-                f"[JOBPOSTING-SERVICE] get_specific_job_posting 실패: JobPosting id {job_posting_id} not found for corporate_user id={corporate_user.id}"
-            )
-            raise NotificationNotFoundException()
-        return job_posting
-
-
-async def delete_job_posting(
-    corporate_user: CorporateUser, job_posting_id: int
-) -> dict:
-    job_posting = await rep_get_job_posting_by_id(job_posting_id)
-    if not job_posting:
-        logger.warning(
-            f"[JOBPOSTING-SERVICE] delete_job_posting 실패: JobPosting id {job_posting_id} not found."
-        )
         raise NotificationNotFoundException()
     await validate_user_permissions(corporate_user, job_posting)
     await rep_delete_job_posting(job_posting)
