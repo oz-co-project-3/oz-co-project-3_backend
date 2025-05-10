@@ -5,20 +5,22 @@ from app.domain.admin.repositories.resume_repository import (
     get_all_resumes_query,
     get_resume_by_id,
     get_resumes_by_name,
+    get_user_by_id,
 )
 from app.domain.admin.schemas.resume_schemas import ResumeResponseDTO
 from app.domain.services.verification import check_existing, check_superuser
 from app.exceptions.resume_exceptions import ResumeNotFoundException
+from app.exceptions.user_exceptions import UserNotFoundException
 
 
 async def get_all_resumes_service(
-    current_user: Any, name: str
+    current_user: Any, user_id: int
 ) -> List[ResumeResponseDTO]:
     check_superuser(current_user)
+    user = await get_user_by_id(user_id)
+    check_existing(user, UserNotFoundException)
 
-    if name:
-        return await get_resumes_by_name(name)
-    return await get_all_resumes_query()
+    return await get_all_resumes_query(user_id)
 
 
 async def get_resume_by_id_service(current_user: Any, id: int) -> ResumeResponseDTO:

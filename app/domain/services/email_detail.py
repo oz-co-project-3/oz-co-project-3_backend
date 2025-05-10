@@ -3,7 +3,7 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 
-from app.core.redis import redis
+from app.core.redis import get_redis
 from app.core.settings import settings
 
 SMTP_USER = settings.SMTP_USER
@@ -31,7 +31,7 @@ def send_email(to_email: str, subject: str, content: str):
 
 async def generate_email_code(email: str) -> str:
     code = str(random.randint(100000, 999999))
-    await redis.set(f"email_verify:{email}", code, ex=600)  # 10분 유효
+    await get_redis().set(f"email_verify:{email}", code, ex=600)  # 10분 유효
     return code
 
 

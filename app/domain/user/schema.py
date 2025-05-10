@@ -337,6 +337,7 @@ class BookMarkPostingDTO(BaseModel):
     location: str = Field(..., max_length=100, description="근무 위치")
     image_url: Optional[str] = Field(None, max_length=255, description="이미지 URL (선택)")
     employ_method: str = Field(..., max_length=50, description="고용 형태 (예: 정규직, 계약직 등)")
+    deadline: str
 
     class Config:
         from_attributes = True

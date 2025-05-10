@@ -1,12 +1,19 @@
+import logging
+
 import httpx
 
 from app.core.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 # 카카오 url 이동
 async def generate_kakao_auth_url() -> dict:
     kakao_client_id = settings.KAKAO_CLIENT_ID
     redirect_uri = settings.KAKAO_REDIRECT_URI
+    logger.info(
+        f"[DEBUG] generate_kakao_auth_url: client_id={kakao_client_id}, redirect_uri={redirect_uri}"
+    )
     url = (
         f"https://kauth.kakao.com/oauth/authorize?"
         f"client_id={kakao_client_id}&redirect_uri={redirect_uri}&response_type=code"
@@ -14,7 +21,6 @@ async def generate_kakao_auth_url() -> dict:
     return {"auth_url": url}
 
 
-# 카카오 콜백 access_token 발급
 async def get_kakao_access_token(code: str) -> str:
     url = "https://kauth.kakao.com/oauth/token"
     payload = {
@@ -24,9 +30,12 @@ async def get_kakao_access_token(code: str) -> str:
         "redirect_uri": settings.KAKAO_REDIRECT_URI,
         "code": code,
     }
+    logger.info(f"[DEBUG] 카카오 토큰 요청 payload = {payload}")
 
     async with httpx.AsyncClient() as client:
         response = await client.post(url, data=payload)
+        logger.info(f"[DEBUG] 카카오 응답 상태코드 = {response.status_code}")
+        logger.info(f"[DEBUG] 카카오 응답 본문 = {response.text}")
         response.raise_for_status()
         return response.json()["access_token"]
 

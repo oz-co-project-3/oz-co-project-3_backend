@@ -108,29 +108,30 @@ async def patch_user(
 
 
 @admin_router.get(
-    "/resume/",
+    "/resume/user/{user_id}/",
     response_model=List[ResumeResponseDTO],
     status_code=status.HTTP_200_OK,
-    summary="관리자 이력서 전체 조회",
+    summary="관리자 유저 이력서 전체 조회",
     description="""
 `401` `code`:`auth_required` 인증이 필요합니다.\n
 `401` `code`:`invalid_token` 유효하지 않은 토큰입니다.\n
 `403` `code`:`permission_denied` 권한이 없습니다.\n
+`404` `code`:`user_not_found` 사용자가 없습니다.\n
 `422` : Unprocessable Entity
 """,
 )
 async def get_list_resumes(
     current_user: BaseUser = Depends(get_current_user),
-    name: Optional[str] = Query(
-        default=None, max_length=100, description="이름 (최대 100자)"
+    user_id: int = Path(
+        ..., gt=0, le=2147483647, description="user ID (1 ~ 2147483647)"
     ),
 ):
     logger.info(f"[API] 관리자 이력서 전체 조회 요청")
-    return await get_all_resumes_service(current_user, name)
+    return await get_all_resumes_service(current_user, user_id)
 
 
 @admin_router.get(
-    "/resume/{id}/",
+    "/resume/{resume_id}/",
     response_model=ResumeResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="관리자 이력서 상세 조회",
@@ -144,10 +145,12 @@ async def get_list_resumes(
 )
 async def get_resume(
     current_user: BaseUser = Depends(get_current_user),
-    id: int = Path(..., gt=0, le=2147483647, description="resume ID (1 ~ 2147483647)"),
+    resume_id: int = Path(
+        ..., gt=0, le=2147483647, description="resume ID (1 ~ 2147483647)"
+    ),
 ):
     logger.info(f"[API] 관리자 이력서 상세 조회 요청 : resume_id ={id}")
-    return await get_resume_by_id_service(id=id, current_user=current_user)
+    return await get_resume_by_id_service(id=resume_id, current_user=current_user)
 
 
 @admin_router.delete(

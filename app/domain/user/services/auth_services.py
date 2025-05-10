@@ -6,7 +6,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from passlib.hash import bcrypt
 
-from app.core.redis import redis
+from app.core.redis import get_redis
 from app.core.token import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     ALGORITHM,
@@ -21,8 +21,10 @@ from app.domain.services.social_account import (
 )
 from app.domain.user.models import (
     BaseUser,
+    CorporateUser,
     Gender,
     SeekerStatus,
+    SeekerUser,
     SignInEnum,
     UserStatus,
     UserTypeEnum,
@@ -91,15 +93,17 @@ async def login_user(email: str, password: str) -> tuple[LoginResponseDTO, str, 
 
     access_token, refresh_token = create_jwt_tokens(user.id, user_type)
 
-    await redis.set(
+    await get_redis().set(
         f"refresh_token:{user.id}", refresh_token, ex=REFRESH_TOKEN_EXPIRE_SECONDS * 60
     )
+
+    seeker = await SeekerUser.get_or_none(user=user)
 
     dto = LoginResponseDTO(
         user_id=user.id,
         user_type=user.user_type,
         email=user.email,
-        name=None,
+        name=seeker.name,
         access_token=access_token,
     )
 
@@ -108,7 +112,7 @@ async def login_user(email: str, password: str) -> tuple[LoginResponseDTO, str, 
 
 # 로그아웃
 async def logout_user(user: BaseUser, access_token: str) -> LogoutResponseDTO:
-    refresh_deleted = await redis.delete(f"refresh_token:{user.id}")
+    refresh_deleted = await get_redis().delete(f"refresh_token:{user.id}")
     if refresh_deleted == 0:
         logger.warning(f"[CHECK] 로그아웃 실패 - 토큰 없음: 유저 ID {user.id}")
         raise InvalidTokenException()
@@ -118,7 +122,7 @@ async def logout_user(user: BaseUser, access_token: str) -> LogoutResponseDTO:
         exp = payload.get("exp")
         ttl = exp - int(datetime.utcnow().timestamp())
         if ttl > 0:
-            await redis.setex(f"blacklist:{access_token}", ttl, "1")
+            await get_redis().setex(f"blacklist:{access_token}", ttl, "1")
     except Exception as e:
         logger.error(f"[ERROR] access_token 블랙리스트 등록 실패: {e}")
 
@@ -145,7 +149,7 @@ async def refresh_access_token(request: Request) -> tuple[RefreshTokenResponseDT
         logger.warning(f"[CHECK] 리프레시 토큰 디코딩 오류")
         raise InvalidRefreshTokenException()
 
-    stored_token = await redis.get(f"refresh_token:{str(user_id)}")
+    stored_token = await get_redis().get(f"refresh_token:{str(user_id)}")
     if stored_token != refresh_token:
         logger.warning(f"[CHECK] 리프레시 토큰 불일치: {user_id}")
         raise InvalidRefreshTokenException()
@@ -203,7 +207,7 @@ async def kakao_login(kakao_info: dict) -> tuple[LoginResponseDTO, str, str]:
             await user.save()
 
     access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)
-    await redis.set(f"refresh_token:{user.id}", refresh_token)
+    await get_redis().set(f"refresh_token:{user.id}", refresh_token)
 
     dto = LoginResponseDTO(
         access_token=access_token,
@@ -250,7 +254,7 @@ async def naver_login(code: str, state: str) -> tuple[LoginResponseDTO, str, str
             await user.save()
 
     access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)
-    await redis.set(f"refresh_token:{user.id}", refresh_token)
+    await get_redis().set(f"refresh_token:{user.id}", refresh_token)
 
     dto = LoginResponseDTO(
         access_token=access_token,

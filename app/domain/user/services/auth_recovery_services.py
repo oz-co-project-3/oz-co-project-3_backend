@@ -2,7 +2,7 @@ import logging
 
 from passlib.hash import bcrypt
 
-from app.core.redis import redis
+from app.core.redis import get_redis
 from app.domain.services.email_detail import send_email_code
 from app.domain.user.repository import (
     get_corporate_by_manager_name_and_phone,
@@ -114,7 +114,7 @@ async def reset_password(
 async def complete_email_verification(
     email: str, verification_code: str
 ) -> EmailVerificationResponseDTO:
-    saved_code = await redis.get(f"email_verify:{email}")
+    saved_code = await get_redis().get(f"email_verify:{email}")
 
     if not saved_code or str(saved_code) != str(verification_code):
         raise InvalidVerificationCodeException()

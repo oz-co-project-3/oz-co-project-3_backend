@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi.security.utils import get_authorization_scheme_param
 from starlette.requests import Request
 
-from app.core.redis import redis
+from app.core.redis import get_redis
 from app.core.settings import settings
 from app.domain.user.models import BaseUser
 from app.exceptions.auth_exceptions import (
@@ -37,6 +37,9 @@ class CustomOAuth2PasswordBearer(OAuth2PasswordBearer):
 
 
 oauth2_scheme = CustomOAuth2PasswordBearer(tokenUrl="/api/user/login/")
+oauth2_optional = CustomOAuth2PasswordBearer(
+    tokenUrl="/api/user/login/", auto_error=False
+)
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 1
@@ -66,7 +69,7 @@ def create_jwt_tokens(user_id: int, user_type: str) -> tuple[str, str]:
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> BaseUser:
     # 블랙리스트 체크
-    is_blacklisted = await redis.get(f"blacklist:{token}")
+    is_blacklisted = await get_redis().get(f"blacklist:{token}")
     if is_blacklisted:
         raise InvalidTokenException()
 
@@ -85,6 +88,22 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> BaseUser:
         raise InvalidTokenException()
 
     return user
+
+
+async def get_optional_user(
+    token: Optional[str] = Depends(oauth2_optional),
+) -> Optional[BaseUser]:
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+        user = await BaseUser.get_or_none(id=user_id)
+        return user
+    except jwt.PyJWTError:
+        return None
 
 
 def create_reset_token(email: str, expires_minutes: int = 10) -> str:
