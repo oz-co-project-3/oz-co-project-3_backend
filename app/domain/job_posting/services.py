@@ -46,6 +46,7 @@ async def create_job_posting(
 ) -> JobPostingResponse:
     corporate_user = await get_corporate_user_by_base_user(current_user)
     check_existing(corporate_user, UserNotFoundException)
+    await _check_title_duplication(data.title)
     job_posting = await rep_create_job_posting(
         corporate_user=corporate_user, data=data.model_dump()
     )
