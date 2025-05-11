@@ -21,6 +21,7 @@ dependencies = [
     "gunicorn (>=23.0.0,<24.0.0)",
     "boto3 (>=1.38.3,<2.0.0)",
     "python-multipart (>=0.0.20,<0.0.21)",
+    "starlette (>=0.46.2,<0.47.0)",
 ]
 
 [[project.authors]]
