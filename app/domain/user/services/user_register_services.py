@@ -65,12 +65,6 @@ async def register_user(request: UserRegisterRequest) -> UserUnionResponseDTO:
 
     hashed_password = bcrypt.hash(request.password)
 
-    redis = get_redis()
-    is_verified = await redis.get(f"email_verified:{request.email}")
-    if is_verified != "true":
-        logger.warning(f"[CHECK] 이메일 인증 미완료: {request.email}")
-        raise UnverifiedOrInactiveAccountException()
-
     base_user = await create_base_user(
         email=request.email,
         password=hashed_password,
