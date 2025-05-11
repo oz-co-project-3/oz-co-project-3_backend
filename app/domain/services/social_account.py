@@ -1,6 +1,10 @@
+import logging
+
 import httpx
 
 from app.core.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 # 카카오 url 이동
