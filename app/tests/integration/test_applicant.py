@@ -133,5 +133,5 @@ async def test_applicant_seeker(client, access_token):
     assert "id" in data
     assert isinstance(data["id"], int)
 
-    assert "job_title" in data, "응답 데이터에 'job_title' 키가 존재하지 않습니다."
-    assert isinstance(data["job_title"], str), "'job_title'은 문자열이어야 합니다."
+    assert "title" in data, "응답 데이터에 'title' 키가 존재하지 않습니다."
+    assert isinstance(data["title"], str), "'title'은 문자열이어야 합니다."

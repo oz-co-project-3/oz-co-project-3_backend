@@ -200,12 +200,13 @@ async def test_admin_patch_user_by_id(client, access_token):
 @pytest.mark.asyncio
 async def test_admin_get_all_resumes(client, access_token):
     headers = {"Authorization": f"Bearer {access_token[0]}"}
-    response = await client.get("/api/admin/resume/", headers=headers)
+    user_id = 1
+    response = await client.get(f"/api/admin/resume/user/{user_id}/", headers=headers)
     assert response.status_code == 200
     assert await Resume.all().count() == 2
 
     headers = {"Authorization": f"Bearer {access_token[1]}"}
-    response = await client.get("/api/admin/resume/", headers=headers)
+    response = await client.get(f"/api/admin/resume/user/{user_id}/", headers=headers)
     assert response.status_code == 403
     assert response.json()["message"]["code"] == "permission_denied"
 

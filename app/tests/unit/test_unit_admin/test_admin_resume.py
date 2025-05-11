@@ -105,7 +105,7 @@ async def test_get_all_resumes_service(
     mock_get_all_resumes_query.return_value = mock_data
 
     # when
-    result = await get_all_resumes_service(dummy_user, dummy_name)
+    result = await get_all_resumes_service(dummy_user, 1)
 
     # then
     assert result == mock_data
