@@ -105,7 +105,7 @@ async def get_applicant_detail_endpoint(
     logger.info(
         f"[API] 구직자 특정 지원 내역 조회 요청 : applicant_id={applicant_id}, BaseUser id={current_user.id}"
     )
-    result = await get_applicant_detail_service(applicant_id, current_user.id)
+    result = await get_applicant_detail_service(current_user.id, applicant_id)
     if result is None:
         raise ApplicantNotFoundException()
     logger.info(f"[API] 구직자 특정 지원 내역 조회 완료 : applicant_id={applicant_id}")
