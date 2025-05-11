@@ -46,8 +46,8 @@ class ResumeResponseDTO(BaseModel):
     status: StatusEnum
     document_url: Optional[str] = None
     work_experiences: List[WorkExpResponseDTO] = Field(default_factory=list)
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
