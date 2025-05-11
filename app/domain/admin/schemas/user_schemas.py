@@ -27,7 +27,7 @@ class SeekerUserResponseSchema(BaseModel):
     id: int
     name: str
     phone_number: str
-    birth: date
+    birth: Optional[date] = None
     interests: str
     purposes: str
     sources: str
