@@ -6,6 +6,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
 from tortoise.contrib.fastapi import register_tortoise
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.api.v1.admin import admin_router
 from app.api.v1.applicant import applicant_router
@@ -24,6 +25,7 @@ from app.exceptions.base_exceptions import CustomException
 
 bearer_scheme = HTTPBearer()
 app = FastAPI()
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 app.include_router(user_router)
 app.include_router(comment_router)
