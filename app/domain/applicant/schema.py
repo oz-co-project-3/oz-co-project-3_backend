@@ -41,6 +41,6 @@ class ApplicantResponse(BaseModel):
     position: str
     deadline: str
     location: str
-    image_url: str
+    image_url: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

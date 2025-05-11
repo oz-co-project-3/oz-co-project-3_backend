@@ -203,7 +203,7 @@ async def kakao_login(kakao_info: dict) -> tuple[LoginResponseDTO, str, str]:
         )
     else:
         if SignInEnum.Kakao.value not in user.signinMethod:
-            user.signinMethod += ",Kakao"
+            user.signinMethod += ",kakao"
             await user.save()
 
     access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)
@@ -250,7 +250,7 @@ async def naver_login(code: str, state: str) -> tuple[LoginResponseDTO, str, str
         )
     else:
         if SignInEnum.Naver.value not in user.signinMethod:
-            user.signinMethod += ",Naver"
+            user.signinMethod += ",naver"
             await user.save()
 
     access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)
