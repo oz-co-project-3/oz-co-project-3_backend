@@ -3,8 +3,7 @@ from typing import Any
 
 from app.domain.admin.repositories.resume_repository import get_resume_by_id
 from app.domain.job_posting.models import Applicants
-from app.domain.resume.models import WorkExp
-
+from app.domain.resume.models import Resume, WorkExp
 from app.domain.resume.repository import (
     create_resume,
     delete_resume,
