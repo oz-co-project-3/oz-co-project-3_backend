@@ -117,7 +117,13 @@ async def get_postings_query(
 
 
 async def get_posting_query(id):
-    return await JobPosting.filter(pk=id).select_related("user").first()
+    posting = await JobPosting.filter(pk=id).select_related("user").first()
+
+    if posting:
+        posting.view_count += 1
+        await posting.save()
+
+    return posting
 
 
 async def get_resume_query(resume_id):
@@ -148,6 +154,10 @@ async def patch_posting_applicant_by_id(applicant, resume, patch_applicant):
     applicant.resume = resume
     applicant.status = patch_applicant.status
     applicant.memo = patch_applicant.memo
+
+    if applicant.status == "지원 취소":
+        await applicant.delete()
+        return None
 
     await applicant.save()
 
