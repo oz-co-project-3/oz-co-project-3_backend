@@ -31,7 +31,7 @@ async def get_applicants_by_job_posting_service(
     await validate_user_permissions(corporate_user, job_posting)
 
     applicants = await get_applicants_by_job_posting(job_posting_id)
-    return [format_applicant_response(app) for app in applicants]
+    return [await format_applicant_response(app) for app in applicants]
 
 
 async def get_all_applicants_by_corporate_user_service(
@@ -52,12 +52,12 @@ async def get_all_applicants_by_corporate_user_service(
             f"[APPLICANT-SERVICE] CorporateUser ID {corporate_user.id}에 등록된 공고에 지원한 지원자가 없습니다."
         )
         raise NotificationNotFoundException()
-    return [format_applicant_response(app) for app in applicants]
+    return [await format_applicant_response(app) for app in applicants]
 
 
 async def get_applicants_by_seeker_user_service(user_id=int) -> List[ApplicantResponse]:
     applicants = await get_applicants_by_seeker_user(user_id)
-    return [format_applicant_response(app) for app in applicants]
+    return [await format_applicant_response(app) for app in applicants]
 
 
 async def get_applicant_detail_service(
@@ -69,4 +69,4 @@ async def get_applicant_detail_service(
             f"[APPLICANT-SERVICE] 지원내역ID {applicant_id}를 BaseUser ID {user_id}에 대해 찾을 수 없습니다."
         )
         raise NotificationNotFoundException()
-    return format_applicant_response(applicant)
+    return await format_applicant_response(applicant)

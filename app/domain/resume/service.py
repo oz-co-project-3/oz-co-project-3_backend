@@ -2,7 +2,9 @@ import logging
 from typing import Any
 
 from app.domain.admin.repositories.resume_repository import get_resume_by_id
-from app.domain.resume.models import Resume, WorkExp
+from app.domain.job_posting.models import Applicants
+from app.domain.resume.models import WorkExp
+
 from app.domain.resume.repository import (
     create_resume,
     delete_resume,
@@ -12,8 +14,9 @@ from app.domain.resume.repository import (
     update_resume,
 )
 from app.domain.resume.schema import ResumeResponseSchema
-from app.domain.services.permission import check_author
-from app.domain.user.models import SeekerUser
+from app.domain.services.permission import check_author, check_permission
+from app.domain.services.verification import check_existing
+from app.domain.user.models import BaseUser, SeekerUser
 from app.exceptions.auth_exceptions import PermissionDeniedException
 from app.exceptions.job_posting_exceptions import SameTitleExistException
 from app.exceptions.resume_exceptions import (
@@ -45,19 +48,15 @@ async def get_resume_by_id_service(
     resume_id: int, current_user: SeekerUser
 ) -> ResumeResponseSchema:
     resume = await get_resume_by_id(resume_id)
+    check_existing(resume, ResumeNotFoundException)
+    base_user_id = current_user.user_id
+    await check_permission(resume, base_user_id, current_user)
+
     if not resume:
         logger.warning(f"[RESUME] 이력서 id {resume_id}를 찾을 수 없습니다.")
         raise ResumeNotFoundException()
 
     await resume.fetch_related("user", "work_experiences")
-
-    try:
-        await check_author(resume, current_user)
-    except PermissionDeniedException:
-        logger.warning(
-            f"[RESUME] 이력서 id {resume_id}에 대해 사용자 id {current_user.id}의 접근 권한이 없습니다."
-        )
-        raise
 
     return ResumeResponseSchema.model_validate(resume)
 
