@@ -103,7 +103,7 @@ async def login_user(email: str, password: str) -> tuple[LoginResponseDTO, str, 
         user_id=user.id,
         user_type=user.user_type,
         email=user.email,
-        name=seeker.name,
+        name=seeker.name if seeker else "사용자",
         access_token=access_token,
     )
 

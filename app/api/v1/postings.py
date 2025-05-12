@@ -120,7 +120,6 @@ async def create_applicant(
 
 @posting_router.patch(
     "/{id}/applicant/{applicant_id}/",
-    response_model=ApplicantResponseDTO,
     status_code=status.HTTP_200_OK,
     summary="공고 지원자 수정",
     description="""
@@ -139,12 +138,13 @@ async def patch_posting_applicant(
         ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
     ),
     applicant_id: int = Path(
-        ..., gt=0, le=2147483647, description="job_posting ID (1 ~ 2147483647)"
+        ..., gt=0, le=2147483647, description="applicantㅈ ID (1 ~ 2147483647)"
     ),
 ):
     logger.info(
         f"[API] 공고 지원자 수정 요청: user_id={current_user.id}, job_posting_id={id}, applicant_id={applicant_id}"
     )
-    return await patch_posting_applicant_by_id_service(
+    applicant = await patch_posting_applicant_by_id_service(
         id, current_user, patch_applicant, applicant_id
     )
+    return applicant

@@ -46,6 +46,7 @@ async def create_job_posting(
 ) -> JobPostingResponse:
     corporate_user = await get_corporate_user_by_base_user(current_user)
     check_existing(corporate_user, UserNotFoundException)
+    await _check_title_duplication(data.title)
     job_posting = await rep_create_job_posting(
         corporate_user=corporate_user, data=data.model_dump()
     )
@@ -103,22 +104,6 @@ async def get_specific_job_posting(
         )
         raise NotificationNotFoundException()
     return job_posting
-
-
-async def delete_job_posting(
-    corporate_user: CorporateUser, job_posting_id: int
-) -> dict:
-    job_posting = await rep_get_job_posting_by_id(job_posting_id)
-    if not job_posting:
-        logger.warning(
-            f"[JOBPOSTING-SERVICE] delete_job_posting 실패: JobPosting id {job_posting_id} not found."
-        )
-        if not job_posting:
-            logger.warning(
-                f"[JOBPOSTING-SERVICE] get_specific_job_posting 실패: JobPosting id {job_posting_id} not found for corporate_user id={corporate_user.id}"
-            )
-            raise NotificationNotFoundException()
-        return job_posting
 
 
 async def delete_job_posting(
