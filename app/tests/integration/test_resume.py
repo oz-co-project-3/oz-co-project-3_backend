@@ -1,3 +1,5 @@
+import copy
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 from passlib.handlers.bcrypt import bcrypt
@@ -66,7 +68,15 @@ async def test_create_resume(client, access_token):
     assert await Resume.all().count() == 1
     assert test_resume["title"] == "테스트 이력서"
     await client.post("/api/resume/", json=test_resume, headers=headers)
-    await client.post("/api/resume/", json=test_resume, headers=headers)
+
+    test_resume2 = copy.deepcopy(test_resume)
+    test_resume2["title"] = "테스트 이력서2"
+    second_response = await client.post(
+        "/api/resume/", json=test_resume2, headers=headers
+    )
+    assert second_response.status_code == 201
+    resume_count = await Resume.all().count()
+    assert resume_count == 2
 
 
 @pytest.mark.asyncio
@@ -76,7 +86,7 @@ async def test_get_all_resume(client, access_token):
 
     assert response.status_code == 200
     json_data = response.json()
-    assert len(json_data["data"]) == 3
+    assert len(json_data["data"]) == 2
 
 
 @pytest.mark.asyncio
@@ -116,4 +126,4 @@ async def test_delete_resume(client, access_token):
     resume_id = 1
     response = await client.delete(f"/api/resume/{resume_id}/", headers=header)
     assert response.status_code == 200
-    assert await Resume.all().count() == 2
+    assert await Resume.all().count() == 1
