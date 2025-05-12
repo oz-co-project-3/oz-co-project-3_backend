@@ -75,7 +75,8 @@ async def test_create_resume(client, access_token):
         "/api/resume/", json=test_resume2, headers=headers
     )
     assert second_response.status_code == 201
-    assert await Resume.all().count() == 2
+    resume_count = await Resume.all().count()
+    assert resume_count == 2
 
 
 @pytest.mark.asyncio
@@ -85,7 +86,7 @@ async def test_get_all_resume(client, access_token):
 
     assert response.status_code == 200
     json_data = response.json()
-    assert len(json_data["data"]) == 3
+    assert len(json_data["data"]) == 2
 
 
 @pytest.mark.asyncio
@@ -125,4 +126,4 @@ async def test_delete_resume(client, access_token):
     resume_id = 1
     response = await client.delete(f"/api/resume/{resume_id}/", headers=header)
     assert response.status_code == 200
-    assert await Resume.all().count() == 2
+    assert await Resume.all().count() == 1

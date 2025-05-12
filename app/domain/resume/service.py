@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 async def create_resume_service(data: dict) -> ResumeResponseSchema:
     work_experiences = data.pop("work_experiences", [])
-    await _check_title_duplication(data.title)
+    await _check_title_duplication(data.get("title"))
     resume = await create_resume(data)
 
     if work_experiences:
@@ -105,7 +105,7 @@ async def update_resume_service(
         k: v for k, v in data.items() if k not in ["user", "work_experiences"]
     }
     if "title" in updatable_fields:
-        await _check_title_duplication(updatable_fields("title"), exclude_id=resume.id)
+        await _check_title_duplication(updatable_fields["title"], exclude_id=resume.id)
     updated_resume = await update_resume(resume_id, updatable_fields)
 
     if updated_resume:
