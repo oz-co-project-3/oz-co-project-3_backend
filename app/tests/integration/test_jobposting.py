@@ -155,7 +155,7 @@ async def test_job_posting_delete(client, access_token):
 @pytest.mark.asyncio
 async def test_job_posting_bookmark(client, access_token):
     headers = {"Authorization": f"Bearer {access_token}"}
-    id = 3
+    id = 2
     url = f"/api/job_posting/{id}/bookmark/"
 
     # 초기상태로 설정

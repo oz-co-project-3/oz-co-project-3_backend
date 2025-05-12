@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class StatusEnum(str, Enum):
@@ -21,18 +21,18 @@ class WorkExpRequestSchema(BaseModel):
 # 이력서 생성 및 수정
 class ResumeRequestSchema(BaseModel):
     user: Optional[int] = None
-    title: str
+    title: str = Field(..., max_length=100, description="길이 제한 100자")
     visibility: bool
-    name: str
-    phone_number: str
-    email: str
+    name: str = Field(..., max_length=20, description="길이 제한 20자")
+    phone_number: str = Field(..., max_length=50, description="길이 제한 50자")
+    email: str = Field(..., max_length=100, description="길이 제한 100자")
     image_url: Optional[str] = None
     interests: Optional[str] = None
-    desired_area: str
+    desired_area: str = Field(..., max_length=20, description="길이 제한 20자")
     education: Optional[str] = None
     school_name: Optional[str] = None
     graduation_status: Optional[str] = None
-    introduce: str
+    introduce: str = Field(..., max_length=500, description="길이 제한 500자")
     status: StatusEnum
     document_url: Optional[str] = None
     work_experiences: Optional[List[WorkExpRequestSchema]] = None  # 경력 사항 추가
