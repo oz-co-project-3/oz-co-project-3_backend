@@ -27,10 +27,20 @@ class ApplicantUpdate(BaseModel):
     memo: Optional[str] = None
 
 
+class ResumeResponse(BaseModel):
+    id: int
+    title: str
+    name: str
+    email: str
+
+    class Config:
+        from_attributes = True
+
+
 class ApplicantResponse(BaseModel):
     id: int
     job_posting_id: int
-    resume_id: int
+    resume: ResumeResponse
     user_id: int
     status: ApplicantEnum
     memo: Optional[str] = None
@@ -41,6 +51,6 @@ class ApplicantResponse(BaseModel):
     position: str
     deadline: str
     location: str
-    image_url: str
+    image_url: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

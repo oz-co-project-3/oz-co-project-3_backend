@@ -5,6 +5,7 @@ from typing import Optional
 
 from passlib.hash import bcrypt
 
+from app.core.redis import get_redis
 from app.core.token import create_jwt_tokens
 from app.domain.services.business_verify import verify_business_number
 from app.domain.services.email_detail import send_email_code
@@ -37,6 +38,7 @@ from app.exceptions.user_exceptions import (
     AlreadyBusinessUserException,
     DuplicatePhoneNumberException,
     InvalidBusinessNumberException,
+    UnverifiedOrInactiveAccountException,
 )
 
 logger = logging.getLogger(__name__)
@@ -48,7 +50,7 @@ async def register_user(request: UserRegisterRequest) -> UserUnionResponseDTO:
         logger.warning(f"[CHECK] 동일한 이메일 발견: {request.email}")
         raise DuplicateEmailException()
 
-    if not check_duplicate_phone_number(request):
+    if not await check_duplicate_phone_number(request):
         raise DuplicatePhoneNumberException()
 
     if len(request.password) < 8 or not re.search(
@@ -168,13 +170,13 @@ async def delete_user(
     current_user.status = "delete"
 
     if reason:
-        current_user.reason = reason
+        current_user.leave_reason = reason
 
     await current_user.save()
 
     return UserDeleteDTO(
         user_id=current_user.id,
         email=current_user.email,
-        reason=current_user.reason,
+        reason=current_user.leave_reason,
         deleted_at=current_user.deleted_at,
     )

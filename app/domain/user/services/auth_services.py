@@ -21,8 +21,10 @@ from app.domain.services.social_account import (
 )
 from app.domain.user.models import (
     BaseUser,
+    CorporateUser,
     Gender,
     SeekerStatus,
+    SeekerUser,
     SignInEnum,
     UserStatus,
     UserTypeEnum,
@@ -95,11 +97,13 @@ async def login_user(email: str, password: str) -> tuple[LoginResponseDTO, str, 
         f"refresh_token:{user.id}", refresh_token, ex=REFRESH_TOKEN_EXPIRE_SECONDS * 60
     )
 
+    seeker = await SeekerUser.get_or_none(user=user)
+
     dto = LoginResponseDTO(
         user_id=user.id,
         user_type=user.user_type,
         email=user.email,
-        name=None,
+        name=seeker.name if seeker else "사용자",
         access_token=access_token,
     )
 
@@ -199,7 +203,7 @@ async def kakao_login(kakao_info: dict) -> tuple[LoginResponseDTO, str, str]:
         )
     else:
         if SignInEnum.Kakao.value not in user.signinMethod:
-            user.signinMethod += ",Kakao"
+            user.signinMethod += ",kakao"
             await user.save()
 
     access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)
@@ -246,7 +250,7 @@ async def naver_login(code: str, state: str) -> tuple[LoginResponseDTO, str, str
         )
     else:
         if SignInEnum.Naver.value not in user.signinMethod:
-            user.signinMethod += ",Naver"
+            user.signinMethod += ",naver"
             await user.save()
 
     access_token, refresh_token = create_jwt_tokens(user.id, user.user_type)

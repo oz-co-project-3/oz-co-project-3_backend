@@ -128,7 +128,10 @@ async def update_resume_enpoint(
     seeker_user = await get_seeker_user(current_user)
     check_existing(seeker_user, ResumeNotFoundException)
     result = await update_resume_service(
-        resume_id=resume_id, data=resume_data.model_dump(), current_user=seeker_user
+        resume_id=resume_id,
+        data=resume_data.model_dump(),
+        current_user=seeker_user,
+        base_user=current_user,
     )
     logger.info(
         f"[API] 이력서 수정 완료 : resume_id={resume_id}, seeker_user_id={seeker_user.id}"

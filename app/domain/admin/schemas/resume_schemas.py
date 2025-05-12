@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 
@@ -45,6 +46,8 @@ class ResumeResponseDTO(BaseModel):
     status: StatusEnum
     document_url: Optional[str] = None
     work_experiences: List[WorkExpResponseDTO] = Field(default_factory=list)
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
