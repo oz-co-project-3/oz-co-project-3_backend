@@ -147,7 +147,4 @@ async def patch_posting_applicant(
     applicant = await patch_posting_applicant_by_id_service(
         id, current_user, patch_applicant, applicant_id
     )
-    if applicant:
-        return applicant
-    else:
-        return {"message": "지원이 취소되었습니다"}
+    return applicant

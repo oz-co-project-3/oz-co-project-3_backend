@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from tortoise.expressions import Q
 
-from app.domain.job_posting.models import Applicants, JobPosting
+from app.domain.job_posting.models import ApplicantEnum, Applicants, JobPosting
 from app.domain.posting.schemas import (
     JobPostingResponseDTO,
     PaginatedJobPostingsResponseDTO,
@@ -155,9 +155,9 @@ async def patch_posting_applicant_by_id(applicant, resume, patch_applicant):
     applicant.status = patch_applicant.status
     applicant.memo = patch_applicant.memo
 
-    if applicant.status == "지원 취소":
+    if patch_applicant.status == ApplicantEnum.Cancelled:
         await applicant.delete()
-        return None
+        return {"message": "지원이 취소되었습니다"}
 
     await applicant.save()
 
