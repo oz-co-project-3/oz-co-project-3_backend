@@ -50,6 +50,7 @@ class JobPostingResponseDTO(BaseModel):
     created_at: datetime
     updated_at: datetime
     is_bookmarked: Optional[bool] = False
+    image_url: Optional[str] = None
 
     class Config:
         from_attributes = True
