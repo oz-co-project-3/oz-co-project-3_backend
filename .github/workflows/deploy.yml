@@ -25,8 +25,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.dev
-#          file: Dockerfile.prod # 배포
+          file: Dockerfile.prod # 배포
+#          file: ./Dockerfile.dev
           push: true
           tags: hak2881/senior:latest
           no-cache: true

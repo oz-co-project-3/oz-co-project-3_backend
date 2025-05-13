@@ -20,11 +20,16 @@ from app.api.v1.success_review import success_review_router
 from app.api.v1.user import router as user_router
 from app.api.v1.websocket import websocket_router
 from app.core.config import TORTOISE_ORM
+from app.core.settings import settings
 from app.domain.services.s3_service import image_upload_router
 from app.exceptions.base_exceptions import CustomException
 
 bearer_scheme = HTTPBearer()
-app = FastAPI()
+app = FastAPI(
+    docs_url=None if settings.ENV == "prod" else "/docs",
+    redoc_url=None if settings.ENV == "prod" else "/redoc",
+    openapi_url=None if settings.ENV == "prod" else "/openapi.json",
+)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 app.include_router(user_router)
@@ -40,12 +45,17 @@ app.include_router(resume_router)
 app.include_router(image_upload_router)
 app.include_router(applicant_router)
 
-origins = [
-    "http://localhost",
-    "http://localhost:3000",
-    "http://127.0.0.1",
-    "http://127.0.0.1:3000",
-]
+if settings.ENV == "prod":
+    origins = [
+        "https://senior-tomorrow.o-r.kr",  # 실제 서비스 도메인
+    ]
+else:
+    origins = [
+        "http://localhost",
+        "http://localhost:3000",
+        "http://127.0.0.1",
+        "http://127.0.0.1:3000",
+    ]
 
 app.add_middleware(
     CORSMiddleware,
