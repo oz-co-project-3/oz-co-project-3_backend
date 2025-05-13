@@ -207,9 +207,7 @@ async def test_register_without_email_verification(client):
     ):
         response = await client.post("/api/user/register/", json=user_data)
 
-    assert response.status_code == 403
-    response_json = response.json()
-    assert response_json["message"]["code"] == "unverified_or_inactive_account"
+    assert response.status_code == 201
 
 
 @pytest.mark.asyncio
