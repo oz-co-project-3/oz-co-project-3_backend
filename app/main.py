@@ -26,9 +26,9 @@ from app.exceptions.base_exceptions import CustomException
 
 bearer_scheme = HTTPBearer()
 app = FastAPI(
-    # docs_url=None if settings.ENV == "prod" else "/docs",
-    # redoc_url=None if settings.ENV == "prod" else "/redoc",
-    # openapi_url=None if settings.ENV == "prod" else "/openapi.json",
+    docs_url=None if settings.ENV == "prod" else "/docs",
+    redoc_url=None if settings.ENV == "prod" else "/redoc",
+    openapi_url=None if settings.ENV == "prod" else "/openapi.json",
 )
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
